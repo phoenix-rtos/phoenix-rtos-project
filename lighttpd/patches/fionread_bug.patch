@@ -1,0 +1,17 @@
+ src/http-header-glue.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/http-header-glue.c b/src/http-header-glue.c
+index 5d4f1f5..d0c925c 100644
+--- a/src/http-header-glue.c
++++ b/src/http-header-glue.c
+@@ -1228,7 +1228,8 @@ handler_t http_response_read(server *srv, connection *con, http_response_opts *o
+                 toread = 4096; /* let read() below indicate if EOF or EAGAIN */
+               #endif
+             }
+-        }
++        } else
++			toread = 4096;
+ 
+         if (con->conf.stream_response_body & FDEVENT_STREAM_RESPONSE_BUFMIN) {
+             off_t cqlen = chunkqueue_length(con->write_queue);

@@ -1,0 +1,12 @@
+diff -Naur busybox-1.27.2/networking/telnetd.c busybox-1.27.2.phx/networking/telnetd.c
+--- busybox-1.27.2/networking/telnetd.c	2017-07-06 17:14:57.000000000 +0200
++++ busybox-1.27.2.phx/networking/telnetd.c	2018-12-12 15:23:33.324729632 +0100
+@@ -478,7 +478,7 @@
+ 	}
+ 
+ 	fflush_all();
+-	pid = vfork(); /* NOMMU-friendly */
++	pid = fork(); /* Prevent sharing of signal handlers until the issue is resolved */
+ 	if (pid < 0) {
+ 		free(ts);
+ 		close(fd);

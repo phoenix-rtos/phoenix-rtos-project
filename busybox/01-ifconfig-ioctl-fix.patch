@@ -1,0 +1,12 @@
+diff -Naur busybox-1.27.2/networking/ifconfig.c busybox-1.27.2.phx/networking/ifconfig.c
+--- busybox-1.27.2/networking/ifconfig.c	2017-07-06 17:14:57.000000000 +0200
++++ busybox-1.27.2.phx/networking/ifconfig.c	2018-09-12 17:44:38.480431151 +0200
+@@ -227,7 +227,7 @@
+ 
+ struct arg1opt {
+ 	const char *name;
+-	unsigned short selector;
++	unsigned long selector;
+ 	unsigned short ifr_offset;
+ };
+ 

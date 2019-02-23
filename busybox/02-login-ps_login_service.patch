@@ -1,0 +1,242 @@
+diff -Naur busybox-1.27.2/loginutils/login.c busybox-1.27.2.phs/loginutils/login.c
+--- busybox-1.27.2/loginutils/login.c	2017-07-06 17:14:57.000000000 +0200
++++ busybox-1.27.2.phs/loginutils/login.c	2018-10-02 14:49:44.154759792 +0200
+@@ -47,7 +47,15 @@
+ //config:	  The file /etc/securetty is used by (some versions of) login(1).
+ //config:	  The file contains the device names of tty lines (one per line,
+ //config:	  without leading /dev/) on which root is allowed to login.
+-
++//config:
++//config:config PS_LOGIN_SERVICE
++//config:	bool "Support for checking credentials using PhoenixSystems Login Service"
++//config:	default n
++//config:	depends on LOGIN
++//config:	help
++//config:	  Use ps_login_service_client in login(1) instead of direct access to
++//config:	  password database.
++//config:
+ //applet:/* Needs to be run by root or be suid root - needs to change uid and gid: */
+ //applet:IF_LOGIN(APPLET(login, BB_DIR_BIN, BB_SUID_REQUIRE))
+ 
+@@ -309,6 +317,171 @@
+ 	_exit(EXIT_SUCCESS);
+ }
+ 
++
++#if ENABLE_PS_LOGIN_SERVICE
++
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <pwd.h>
++
++#define PS_LOGIN_SERVICE_DEFAULT_TCP_PORT  7942
++
++static int ps_login_service_run_verification(const char* source, const char* username, const char* password,
++                                             int* blocked_seconds,
++                                             struct passwd* pw, char* pw_buffer, int pw_buffer_size);
++
++
++#define login_serv_log_sys_error(fmt, ...) do { } while (0)
++#define login_serv_log_info(fmt, ...) do { } while (0)
++
++
++static int ps_login_service_connect(int port)
++{
++	struct sockaddr_in  serveraddr;
++	int sock;
++    int res = socket(AF_INET, SOCK_STREAM, 0);
++    if (res < 0) {
++        login_serv_log_sys_error("socket()");
++        return -1;
++    }
++    sock = res;
++
++    memset(&serveraddr, 0x00, sizeof(serveraddr));
++    serveraddr.sin_family = AF_INET;
++    serveraddr.sin_port = htons(port);
++    serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
++
++    //login_serv_log_info("Connecting to port %d", port);
++    res = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
++    if (res < 0) {
++        login_serv_log_sys_error("connect()");
++        return -1;
++    }
++
++    return sock;
++}
++
++#define PS_LOGIN_SERVICE_VERIFY_RESULT__OK                  0
++#define PS_LOGIN_SERVICE_VERIFY_RESULT__BAD_USER            1
++#define PS_LOGIN_SERVICE_VERIFY_RESULT__BAD_PASSWORD        2
++#define PS_LOGIN_SERVICE_VERIFY_RESULT__USER_BLOCKED        3 // param: int blocked_seconds
++#define PS_LOGIN_SERVICE_VERIFY_RESULT__USER_DB_OVERFLOW    4
++
++static char* ps_login_service_skip_word(char* buf)
++{
++    while (*buf && *buf != ':')
++        buf++;
++    if (*buf)
++        *buf++ = '\0';
++    return buf;
++}
++
++static int ps_login_service_translate_response(char* buf, int* blocked_seconds,
++                                               struct passwd* pw)
++{
++	char* uid_str;
++    char* gid_str;
++    char* home_dir;
++    char* shell;
++    int sec;
++
++    if (strncmp(buf, "ok ", 3) == 0) {
++        buf += 3;
++        if (pw) {
++            // no username
++            // no passwd
++            uid_str  = buf; buf = ps_login_service_skip_word(buf);
++            gid_str  = buf; buf = ps_login_service_skip_word(buf);
++            home_dir = buf; buf = ps_login_service_skip_word(buf);
++            shell    = buf; buf = ps_login_service_skip_word(buf);
++            pw->pw_name = (char*)"x"; // fake
++            pw->pw_passwd = (char*)"x"; // fake
++            pw->pw_uid = atoi(uid_str);
++            pw->pw_gid = atoi(gid_str);
++            pw->pw_gecos = (char*)"";
++            pw->pw_dir = home_dir;
++            pw->pw_shell = shell;
++        }
++        return PS_LOGIN_SERVICE_VERIFY_RESULT__OK;
++    }
++
++    if (strcmp(buf, "bad_user") == 0)
++        return PS_LOGIN_SERVICE_VERIFY_RESULT__BAD_USER;
++    if (strcmp(buf, "bad_pass") == 0)
++        return PS_LOGIN_SERVICE_VERIFY_RESULT__BAD_PASSWORD;
++    if (strcmp(buf, "db_overflow") == 0)
++        return PS_LOGIN_SERVICE_VERIFY_RESULT__USER_DB_OVERFLOW;
++
++    if (strncmp(buf, "user_blocked ", 13) == 0) {
++        buf += 13;
++        sec = atoi(buf);
++        if (blocked_seconds)
++            *blocked_seconds = sec;
++        return PS_LOGIN_SERVICE_VERIFY_RESULT__USER_BLOCKED;
++    }
++    return -1;
++}
++
++static int ps_login_service_run_verification(const char* source, const char* username, const char* password,
++                                             int* blocked_seconds,
++                                             struct passwd* pw,
++                                             char* pw_buffer, int pw_buffer_size)
++{
++    char buf[128];
++    int to_send, len;
++
++    int fd = ps_login_service_connect(PS_LOGIN_SERVICE_DEFAULT_TCP_PORT);
++    if (fd < 0)
++        return -1;
++
++    to_send = sprintf(buf, "login %s %s %s", source, username, password);
++
++    for (;;) {
++        len = write(fd, buf, to_send);
++        if (len < 0) {
++            if (errno == EINTR)
++                continue;
++            login_serv_log_sys_error("read()");
++            close(fd);
++            return -1;
++        }
++        break;
++    }
++
++    if (!pw_buffer) {
++        pw_buffer = buf;
++        pw_buffer_size = sizeof(buf);
++    }
++
++    for (;;) {
++        len = read(fd, pw_buffer, pw_buffer_size-1);
++        if (len < 0) {
++            if (errno == EINTR)
++                continue;
++            login_serv_log_sys_error("read()");
++            close(fd);
++            return -1;
++        }
++        break;
++    }
++    pw_buffer[len] = '\0';
++    login_serv_log_info("Response : [%s]", pw_buffer);
++    close(fd);
++
++    return ps_login_service_translate_response(pw_buffer, blocked_seconds, pw);
++}
++
++#endif // #if ENABLE_PS_LOGIN_SERVICE
++
++
++
+ int login_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+ int login_main(int argc UNUSED_PARAM, char **argv)
+ {
+@@ -337,6 +510,12 @@
+ 	char pwdbuf[256];
+ 	char **pamenv;
+ #endif
++	int from_getty = 0;
++#if ENABLE_PS_LOGIN_SERVICE
++	struct passwd pwdstruct;
++	char pwdbuf[256];
++	char* unencrypted;
++#endif
+ #if ENABLE_LOGIN_SESSION_AS_CHILD
+ 	pid_t child_pid;
+ #endif
+@@ -361,8 +540,10 @@
+ 		safe_strncpy(username, opt_user, sizeof(username));
+ 	}
+ 	argv += optind;
+-	if (argv[0]) /* user from command line (getty) */
++	if (argv[0]) { /* user from command line (getty) */
++		from_getty = 1;
+ 		safe_strncpy(username, argv[0], sizeof(username));
++	}
+ 
+ 	/* Save tty attributes - and by doing it, check that it's indeed a tty */
+ 	if (tcgetattr(STDIN_FILENO, &G.tty_attrs) < 0
+@@ -473,7 +654,23 @@
+ 		syslog(LOG_WARNING, "pam_%s call failed: %s (%d)", failed_msg,
+ 					pam_strerror(pamh, pamret), pamret);
+ 		safe_strncpy(username, "UNKNOWN", sizeof(username));
+-#else /* not PAM */
++/* not PAM */
++#elif ENABLE_PS_LOGIN_SERVICE
++
++		if (1)
++		{
++			unencrypted = bb_ask_stdin("Password: ");
++			if (!unencrypted)
++				goto auth_failed;
++			pw = &pwdstruct;
++			const char* origin = from_getty ? "console" : "telnet";
++			if (ps_login_service_run_verification(origin, username, unencrypted, NULL, pw, pwdbuf, sizeof(pwdbuf)) == PS_LOGIN_SERVICE_VERIFY_RESULT__OK)
++				break;
++			goto auth_failed;
++		}
++
++/* ! ENABLE_PS_LOGIN_SERVICE */
++#else
+ 		pw = getpwnam(username);
+ 		if (!pw) {
+ 			strcpy(username, "UNKNOWN");

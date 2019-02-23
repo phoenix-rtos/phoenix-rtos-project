@@ -1,0 +1,16 @@
+diff -Naur busybox-1.27.2/runit/runsv.c busybox-1.27.2.phs/runit/runsv.c
+--- busybox-1.27.2/runit/runsv.c	2017-07-06 17:14:57.000000000 +0200
++++ busybox-1.27.2.phs/runit/runsv.c	2018-10-02 17:54:53.789791611 +0200
+@@ -57,6 +57,12 @@
+ {
+ 	syscall(__NR_clock_gettime, CLOCK_REALTIME, ts);
+ }
++#elif defined(phoenix)
++static void gettimeofday_ns(struct timespec *ts)
++{
++	clock_gettime(CLOCK_REALTIME, ts);
++}
++
+ #else
+ static void gettimeofday_ns(struct timespec *ts)
+ {
