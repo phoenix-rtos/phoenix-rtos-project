@@ -1,45 +1,63 @@
+#!/bin/bash
+LIGHTTPD="lighttpd-1.4.50"
+
+b_log "Building lighttpd"
 
 
-LIGHTTPD=lighttpd-1.4.50
+PREFIX_LIGHTTPD=${TOPDIR}/phoenix-rtos-ports/lighttpd
+PREFIX_LIGHTTPD_BUILD=${PREFIX_BUILD}/lighttpd
+PREFIX_LIGHTTPD_SRC=${PREFIX_LIGHTTPD}/${LIGHTTPD}
+PREFIX_PCRE_BUILD=${PREFIX_BUILD}/pcre
 
-log_build "Building lighttpd"
-LIGHTTPD_BUILD_DIR=$(pwd)/build/lighttpd/build
-LIGHTTPD_ARCH_DIR=$(pwd)/build/lighttpd
-LIGHTTPD_SRC_DIR=$LIGHTTPD_ARCH_DIR/${LIGHTTPD}
-mkdir -p "$LIGHTTPD_BUILD_DIR"
+#
+# Download and unpack
+#
+mkdir -p "$PREFIX_LIGHTTPD_BUILD"
 
-if [ ! -z "$CLEAN_TARGET" ]; then
-	[ -f "$LIGHTTPD_ARCH_DIR/${LIGHTTPD}.tar.gz" ] || wget https://download.lighttpd.net/lighttpd/releases-1.4.x/${LIGHTTPD}.tar.gz -P "$LIGHTTPD_ARCH_DIR"
-	if [ ! -d "$LIGHTTPD_SRC_DIR" ]; then
-		tar zxf "$LIGHTTPD_ARCH_DIR/${LIGHTTPD}.tar.gz" -C "$LIGHTTPD_ARCH_DIR"
-		cp -R "lighttpd/patches" $LIGHTTPD_ARCH_DIR
+if [ ! -z "$CLEAN" ]; then
+        [ -f "$PREFIX_LIGHTTPD/${LIGHTTPD}.tar.gz" ] || wget https://download.lighttpd.net/lighttpd/releases-1.4.x/${LIGHTTPD}.tar.gz -P "$PREFIX_LIGHTTPD"
+        if [ ! -d "$PREFIX_LIGHTTPD_SRC" ];then
+		tar zxf "$PREFIX_LIGHTTPD/${LIGHTTPD}.tar.gz" -C "$PREFIX_LIGHTTPD"
 
-		cd $LIGHTTPD_SRC_DIR
-		for i in ${LIGHTTPD_ARCH_DIR}/patches/*.patch; do patch -t -p1 < $i; done
+		for patchfile in ${PREFIX_LIGHTTPD}/patches/*.patch; do
+			echo "applying patch: $patchfile"
+        		patch -d $PREFIX_LIGHTTPD_SRC -p1 -p1 < $patchfile 
+		done
 	fi
 
-	cd $TOPDIR
-	cat $FSDIR/etc/lighttpd.conf | grep mod_ | cut -d'"' -f2 | xargs -L1 -I{} echo "PLUGIN_INIT({})" > $LIGHTTPD_SRC_DIR/src/plugin-static.h
+ cat $PREFIX_FS/root/etc/lighttpd.conf | grep mod_ | cut -d'"' -f2 | xargs -L1 -I{} echo "PLUGIN_INIT({})" > $PREFIX_LIGHTTPD_SRC/src/plugin-static.h
 
-	cd $LIGHTTPD_SRC_DIR
-	LIGHTTPD_CFLAGS="-I$PCRE_BUILD_DIR/user-include/ -Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb \
-		-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -DLIGHTTPD_STATIC -DPHOENIX"
-	LIGHTTPD_LDFLAGS="-L$PCRE_BUILD_DIR/user-lib/ -z max-page-size=0x1000"
+        [ -f "$PREFIX_LIGHTTPD_SRC/config.cache" ] && rm $PREFIX_LIGHTTPD_SRC/config.cache
+        
+	LIGHTTPD_CFLAGS="-I$PREFIX_PCRE_BUILD -DLIGHTTPD_STATIC -DPHOENIX"
 
-	./configure LIGHTTPD_STATIC=yes CFLAGS="${LIGHTTPD_CFLAGS} ${CFLAGS}" LDFLAGS="${LIGHTTPD_LDFLAGS} ${LDFLAGS}" AR_FLAGS="-r" -C --disable-ipv6 --disable-mmap --with-bzip2=no \
-		--with-zlib=no --enable-shared=no --enable-static=yes --disable-shared --host="$TARGET_FAMILY" -target="$TARGET_FAMILY" CC=${CROSS}gcc \
-		AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as --prefix="$LIGHTTPD_BUILD_DIR/rootfs" --libdir="$LIGHTTPD_BUILD_DIR/user-lib" --includedir="$LIGHTTPD_BUILD_DIR/user-include"
+        LIGHTTPD_LDFLAGS="-L$PREFIX_PCRE_BUILD"
 
-	sed -i 's/#define HAVE_MMAP 1//g' config.h
-	sed -i 's/#define HAVE_MUNMAP 1//g' config.h
-	sed -i 's/#define HAVE_GETRLIMIT 1//g' config.h
-	sed -i 's/#define HAVE_SYS_POLL_H 1//g' config.h
-	sed -i 's/#define HAVE_SIGACTION 1//g' config.h
-	sed -i 's/#define HAVE_DLFCN_H 1//g' config.h
+#
+# Configure
+#
+
+      ( cd $PREFIX_LIGHTTPD_BUILD && $PREFIX_LIGHTTPD_SRC/configure LIGHTTPD_STATIC=yes CFLAGS="${LIGHTTPD_CFLAGS} ${CFLAGS}" LDFLAGS="${LIGHTTPD_LDFLAGS} ${LDFLAGS}" AR_FLAGS="-r" -C --disable-ipv6 --disable-mmap --with-bzip2=no \
+                --with-zlib=no --enable-shared=no --enable-static=yes --disable-shared --host="$TARGET_FAMILY" -target="$TARGET_FAMILY" CC=${CROSS}gcc \
+                AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as --prefix="$PREFIX_FS/root" ) 
+
+
+        sed -i 's/#define HAVE_MMAP 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
+        sed -i 's/#define HAVE_MUNMAP 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
+        sed -i 's/#define HAVE_GETRLIMIT 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
+        sed -i 's/#define HAVE_SYS_POLL_H 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
+        sed -i 's/#define HAVE_SIGACTION 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
+        sed -i 's/#define HAVE_DLFCN_H 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
 
 fi
-make -C "$LIGHTTPD_SRC_DIR" -j 9 install
-cd $TOPDIR
-${CROSS}strip -s $LIGHTTPD_BUILD_DIR/rootfs/sbin/lighttpd -o $PREFIX_PROG_STRIPPED/lighttpd
-cp $LIGHTTPD_BUILD_DIR/rootfs/sbin/lighttpd $PREFIX_PROG/lighttpd
-install_bin "$PREFIX_PROG_STRIPPED/lighttpd" /sbin
+
+#
+# Make
+#
+#cd ${PREFIX_LIGHTTPD_BUILD}
+#echo ${MAKEFLAGS}
+make -C ${PREFIX_LIGHTTPD_BUILD} -f ${PREFIX_LIGHTTPD_BUILD}/Makefile  CROSS_COMPILE="$CROSS"  ${MAKEFLAGS} install
+
+${CROSS}strip -s $PREFIX_FS/root/sbin/lighttpd -o $PREFIX_PROG_STRIPPED/lighttpd
+b_install "$PREFIX_PROG_STRIPPED/lighttpd" /sbin
+
