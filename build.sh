@@ -21,4 +21,4 @@ export TARGET TARGET_FAMILY TOPDIR PREFIX_BUILD PREFIX_FS PREFIX_BOOT PREFIX_PRO
 
 [ "X${PORTS_OPENSSL}" == "Xy" ] && ./phoenix-rtos-ports/openssl/build.sh
 
-#[ "X${PORTS_OPENVPN}" == "Xy" ] && ./phoenix-rtos-ports/openvpn/build.sh
+[ "X${PORTS_OPENVPN}" == "Xy" ] && ./phoenix-rtos-ports/openvpn/build.sh

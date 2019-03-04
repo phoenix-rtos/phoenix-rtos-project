@@ -1,0 +1,315 @@
+ configure.ac           | 36 ++++++++++++++++++++++++++++++++----
+ src/openvpn/forward.c  |  6 +++---
+ src/openvpn/interval.c |  2 +-
+ src/openvpn/misc.c     |  2 +-
+ src/openvpn/route.c    | 25 ++++++++++++++++++++++---
+ src/openvpn/socket.c   |  2 +-
+ src/openvpn/syshead.h  |  4 ++++
+ src/openvpn/tun.c      | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/openvpn/tun.h      |  7 +++++++
+ 9 files changed, 115 insertions(+), 13 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 9d5fc3fd..efb66018 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -62,19 +62,34 @@ AC_ARG_ENABLE(
+ 	[lzo],
+ 	[AS_HELP_STRING([--disable-lzo], [disable LZO compression support @<:@default=yes@:>@])],
+ 	,
+-	[enable_lzo="yes"]
++	[
++		case "$host" in
++			*-phoenix*) enable_lzo="no";;
++			*) enable_lzo="yes";;
++		esac
++	]
+ )
+ 
+ AC_ARG_ENABLE(lz4,
+ 	[  --disable-lz4           Disable LZ4 compression support],
+ 	[enable_lz4="$enableval"],
+-	[enable_lz4="yes"]
++	[
++		case "$host" in
++			*-phoenix*) enable_lz4="no";;
++			*) enable_lz4="yes";;
++		esac
++	]
+ )
+ 
+ AC_ARG_ENABLE(comp-stub,
+ 	[  --enable-comp-stub      Don't compile compression support but still allow limited interoperability with compression-enabled peers],
+ 	[enable_comp_stub="$enableval"],
+-	[enable_comp_stub="no"]
++	[
++		case "$host" in
++			*-phoenix*) enable_comp_stub="yes";;
++			*) enable_comp_stub="no";;
++		esac
++	]
+ )
+ 
+ AC_ARG_ENABLE(
+@@ -109,7 +124,12 @@ AC_ARG_ENABLE(
+ 	[plugins],
+ 	[AS_HELP_STRING([--disable-plugins], [disable plug-in support @<:@default=yes@:>@])],
+ 	,
+-	[enable_plugins="yes"]
++	[
++		case "$host" in
++			*-phoenix*) enable_plugins="no";;
++			*) enable_plugins="yes";;
++		esac
++	]
+ )
+ 
+ AC_ARG_ENABLE(
+@@ -190,6 +210,7 @@ AC_ARG_ENABLE(
+ 		case "$host" in
+ 			*-*-openbsd*) enable_plugin_auth_pam="no";;
+ 			*-mingw*) enable_plugin_auth_pam="no";;
++			*-phoenix*) enable_plugin_auth_pam="no";;
+ 			*) enable_plugin_auth_pam="yes";;
+ 		esac
+ 	]
+@@ -349,6 +370,13 @@ case "$host" in
+ 		have_tap_header="yes"
+ 		ac_cv_header_net_if_h="no"	# exists, but breaks things
+ 		;;
++	*-phoenix*)
++		AC_DEFINE([TARGET_PHOENIX], [1], [Are we running PHOENIX?])
++		AC_DEFINE_UNQUOTED([TARGET_PREFIX], ["P"], [Target prefix])
++		ROUTE="/sbin/route"
++		have_tap_header="yes"
++		;;
++
+ 	*)
+ 		AC_DEFINE_UNQUOTED([TARGET_PREFIX], ["X"], [Target prefix])
+ 		have_tap_header="yes"
+diff --git a/src/openvpn/forward.c b/src/openvpn/forward.c
+index 8f90418f..f955af10 100644
+--- a/src/openvpn/forward.c
++++ b/src/openvpn/forward.c
+@@ -1830,12 +1830,12 @@ process_io(struct context *c)
+         process_outgoing_link(c);
+     }
+     /* TUN device ready to accept write */
+-    else if (status & TUN_WRITE)
++    if (status & TUN_WRITE)
+     {
+         process_outgoing_tun(c);
+     }
+     /* Incoming data on TCP/UDP port */
+-    else if (status & SOCKET_READ)
++    if (status & SOCKET_READ)
+     {
+         read_incoming_link(c);
+         if (!IS_SIG(c))
+@@ -1844,7 +1844,7 @@ process_io(struct context *c)
+         }
+     }
+     /* Incoming data on TUN device */
+-    else if (status & TUN_READ)
++    if (status & TUN_READ)
+     {
+         read_incoming_tun(c);
+         if (!IS_SIG(c))
+diff --git a/src/openvpn/interval.c b/src/openvpn/interval.c
+index b728560b..2a361ef6 100644
+--- a/src/openvpn/interval.c
++++ b/src/openvpn/interval.c
+@@ -52,7 +52,7 @@ event_timeout_trigger(struct event_timeout *et,
+     if (et->defined)
+     {
+         time_t wakeup = et->last - local_now + et->n;
+-        if (wakeup <= 0)
++        if (wakeup <= 0 || ((wakeup >> 63) & 1))
+         {
+ #if INTERVAL_DEBUG
+             dmsg(D_INTERVAL, "EVENT event_timeout_trigger (%d) etcr=%d", et->n,
+diff --git a/src/openvpn/misc.c b/src/openvpn/misc.c
+index 581a8908..d4588ca8 100644
+--- a/src/openvpn/misc.c
++++ b/src/openvpn/misc.c
+@@ -204,7 +204,7 @@ openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned in
+             char *const *envp = (char *const *)make_env_array(es, true, &gc);
+             pid_t pid;
+ 
+-            pid = fork();
++            pid = vfork();
+             if (pid == (pid_t)0) /* child side */
+             {
+                 execve(cmd, argv, envp);
+diff --git a/src/openvpn/route.c b/src/openvpn/route.c
+index 2d6428b2..d2ac169e 100644
+--- a/src/openvpn/route.c
++++ b/src/openvpn/route.c
+@@ -1801,7 +1801,15 @@ add_route(struct route_ipv4 *r,
+         argv_msg(D_ROUTE, &argv);
+         status = openvpn_execve_check(&argv, es, 0, "ERROR: AIX route add command failed");
+     }
+-
++#elif defined(TARGET_PHOENIX)
++	{
++		int netbits = netmask_to_netbits2(r->netmask);
++		argv_printf(&argv, "%s add -net %s/%d gw %s %s",
++					ROUTE_PATH,
++					network, netbits, gateway, tt->netif_name);
++        argv_msg(D_ROUTE, &argv);
++        status = openvpn_execve_check(&argv, es, 0, "ERROR: PHOENIX route add command failed");
++	}
+ #else  /* if defined(TARGET_LINUX) */
+     msg(M_FATAL, "Sorry, but I don't know how to do 'route' commands on this operating system.  Try putting your routes in a --route-up script");
+ #endif /* if defined(TARGET_LINUX) */
+@@ -2109,7 +2117,8 @@ add_route_ipv6(struct route_ipv6 *r6, const struct tuntap *tt, unsigned int flag
+                 network, r6->netbits, gateway);
+     argv_msg(D_ROUTE, &argv);
+     status = openvpn_execve_check(&argv, es, 0, "ERROR: AIX route add command failed");
+-
++#elif defined(TARGET_PHOENIX)
++    msg(M_FATAL, "Sorry, IPv6 is not working on PHOENIX (yet!)");
+ #else  /* if defined(TARGET_LINUX) */
+     msg(M_FATAL, "Sorry, but I don't know how to do 'route ipv6' commands on this operating system.  Try putting your routes in a --route-up script");
+ #endif /* if defined(TARGET_LINUX) */
+@@ -2307,7 +2316,15 @@ delete_route(struct route_ipv4 *r,
+         argv_msg(D_ROUTE, &argv);
+         openvpn_execve_check(&argv, es, 0, "ERROR: AIX route delete command failed");
+     }
+-
++#elif defined(TARGET_PHOENIX)
++	{
++		int netbits = netmask_to_netbits2(r->netmask);
++		argv_printf(&argv, "%s del -net %s/%d gw %s %s",
++					ROUTE_PATH,
++					network, netbits, gateway, tt->netif_name);
++        argv_msg(D_ROUTE, &argv);
++        openvpn_execve_check(&argv, es, 0, "ERROR: PHOENIX route del command failed");
++	}
+ #else  /* if defined(TARGET_LINUX) */
+     msg(M_FATAL, "Sorry, but I don't know how to do 'route' commands on this operating system.  Try putting your routes in a --route-up script");
+ #endif /* if defined(TARGET_LINUX) */
+@@ -2543,6 +2560,8 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt, unsigned
+                 network, r6->netbits, gateway);
+     argv_msg(D_ROUTE, &argv);
+     openvpn_execve_check(&argv, es, 0, "ERROR: AIX route add command failed");
++#elif defined(TARGET_PHOENIX)
++	msg(M_FATAL, "Sorry, IPv6 is not working on PHOENIX");
+ 
+ #else  /* if defined(TARGET_LINUX) */
+     msg(M_FATAL, "Sorry, but I don't know how to do 'route ipv6' commands on this operating system.  Try putting your routes in a --route-down script");
+diff --git a/src/openvpn/socket.c b/src/openvpn/socket.c
+index c76d2062..d6c90e81 100644
+--- a/src/openvpn/socket.c
++++ b/src/openvpn/socket.c
+@@ -552,7 +552,7 @@ openvpn_getaddrinfo(unsigned int flags,
+          */
+         while (true)
+         {
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(TARGET_PHOENIX)
+             res_init();
+ #endif
+             /* try hostname lookup */
+diff --git a/src/openvpn/syshead.h b/src/openvpn/syshead.h
+index 3ac9d70c..e50df2ef 100644
+--- a/src/openvpn/syshead.h
++++ b/src/openvpn/syshead.h
+@@ -383,6 +383,10 @@ typedef int MIB_TCP_STATE;
+ #include <sys/mman.h>
+ #endif
+ 
++#ifdef TARGET_PHOENIX
++#include <sys/select.h>
++#endif
++
+ /*
+  * Pedantic mode is meant to accomplish lint-style program checking,
+  * not to build a working executable.
+diff --git a/src/openvpn/tun.c b/src/openvpn/tun.c
+index 63f9d1bf..0f25403d 100644
+--- a/src/openvpn/tun.c
++++ b/src/openvpn/tun.c
+@@ -1598,6 +1598,36 @@ do_ifconfig(struct tuntap *tt,
+                 add_route_connected_v6_net(tt, es);
+             }
+         }
++#elif defined(TARGET_PHOENIX)
++		{
++			if (tun) {
++				argv_printf(&argv,
++                        "%s %s %s pointopoint %s mtu %d",
++                        IFCONFIG_PATH,
++                        tt->netif_name,
++                        ifconfig_local,
++                        ifconfig_remote_netmask,
++                        tun_mtu
++                        );
++			}
++			else {
++				argv_printf(&argv,
++                        "%s %s %s netmask %s mtu %d broadcast %s",
++                        IFCONFIG_PATH,
++                        tt->netif_name,
++                        ifconfig_local,
++                        ifconfig_remote_netmask,
++                        tun_mtu,
++                        ifconfig_broadcast
++                        );
++			}
++			argv_msg(M_INFO, &argv);
++			openvpn_execve_check(&argv, es, S_FATAL, "Phoenix ifconfig failed");
++			if (do_ipv6) {
++				msg(M_FATAL, "No IPv6 support on Phoenix");
++			}
++			tt->did_ifconfig = true;
++		}
+ #else  /* if defined(TARGET_LINUX) */
+         msg(M_FATAL, "Sorry, but I don't know how to do 'ifconfig' commands on this operating system.  You should ifconfig your TUN/TAP device manually or use an --up script.");
+ #endif /* if defined(TARGET_LINUX) */
+@@ -1618,6 +1648,9 @@ clear_tuntap(struct tuntap *tuntap)
+ #ifdef TARGET_SOLARIS
+     tuntap->ip_fd = -1;
+ #endif
++#ifdef TARGET_PHOENIX
++	free(tuntap->netif_name);
++#endif
+ }
+ 
+ static void
+@@ -1823,6 +1856,17 @@ open_tun_generic(const char *dev, const char *dev_type, const char *dev_node,
+ 
+         /* tt->actual_name is passed to up and down scripts and used as the ifconfig dev name */
+         tt->actual_name = string_alloc(dynamic_opened ? dynamic_name : dev, NULL);
++#ifdef TARGET_PHOENIX
++		/* This is not nice and will fail if more than one
++		 * tun interface is present not to mention that it won't
++		 * work when tap is used.
++		 * TODO: proper way to get interface name (maybe ioctl on dev node?)*/
++		FILE *fp = popen("ifconfig | grep ^tu | cut -b 1-3", "r");
++		tt->netif_name = malloc(4);
++		memset(tt->netif_name, 0, 4);
++		fread(tt->netif_name, 4, 1, fp);
++		pclose(fp);
++#endif
+     }
+ }
+ #endif /* !_WIN32 && !TARGET_LINUX */
+diff --git a/src/openvpn/tun.h b/src/openvpn/tun.h
+index 6c57ad0d..169198cc 100644
+--- a/src/openvpn/tun.h
++++ b/src/openvpn/tun.h
+@@ -184,6 +184,13 @@ struct tuntap
+     int ip_fd;
+ #endif
+ 
++#ifdef TARGET_PHOENIX
++	/* lwip limits interface name to 3 bytes and has global
++	 * interface counter so device node may not correspond to
++	 * interface number - that's why we need it */
++	char *netif_name;
++#endif
++
+ #ifdef HAVE_NET_IF_UTUN_H
+     bool is_utun;
+ #endif
