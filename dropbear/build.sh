@@ -21,29 +21,32 @@ if [ ! -z "$CLEAN" ]; then
 
 	cp $PREFIX_DROPBEAR/localoptions.h $PREFIX_DROPBEAR_BUILD
 
-	DROPBEAR_CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb -fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-z,max-page-size=0x1000 -DENDIAN_LITTLE -DUSE_DEV_PTMX"
+	DROPBEAR_CFLAGS=""
+	DROPBEAR_LDFLAGS=""
 
 #
 # Configure
 #
-	( cd ${PREFIX_DROPBEAR_BUILD} && ${PREFIX_DROPBEAR_SRC}/configure CPPFLAGS="${DROPBEAR_CFLAGS} ${CFLAGS}" CFLAGS="${DROPBEAR_CFLAGS} ${CFLAGS}" LDFLAGS="${DROPBEAR_CFLAGS} ${LDFLAGS}" ARFLAGS="-r" --host="$TARGET_FAMILY" \
-                --target="$TARGET_FAMILY" CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib --includedir="${PREFIX_PROG}" --oldincludedir="${PREFIX_PROG}" \
-                --prefix="${PREFIX_PROG}" --program-prefix="${PREFIX_PROG}" --libdir="${PREFIX_PROG}" --bindir="${PREFIX_PROG}" --disable-zlib --enable-static \
-                --disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx --disable-harden )
+	( cd ${PREFIX_DROPBEAR_BUILD} && ${PREFIX_DROPBEAR_SRC}/configure CPPFLAGS="${CFLAGS} ${DROPBEAR_CFLAGS}" CFLAGS="${CFLAGS} ${DROPBEAR_CFLAGS}" \
+		LDFLAGS="${CFLAGS} ${LDFLAGS} ${DROPBEAR_LDFLAGS}" ARFLAGS="-r" \
+		--host="$TARGET_FAMILY" --target="$TARGET_FAMILY" CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib \
+		--includedir="${PREFIX_PROG}" --oldincludedir="${PREFIX_PROG}" \
+		--prefix="${PREFIX_PROG}" --program-prefix="${PREFIX_PROG}" --libdir="${PREFIX_PROG}" --bindir="${PREFIX_PROG}" --disable-zlib --enable-static \
+		--disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx --disable-harden )
 
 fi
 
 #
 # Make
 #
-make PROGRAMS="dropbear dbclient dropbearkey scp" -C ${PREFIX_DROPBEAR_BUILD} -f ${PREFIX_DROPBEAR_BUILD}/Makefile CROSS_COMPILE="$CROSS" all ${MAKEFLAGS} 
+make PROGRAMS="dropbear dbclient dropbearkey scp" -C ${PREFIX_DROPBEAR_BUILD} -f ${PREFIX_DROPBEAR_BUILD}/Makefile CROSS_COMPILE="$CROSS" ${MAKEFLAGS} 
 
-${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dropbear -o $PREFIX_PROG_STRIPPED/dropbear
-${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dbclient -o $PREFIX_PROG_STRIPPED/dbclient
-${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/scp -o $PREFIX_PROG_STRIPPED/scp
+#${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dropbear -o $PREFIX_PROG_STRIPPED/dropbear
+#${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dbclient -o $PREFIX_PROG_STRIPPED/dbclient
+#${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/scp -o $PREFIX_PROG_STRIPPED/scp
 
-b_install "$PREFIX_PROG_STRIPPED/dropbear" /sbin
-b_install "$PREFIX_PROG_STRIPPED/dbclient" /usr/bin
-b_install "$PREFIX_PROG_STRIPPED/scp" /bin
+#b_install "$PREFIX_PROG_STRIPPED/dropbear" /sbin
+#b_install "$PREFIX_PROG_STRIPPED/dbclient" /usr/bin
+#b_install "$PREFIX_PROG_STRIPPED/scp" /bin
 
 exit 0
