@@ -41,12 +41,12 @@ fi
 #
 make PROGRAMS="dropbear dbclient dropbearkey scp" -C ${PREFIX_DROPBEAR_BUILD} -f ${PREFIX_DROPBEAR_BUILD}/Makefile CROSS_COMPILE="$CROSS" ${MAKEFLAGS} 
 
-#${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dropbear -o $PREFIX_PROG_STRIPPED/dropbear
-#${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dbclient -o $PREFIX_PROG_STRIPPED/dbclient
-#${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/scp -o $PREFIX_PROG_STRIPPED/scp
+${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dropbear -o $PREFIX_PROG_STRIPPED/dropbear
+${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dbclient -o $PREFIX_PROG_STRIPPED/dbclient
+${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/scp -o $PREFIX_PROG_STRIPPED/scp
 
-#b_install "$PREFIX_PROG_STRIPPED/dropbear" /sbin
-#b_install "$PREFIX_PROG_STRIPPED/dbclient" /usr/bin
-#b_install "$PREFIX_PROG_STRIPPED/scp" /bin
+b_install "$PREFIX_PROG_STRIPPED/dropbear" /sbin
+b_install "$PREFIX_PROG_STRIPPED/dbclient" /usr/bin
+b_install "$PREFIX_PROG_STRIPPED/scp" /bin
 
 exit 0
