@@ -1,0 +1,26 @@
+#!/bin/busybox sh
+echo "INITRC: STARTING"
+export PATH=/bin:/usr/bin
+
+DIR_UPDATE="/var/tmp/update"
+
+# mount RAM disks
+mkdir -p /var/log /var/run /var/cfg /var/cfg-req /var/tmp /var/login /var/users-req
+
+# RTC has failed, set last "build" date
+sleep 1
+TIMESTAMP_FILE="/bin/ash"
+if [ "$(date +%s)" -lt 1446055000 ] && [ -f "$TIMESTAMP_FILE" ]; then
+    date -s "@$(date -r $TIMESTAMP_FILE +%s)" > /dev/null
+    #hwclock -w
+fi
+
+# Prepare update directory.
+mkdir -p "$DIR_UPDATE"
+
+# custom (per-project, per-customer initialization)
+if [ -f /etc/rc.local ]; then
+    /etc/rc.local
+fi
+
+echo -e "\e[0;33mINITRC: DONE\e[0m"

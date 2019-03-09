@@ -1,0 +1,53 @@
+#
+# Shell script for building sampe project
+#
+# Copyright 2018, 2019 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk
+#
+
+set -e
+
+TARGET=arm-imx6ull
+TARGET_FAMILY=`echo $TARGET | awk -F- '{ print $1 }'`
+
+CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb\
+	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections"
+
+LDFLAGS="-z max-page-size=0x1000"
+
+#
+# Core configuration
+#
+POSIX=y
+USB=y
+LWIP=y
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_OPENSSL=y
+export PORTS_OPENVPN=n
+
+#
+# Project specific build
+#
+b_build() {
+	b_log "Building project specific applications"
+
+}
+
+
+b_image() {
+	b_log "Creating image"
+
+#	KERNEL_IMG="$TOPDIR/_build/phoenix-arm-imx6ull.img"
+	$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;64;64;-r;jffs2;0;-p;128;64;-p;192;1856  Xpsh;-i;/etc/rc.psh;primary"  --initrd $PREFIX_ROOTFS/sbin/imx6ull-flash --console $PREFIX_ROOTFS/sbin/imx6ull-uart --append $PREFIX_ROOTFS/bin/psh --output $PREFIX_BOOT/primary.img
+	$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;128;64;-r;jffs2;0;-p;64;64;-p;192;1856 Xpsh;-i;/etc/rc.psh;secondary" --initrd $PREFIX_ROOTFS/sbin/imx6ull-flash --console $PREFIX_ROOTFS/sbin/imx6ull-uart --append $PREFIX_ROOTFS/bin/psh --output $PREFIX_BOOT/secondary.img
+
+	cp $KERNEL_IMG $PREFIX_BOOT/
+}

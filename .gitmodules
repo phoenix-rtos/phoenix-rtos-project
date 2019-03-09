@@ -1,0 +1,36 @@
+[submodule "phoenix-rtos-kernel"]
+	path = phoenix-rtos-kernel
+	url = https://github.com/phoenix-rtos/phoenix-rtos-kernel.git
+[submodule "libphoenix"]
+	path = libphoenix
+	url = https://github.com/phoenix-rtos/libphoenix
+[submodule "phoenix-rtos-build"]
+	path = phoenix-rtos-build
+	url = https://github.com/phoenix-rtos/phoenix-rtos-build
+[submodule "phoenix-rtos-ports"]
+	path = phoenix-rtos-ports
+	url = https://github.com/phoenix-rtos/phoenix-rtos-ports
+[submodule "phoenix-rtos-devices"]
+	path = phoenix-rtos-devices
+	url = https://github.com/phoenix-rtos/phoenix-rtos-devices
+[submodule "phoenix-rtos-filesystems"]
+	path = phoenix-rtos-filesystems
+	url = https://github.com/phoenix-rtos/phoenix-rtos-filesystems
+[submodule "phoenixd"]
+	path = phoenixd
+	url = https://github.com/phoenix-rtos/phoenixd
+[submodule "phoenix-rtos-usb"]
+	path = phoenix-rtos-usb
+	url = https://github.com/phoenix-rtos/phoenix-rtos-usb
+[submodule "phoenix-rtos-lwip"]
+	path = phoenix-rtos-lwip
+	url = https://github.com/phoenix-rtos/phoenix-rtos-lwip
+[submodule "phoenix-rtos-posixsrv"]
+	path = phoenix-rtos-posixsrv
+	url = https://github.com/phoenix-rtos/phoenix-rtos-posixsrv
+[submodule "phoenix-rtos-tests"]
+	path = phoenix-rtos-tests
+	url = https://github.com/phoenix-rtos/phoenix-rtos-tests
+[submodule "psh"]
+	path = psh
+	url = https://github.com/phoenix-rtos/psh

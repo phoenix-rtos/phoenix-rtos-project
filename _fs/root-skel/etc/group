@@ -1,0 +1,5 @@
+root:x:0:
+nobody:x:65534:
+router:x:30000:
+www_admin:x:30001:
+www_public:x:30002:
