@@ -4,11 +4,7 @@ X /bin/posixsrv
 W /sbin/dummyfs -m /var -D
 W /bin/mount /dev/flash2 /local jffs2 0
 X /sbin/imx6ull-sdma -s -S 120 -d /local
-X /sbin/ps_plcio_driver
 X /sbin/lwip enet:0x02188000:150:PHY:0.0:reset:-4:/dev/gpio5:irq:-8:/dev/gpio1 enet:0x020b4000:152:no-mdio:PHY:0.3:reset:-5:/dev/gpio5:irq:-9:/dev/gpio1 pppos:/dev/ttyacm0:internet.mts.ru
-#X /sbin/imx6ull-ad7779
-#X /bin/metersrv -i -u -s -d -c /var/tmp/imeter_rx:/var/tmp/imeter_tx:dlms
 X /sbin/imx6ull-uart 0 4 115200 0 0
 X /sbin/imx6ull-uart 0 5 115200 0 0
 X /linuxrc
-

@@ -25,12 +25,12 @@ LWIP=y
 #
 # Ports configuration
 #
-export PORTS_BUSYBOX=n
-export PORTS_PCRE=n
-export PORTS_LIGHTTPD=n
-export PORTS_DROPBEAR=n
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
+export PORTS_LIGHTTPD=y
+export PORTS_DROPBEAR=y
 export PORTS_LUA=n
-export PORTS_OPENSSL=y
+export PORTS_OPENSSL=n
 export PORTS_OPENVPN=n
 
 #
