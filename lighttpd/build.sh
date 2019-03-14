@@ -15,7 +15,7 @@ PREFIX_PCRE_BUILD=${PREFIX_BUILD}/pcre
 mkdir -p "$PREFIX_LIGHTTPD_BUILD"
 
 if [ ! -z "$CLEAN" ]; then
-        [ -f "$PREFIX_LIGHTTPD/${LIGHTTPD}.tar.gz" ] || wget https://download.lighttpd.net/lighttpd/releases-1.4.x/${LIGHTTPD}.tar.gz -P "$PREFIX_LIGHTTPD"
+        [ -f "$PREFIX_LIGHTTPD/${LIGHTTPD}.tar.gz" ] || wget https://download.lighttpd.net/lighttpd/releases-1.4.x/${LIGHTTPD}.tar.gz -P "$PREFIX_LIGHTTPD" --no-check-certificate
         if [ ! -d "$PREFIX_LIGHTTPD_SRC" ];then
 		tar zxf "$PREFIX_LIGHTTPD/${LIGHTTPD}.tar.gz" -C "$PREFIX_LIGHTTPD"
 
