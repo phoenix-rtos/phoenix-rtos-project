@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e 
+set -e
 
 OPENVPN=openvpn-2.4.7
 
@@ -29,18 +29,20 @@ if [ ! -z "$CLEAN" ]; then
 		for i in ${PREFIX_OPENVPN}/*.patch; do patch -t -p1 < $i; done
 
 	fi
-	OPENVPN_CFLAGS="-I${PREFIX_BUILD}/openssl/include/ ${CFLAGS} -std=gnu99"
-	OPENVPN_LDFLAGS="-L${PREFIX_BUILD}/openssl/lib/ ${LDFLAGS}"
-	
+	OPENVPN_CFLAGS="-std=gnu99"
 #
 # Configure
 #
 	cd $PREFIX_OPENVPN_SRC
 	autoreconf -i -v -f	
-	( cd ${PREFIX_OPENVPN_BUILD} && PKG_CONFIG="" ${PREFIX_OPENVPN_SRC}/configure CFLAGS="${OPENVPN_CFLAGS}" LDFLAGS="${OPENVPN_LDFLAGS}" --host=arm-phoenix )
+	cd $PREFIX_OPENVPN_BUILD && PKG_CONFIG="" $PREFIX_OPENVPN_SRC/configure CFLAGS="$CFLAGS $OPENVPN_CFLAGS" LDFLAGS="$LDFLAGS" --host=arm-phoenix --sbindir=$PREFIX_PROG
 fi
 
 #
 # Make
 #
-make -C "$PREFIX_OPENVPN_BUILD" -f ${PREFIX_OPENVPN_BUILD}/Makefile CROSS_COMPILE="$CROSS" ${MAKEFLAGS}
+make -C "$PREFIX_OPENVPN_BUILD" -j 9
+make -C "$PREFIX_OPENVPN_BUILD" install-exec
+
+mkdir -p $PREFIX_PROG_STRIPPED && ${CROSS}strip -s $PREFIX_PROG/openvpn -o $PREFIX_PROG_STRIPPED/openvpn
+b_install "$PREFIX_PROG_STRIPPED/openvpn" /sbin/
