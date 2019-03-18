@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 DROPBEAR=dropbear-2018.76
 
 b_log "Building dropbear"

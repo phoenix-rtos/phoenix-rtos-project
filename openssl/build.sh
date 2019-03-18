@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 OPENSSL=openssl-1.1.1a
 
 b_log "Building openssl"

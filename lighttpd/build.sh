@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 LIGHTTPD="lighttpd-1.4.50"
 
 b_log "Building lighttpd"

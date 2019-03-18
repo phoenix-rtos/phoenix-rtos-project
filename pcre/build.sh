@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 PCRE=pcre-8.42
 
 b_log "Building pcre"

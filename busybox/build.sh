@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 BUSYBOX=busybox-1.27.2
 
 PREFIX_BUSYBOX=${TOPDIR}/phoenix-rtos-ports/busybox
@@ -15,7 +16,6 @@ echo $PREFIX_BUSYBOX_SRC
 mkdir -p "$PREFIX_BUSYBOX_BUILD" "$PREFIX_BUSYBOX_MARKERS"
 [ -f "$PREFIX_BUSYBOX/${BUSYBOX}.tar.bz2" ] || wget "http://busybox.net/downloads/${BUSYBOX}.tar.bz2" -P "$PREFIX_BUSYBOX" --no-check-certificate
 [ -d "$PREFIX_BUSYBOX_SRC" ] || tar jxf "$PREFIX_BUSYBOX/${BUSYBOX}.tar.bz2" -C "$PREFIX_BUSYBOX"
-
 
 #
 # Apply patches
@@ -47,9 +47,3 @@ rm -rf "$PREFIX_BUSYBOX_BUILD/busybox_unstripped" "$PREFIX_BUSYBOX_BUILD/busybox
 # For MacOS
 export LC_CTYPE=C
 make -C ${PREFIX_BUSYBOX_BUILD} KBUILD_SRC="$PREFIX_BUSYBOX_SRC" -f "${PREFIX_BUSYBOX_SRC}"/Makefile CROSS_COMPILE="$CROSS" CONFIG_PREFIX="$PREFIX_FS/root" all
-make -C ${PREFIX_BUSYBOX_BUILD} KBUILD_SRC="$PREFIX_BUSYBOX_SRC" -f "${PREFIX_BUSYBOX_SRC}"/Makefile CROSS_COMPILE="$CROSS" CONFIG_PREFIX="$PREFIX_FS/root" install
-
-
-exit 0
-
-
