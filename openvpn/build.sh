@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e 
+
 OPENVPN=openvpn-2.4.7
 
 b_log "Building openvpn"
@@ -26,19 +29,18 @@ if [ ! -z "$CLEAN" ]; then
 		for i in ${PREFIX_OPENVPN}/*.patch; do patch -t -p1 < $i; done
 
 	fi
-	OPENVPN_CFLAGS="-I$TOPDIR/_build/arm-imx6ull/openssl/include/ ${CFLAGS} -std=gnu99"
-	OPENVPN_LDFLAGS="-L$TOPDIR/_build/arm-imx6ull/openssl/lib/ ${LDFLAGS}"
+	OPENVPN_CFLAGS="-I${PREFIX_BUILD}/openssl/include/ ${CFLAGS} -std=gnu99"
+	OPENVPN_LDFLAGS="-L${PREFIX_BUILD}/openssl/lib/ ${LDFLAGS}"
 	
 #
 # Configure
 #
 	cd $PREFIX_OPENVPN_SRC
 	autoreconf -i -v -f	
-	PKG_CONFIG="" ./configure CFLAGS="${OPENVPN_CFLAGS}" LDFLAGS="${OPENVPN_LDFLAGS}" --host=arm-phoenix
+	( cd ${PREFIX_OPENVPN_BUILD} && PKG_CONFIG="" ${PREFIX_OPENVPN_SRC}/configure CFLAGS="${OPENVPN_CFLAGS}" LDFLAGS="${OPENVPN_LDFLAGS}" --host=arm-phoenix )
 fi
 
 #
 # Make
 #
-make -C "$PREFIX_OPENVPN_SRC" -j 9
-cd $TOPDIR
+make -C "$PREFIX_OPENVPN_BUILD" -f ${PREFIX_OPENVPN_BUILD}/Makefile CROSS_COMPILE="$CROSS" ${MAKEFLAGS}
