@@ -24,11 +24,11 @@ if [ ! -z "$CLEAN" ]; then
 # Configure
 #
 	cp $PREFIX_OPENSSL/30-phoenix.conf $PREFIX_OPENSSL_SRC/Configurations/
-	(cd ${PREFIX_OPENSSL_SRC} && ${PREFIX_OPENSSL_SRC}/Configure phoenix-arm --prefix=$PREFIX_OPENSSL_BUILD)
+	(cd ${PREFIX_OPENSSL_BUILD} && ${PREFIX_OPENSSL_SRC}/Configure phoenix-arm --prefix=$PREFIX_OPENSSL_BUILD)
 fi
 
 #
 # Make
 #
-make -C "$PREFIX_OPENSSL_SRC" -j 9
-make -C "$PREFIX_OPENSSL_SRC" install_sw
+make -C "$PREFIX_OPENSSL_SRC" ${MAKEFLAGS} all
+make -C "$PREFIX_OPENSSL_SRC" ${MAKEFLAGS} install_sw
