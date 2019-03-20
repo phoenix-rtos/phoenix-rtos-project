@@ -21,16 +21,12 @@ if [ ! -z "$CLEAN" ]; then
 	[ -f "$PREFIX_PCRE/${PCRE}.tar.bz2" ] || wget http://ftp.pcre.org/pub/pcre/${PCRE}.tar.bz2 -P "$PREFIX_PCRE"
 	[ -d "$PREFIX_PCRE_SRC" ] || tar jxf "$PREFIX_PCRE/${PCRE}.tar.bz2" -C "$PREFIX_PCRE"
 
-	PCRE_CFLAGS=""
-	PCRE_LDFLAGS=""
-
 #
 # Configure
 #
-	( cd ${PREFIX_PCRE_BUILD} && ${PREFIX_PCRE_SRC}/configure CFLAGS="${PCRE_CFLAGS} ${CFLAGS}" LDFLAGS="${PCRE_LDFLAGS} ${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$TARGET_FAMILY" --target="$TARGET_FAMILY" \
-                --disable-cpp CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib --prefix="${PREFIX_FS}/root")
-#                --libdir="${PREFIX_PCRE_BUILD}/user-lib" \
-#                --includedir="${PREFIX_PCRE_BUILD}/user-include" )
+	( cd ${PREFIX_PCRE_BUILD} && ${PREFIX_PCRE_SRC}/configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$TARGET_FAMILY" --target="$TARGET_FAMILY" \
+                --disable-cpp CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib --prefix="${PREFIX_PCRE_BUILD}" --libdir="${PREFIX_BUILD}/lib" \
+                --includedir="${PREFIX_BUILD}/include" )
 fi
 
 #

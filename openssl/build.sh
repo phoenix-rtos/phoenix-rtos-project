@@ -31,7 +31,7 @@ fi
 #
 # Make
 #
-make -C "$PREFIX_OPENSSL_SRC" ${MAKEFLAGS} -j 9 all
+make -C "$PREFIX_OPENSSL_SRC" ${MAKEFLAGS} $MAKEFLAGS all
 make -C "$PREFIX_OPENSSL_SRC" ${MAKEFLAGS} install_sw
 
 
@@ -41,4 +41,4 @@ cp -Ra $PREFIX_OPENSSL_BUILD/lib/libssl.a  $PREFIX_BUILD/lib/
 
 mkdir -p $PREFIX_PROG && cp -Ra $PREFIX_OPENSSL_BUILD/bin/openssl  $PREFIX_PROG/openssl
 mkdir -p $PREFIX_PROG_STRIPPED && ${CROSS}strip -s $PREFIX_PROG/openssl -o $PREFIX_PROG_STRIPPED/openssl
-b_install "$PREFIX_PROG_STRIPPED/openssl" /usr/bin/
+b_install "$PREFIX_PORTS_INSTALL/openssl" /usr/bin/

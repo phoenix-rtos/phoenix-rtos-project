@@ -47,9 +47,12 @@ make PROGRAMS="dropbear dbclient dropbearkey scp" -C ${PREFIX_DROPBEAR_BUILD} -f
 ${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dropbear -o $PREFIX_PROG_STRIPPED/dropbear
 ${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/dbclient -o $PREFIX_PROG_STRIPPED/dbclient
 ${CROSS}strip -s $PREFIX_DROPBEAR_BUILD/scp -o $PREFIX_PROG_STRIPPED/scp
+cp -a $PREFIX_DROPBEAR_BUILD/dropbear $PREFIX_PROG/dropbear
+cp -a $PREFIX_DROPBEAR_BUILD/dbclient $PREFIX_PROG/dbclient
+cp -a $PREFIX_DROPBEAR_BUILD/scp $PREFIX_PROG/scp
 
-b_install "$PREFIX_PROG_STRIPPED/dropbear" /sbin
-b_install "$PREFIX_PROG_STRIPPED/dbclient" /usr/bin
-b_install "$PREFIX_PROG_STRIPPED/scp" /bin
+b_install "$PREFIX_PORTS_INSTALL/dropbear" /sbin
+b_install "$PREFIX_PORTS_INSTALL/dbclient" /usr/bin
+b_install "$PREFIX_PORTS_INSTALL/scp" /bin
 
 exit 0
