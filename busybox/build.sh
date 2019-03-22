@@ -15,7 +15,7 @@ echo $PREFIX_BUSYBOX_SRC
 #
 mkdir -p "$PREFIX_BUSYBOX_BUILD" "$PREFIX_BUSYBOX_MARKERS"
 [ -f "$PREFIX_BUSYBOX/${BUSYBOX}.tar.bz2" ] || wget "http://busybox.net/downloads/${BUSYBOX}.tar.bz2" -P "$PREFIX_BUSYBOX" --no-check-certificate
-[ -d "$PREFIX_BUSYBOX_SRC" ] || ( tar jxf "$PREFIX_BUSYBOX/${BUSYBOX}.tar.bz2" -C "$PREFIX_BUSYBOX" && find "$PREFIX_BUSYBOX_MARKERS" -name "*.applied" -delete )
+[ -d "$PREFIX_BUSYBOX_SRC" ] || ( tar jxf "$PREFIX_BUSYBOX/${BUSYBOX}.tar.bz2" -C "$PREFIX_BUSYBOX" && find -P "$PREFIX_BUSYBOX_MARKERS" -size 0 -type f -name "*.applied" -delete )
 
 #
 # Apply patches

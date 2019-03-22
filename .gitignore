@@ -4,4 +4,5 @@ lighttpd/lighttpd-*
 openssl/openssl-*
 openvpn/openvpn-*
 pcre/pcre-*
-
+lua/lua-*
+lzo/lzo-*
