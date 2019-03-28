@@ -21,6 +21,8 @@ fi
 
 [ "X${PORTS_PCRE}" == "Xy" ] && ./phoenix-rtos-ports/pcre/build.sh
 
+[ "X${PORTS_OPENSSL}" == "Xy" ] && ./phoenix-rtos-ports/openssl/build.sh
+
 [ "X${PORTS_LIGHTTPD}" == "Xy" ] && ./phoenix-rtos-ports/lighttpd/build.sh
 
 [ "X${PORTS_DROPBEAR}" == "Xy" ] && ./phoenix-rtos-ports/dropbear/build.sh
@@ -28,8 +30,6 @@ fi
 [ "X${PORTS_LUA}" == "Xy" ] && ./phoenix-rtos-ports/lua/build.sh
 
 [ "X${PORTS_LZO}" == "Xy" ] && ./phoenix-rtos-ports/lzo/build.sh
-
-[ "X${PORTS_OPENSSL}" == "Xy" ] && ./phoenix-rtos-ports/openssl/build.sh
 
 [ "X${PORTS_OPENVPN}" == "Xy" ] && ./phoenix-rtos-ports/openvpn/build.sh
 
