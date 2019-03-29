@@ -1,0 +1,52 @@
+ networking/ntpd.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/networking/ntpd.c b/networking/ntpd.c
+index 73d27ac..a8db73f 100644
+--- a/networking/ntpd.c
++++ b/networking/ntpd.c
+@@ -284,7 +284,7 @@ typedef struct {
+ 	l_fixedpt_t m_xmttime;
+ 	uint32_t    m_keyid;
+ 	uint8_t     m_digest[NTP_DIGESTSIZE];
+-} msg_t;
++} ntpd_msg_t;
+ 
+ typedef struct {
+ 	double d_offset;
+@@ -318,7 +318,7 @@ typedef struct {
+ 	double           filter_jitter;
+ 	datapoint_t      filter_datapoint[NUM_DATAPOINTS];
+ 	/* last sent packet: */
+-	msg_t            p_xmt_msg;
++	ntpd_msg_t       p_xmt_msg;
+ 	char             p_hostname[1];
+ } peer_t;
+ 
+@@ -846,7 +846,7 @@ add_peers(const char *s)
+ static int
+ do_sendto(int fd,
+ 		const struct sockaddr *from, const struct sockaddr *to, socklen_t addrlen,
+-		msg_t *msg, ssize_t len)
++		ntpd_msg_t *msg, ssize_t len)
+ {
+ 	ssize_t ret;
+ 
+@@ -1823,7 +1823,7 @@ recv_and_process_peer_pkt(peer_t *p)
+ {
+ 	int         rc;
+ 	ssize_t     size;
+-	msg_t       msg;
++	ntpd_msg_t  msg;
+ 	double      T1, T2, T3, T4;
+ 	double      offset;
+ 	double      prev_delay, delay;
+@@ -2056,7 +2056,7 @@ recv_and_process_client_pkt(void /*int fd*/)
+ 	//uint8_t          version;
+ 	len_and_sockaddr *to;
+ 	struct sockaddr  *from;
+-	msg_t            msg;
++	ntpd_msg_t       msg;
+ 	uint8_t          query_status;
+ 	l_fixedpt_t      query_xmttime;
+ 
