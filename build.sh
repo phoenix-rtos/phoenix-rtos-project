@@ -33,4 +33,6 @@ fi
 
 [ "X${PORTS_OPENVPN}" == "Xy" ] && ./phoenix-rtos-ports/openvpn/build.sh
 
+[ "X${PORTS_CURL}" == "Xy" ] && ./phoenix-rtos-ports/curl/build.sh
+
 exit 0

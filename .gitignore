@@ -6,3 +6,4 @@ openvpn/openvpn-*
 pcre/pcre-*
 lua/lua-*
 lzo/lzo-*
+curl/curl-*
