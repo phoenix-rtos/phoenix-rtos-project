@@ -27,7 +27,7 @@ if [ ! -z "$CLEAN" ]; then
 #
 	cd $PREFIX_CURL_BUILD && PKG_CONFIG="" $PREFIX_CURL_SRC/configure CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
 		--host=arm-phoenix --sbindir=$PREFIX_PROG --disable-pthreads --disable-threaded-resolver \
-		--disable-ipv6 --prefix=$PREFIX_CURL_INSTALL
+		--disable-ipv6 --prefix=$PREFIX_CURL_INSTALL --disable-ntlm-wb
 fi
 
 #
