@@ -7,3 +7,4 @@ pcre/pcre-*
 lua/lua-*
 lzo/lzo-*
 curl/curl-*
+jansson/jansson-*

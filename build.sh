@@ -35,4 +35,6 @@ fi
 
 [ "X${PORTS_CURL}" == "Xy" ] && ./phoenix-rtos-ports/curl/build.sh
 
+[ "X${PORTS_JANSSON}" == "Xy" ] && ./phoenix-rtos-ports/jansson/build.sh
+
 exit 0
