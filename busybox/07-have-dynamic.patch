@@ -1,0 +1,30 @@
+ networking/interface.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/networking/interface.c b/networking/interface.c
+index c5c8f2c..228ccf7 100644
+--- a/networking/interface.c
++++ b/networking/interface.c
+@@ -987,9 +987,7 @@ static void ife_print(struct interface *ptr)
+ 			"SLAVE\0"
+ 			"MASTER\0"
+ 			"MULTICAST\0"
+-#ifdef HAVE_DYNAMIC
+ 			"DYNAMIC\0"
+-#endif
+ 			;
+ 		static const unsigned short ife_print_flags_mask[] ALIGN2 = {
+ 			IFF_UP,
+@@ -1004,10 +1002,8 @@ static void ife_print(struct interface *ptr)
+ 			IFF_ALLMULTI,
+ 			IFF_SLAVE,
+ 			IFF_MASTER,
+-			IFF_MULTICAST
+-#ifdef HAVE_DYNAMIC
+-			,IFF_DYNAMIC
+-#endif
++			IFF_MULTICAST,
++			IFF_DYNAMIC
+ 		};
+ 		const unsigned short *mask = ife_print_flags_mask;
+ 		const char *str = ife_print_flags_strs;
