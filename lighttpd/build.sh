@@ -40,13 +40,10 @@ if [ ! -z "$CLEAN" ]; then
 		--with-zlib=no --enable-shared=no --enable-static=yes --disable-shared --with-openssl --host="$TARGET_FAMILY" -target="$TARGET_FAMILY" CC=${CROSS}gcc \
 		AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as --prefix="$PREFIX_LIGHTTPD_BUILD" --sbindir="$PREFIX_PROG")
 
-	sed -i'' 's/#define HAVE_MMAP 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
-	sed -i'' 's/#define HAVE_MUNMAP 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
-	sed -i'' 's/#define HAVE_GETRLIMIT 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
-	sed -i'' 's/#define HAVE_SYS_POLL_H 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
-	sed -i'' 's/#define HAVE_SIGACTION 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
-	sed -i'' 's/#define HAVE_DLFCN_H 1//g' $PREFIX_LIGHTTPD_BUILD/config.h
-
+	set +e
+	ex "+/HAVE_MMAP 1/d" "+/HAVE_MUNMAP 1/d" "+/HAVE_GETRLIMIT 1/d" "+/HAVE_SYS_POLL_H 1/d" \
+	   "+/HAVE_SIGACTION 1/d" "+/HAVE_DLFCN_H 1/d" -cwq $PREFIX_LIGHTTPD_BUILD/config.h
+	set -e
 fi
 
 #
