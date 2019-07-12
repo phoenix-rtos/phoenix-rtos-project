@@ -27,9 +27,12 @@ if [ ! -z "$CLEAN" ]; then
 	( cd "${PREFIX_JANSSON_BUILD}" && "${PREFIX_JANSSON_SRC}/configure" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$TARGET_FAMILY" --target="$TARGET_FAMILY" \
                 --disable-cpp CC="${CROSS}gcc" AR="${CROSS}ar" LD="${CROSS}ld" AS="${CROSS}as" RANLIB="${CROSS}gcc-ranlib" --prefix="${PREFIX_JANSSON_BUILD}" --libdir="${PREFIX_BUILD}/lib" \
                 --includedir="${PREFIX_BUILD}/include" )
+
+make -C "$PREFIX_JANSSON_BUILD" ${MAKEFLAGS} ${CLEAN}
+
 fi
 
 #
 # Make
 #
-make -C "$PREFIX_JANSSON_BUILD" CROSS_COMPILE="$CROSS" ${MAKEFLAGS} ${CLEAN} install
+make -C "$PREFIX_JANSSON_BUILD" ${MAKEFLAGS} install
