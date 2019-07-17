@@ -1,0 +1,16 @@
+ src/mod_cgi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/mod_cgi.c b/src/mod_cgi.c
+index e0f2c2b..b636f0f 100644
+--- a/src/mod_cgi.c
++++ b/src/mod_cgi.c
+@@ -541,7 +541,7 @@ static ssize_t cgi_write_file_chunk_mmap(server *srv, connection *con, int fd, c
+ 		c->file.mmap.offset = mmap_align_offset(offset);
+ 		c->file.mmap.length = file_end - c->file.mmap.offset;
+ 
+-		if (MAP_FAILED == (c->file.mmap.start = mmap(NULL, c->file.mmap.length, PROT_READ, MAP_PRIVATE, c->file.fd, c->file.mmap.offset))) {
++		if (MAP_FAILED == (c->file.mmap.start)) {
+ 			if (toSend > 65536) toSend = 65536;
+ 			data = malloc(toSend);
+ 			force_assert(data);

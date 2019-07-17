@@ -2,7 +2,7 @@
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/stream.c b/src/stream.c
-index 9099bf6..90a3353 100644
+index 9099bf6..5300ad0 100644
 --- a/src/stream.c
 +++ b/src/stream.c
 @@ -48,7 +48,7 @@ int stream_open(stream *f, const buffer *fn) {
@@ -10,7 +10,7 @@ index 9099bf6..90a3353 100644
  	}
  
 -	f->start = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-+	f->start = MAP_FAILED; //mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
++	f->start = MAP_FAILED;
  
  	if (MAP_FAILED == f->start) {
  		f->start = malloc((size_t)st.st_size);

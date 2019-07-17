@@ -1,0 +1,16 @@
+ src/fdevent_poll.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/fdevent_poll.c b/src/fdevent_poll.c
+index 76e9413..9511aed 100644
+--- a/src/fdevent_poll.c
++++ b/src/fdevent_poll.c
+@@ -43,7 +43,7 @@ static int fdevent_poll_event_del(fdevents *ev, int fde_ndx, int fd) {
+ 
+ 		ev->pollfds[k].fd = -1;
+ 		/* ev->pollfds[k].events = 0; */
+-		/* ev->pollfds[k].revents = 0; */
++		ev->pollfds[k].revents = 0;
+ 
+ 		if (ev->unused.size == 0) {
+ 			ev->unused.size = 16;
