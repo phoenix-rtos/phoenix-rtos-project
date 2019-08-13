@@ -27,7 +27,8 @@ if [ ! -z "$CLEAN" ]; then
 		done
 	fi
 
-	cat $PREFIX_FS/root/etc/lighttpd.conf | grep mod_ | cut -d'"' -f2 | xargs -L1 -I{} echo "PLUGIN_INIT({})" > $PREFIX_LIGHTTPD_SRC/src/plugin-static.h
+	CONFIGFILE=$(find "$PREFIX_FS/root-skel/etc" -name "lighttpd.conf")
+	grep mod_ $CONFIGFILE | cut -d'"' -f2 | xargs -L1 -I{} echo "PLUGIN_INIT({})" > $PREFIX_LIGHTTPD_SRC/src/plugin-static.h
 
 	[ -f "$PREFIX_LIGHTTPD_SRC/config.cache" ] && rm $PREFIX_LIGHTTPD_SRC/config.cache
 	LIGHTTPD_CFLAGS="-DLIGHTTPD_STATIC -DPHOENIX"
