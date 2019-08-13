@@ -26,7 +26,17 @@ if [ ! -z "$CLEAN" ]; then
 
 	DROPBEAR_CFLAGS="-DENDIAN_LITTLE -DUSE_DEV_PTMX -DENABLE_PS_LOGIN_SERVICE"
 	DROPBEAR_LDFLAGS=""
+fi
 
+for patchfile in $PREFIX_DROPBEAR/patch/*; do
+	if [ ! -f "$PREFIX_DROPBEAR_MARKERS/$(basename $patchfile.applied)" ]; then
+		echo "applying patch: $patchfile"
+		patch -d "$PREFIX_DROPBEAR_SRC" -p1 < "$patchfile"
+		touch "$PREFIX_DROPBEAR_MARKERS/$(basename $patchfile).applied"
+	fi
+done
+
+if [ ! -z "$CLEAN" ]; then
 #
 # Configure
 #
@@ -38,15 +48,6 @@ if [ ! -z "$CLEAN" ]; then
 		--disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx --disable-harden )
 
 fi
-
-for patchfile in $PREFIX_DROPBEAR/patch/*; do
-	if [ ! -f "$PREFIX_DROPBEAR_MARKERS/$(basename $patchfile.applied)" ]; then
-		echo "applying patch: $patchfile"
-		patch -d "$PREFIX_DROPBEAR_SRC" -p1 < "$patchfile"
-		touch "$PREFIX_DROPBEAR_MARKERS/$(basename $patchfile).applied"
-	fi
-done
-
 #
 # Make
 #
