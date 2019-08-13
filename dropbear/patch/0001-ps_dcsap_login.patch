@@ -1,0 +1,168 @@
+From c845683134fa6287088c05f9eeae34cc7c35c3bf Mon Sep 17 00:00:00 2001
+From: Kamil Amanowicz <kamil.amanowicz@phoenix-rtos.com>
+Date: Tue, 13 Aug 2019 14:14:15 +0200
+Subject: [PATCH] ps_dcsap_login
+
+---
+ Makefile.in      |  3 ++-
+ phoenix.c        | 65 ++++++++++++++++++++++++++++++++++++++++++++++++
+ phoenix.h        | 16 ++++++++++++
+ svr-auth.c       |  7 ++++--
+ svr-authpasswd.c |  5 +++-
+ 5 files changed, 92 insertions(+), 4 deletions(-)
+ create mode 100644 phoenix.c
+ create mode 100644 phoenix.h
+
+diff --git a/Makefile.in b/Makefile.in
+index e7d52a2..96b5687 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -36,7 +36,8 @@ COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
+ 		queue.o \
+ 		atomicio.o compat.o fake-rfc2553.o \
+ 		ltc_prng.o ecc.o ecdsa.o crypto_desc.o \
+-		gensignkey.o gendss.o genrsa.o
++		gensignkey.o gendss.o genrsa.o \
++		phoenix.o
+ 
+ SVROBJS=svr-kex.o svr-auth.o sshpty.o \
+ 		svr-authpasswd.o svr-authpubkey.o svr-authpubkeyoptions.o svr-session.o svr-service.o \
+diff --git a/phoenix.c b/phoenix.c
+new file mode 100644
+index 0000000..23de01b
+--- /dev/null
++++ b/phoenix.c
+@@ -0,0 +1,65 @@
++#include <stdio.h>
++
++#include "phoenix.h"
++#include "dbutil.h"
++
++#ifdef ENABLE_PS_LOGIN_SERVICE
++
++static int ps_login_service_connect(int port)
++{
++	struct sockaddr_in  serveraddr;
++	int sock;
++	int res = socket(AF_INET, SOCK_STREAM, 0);
++	if (res < 0) {
++		return -1;
++	}
++	sock = res;
++
++	memset(&serveraddr, 0x00, sizeof(serveraddr));
++	serveraddr.sin_family = AF_INET;
++	serveraddr.sin_port = htons(port);
++	serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
++
++	res = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
++	if (res < 0) {
++		return -1;
++	}
++
++	return sock;
++}
++
++
++int ps_login_service_check_pass(char *name, char *pass)
++{
++	char buf[128];
++	int to_send, len;
++	int fd;
++
++	fd = ps_login_service_connect(PS_LOGIN_SERVICE_DEFAULT_TCP_PORT);
++	if (fd < 0) {
++		dropbear_log(LOG_WARNING, "Connection to authenticator failed");
++		return 0;
++	}
++	to_send = sprintf(buf, "login ssh %s %s", name, pass);
++
++	while ((len = write(fd, buf, to_send)) < 0) {
++		if (errno != EINTR) {
++			close(fd);
++			dropbear_log(LOG_WARNING, "Write to authenticator failed with error %d", errno);
++			return 0;
++		}
++	}
++
++	while ((len = read(fd, buf, sizeof(buf) - 1)) < 0) {
++		if (errno != EINTR) {
++			close(fd);
++			dropbear_log(LOG_WARNING, "Read from authenticator failed with error %d", errno);
++			return 0;
++		}
++	}
++	buf[len] = '\0';
++	close(fd);
++	return (strncmp(buf, "ok ", 3) == 0);
++}
++
++#endif /* ENABLE_PS_LOGIN_SERVICE */
+\ No newline at end of file
+diff --git a/phoenix.h b/phoenix.h
+new file mode 100644
+index 0000000..0326932
+--- /dev/null
++++ b/phoenix.h
+@@ -0,0 +1,16 @@
++#ifndef DROPBEAR_PHOENIX_H_
++#define DROPBEAR_PHOENIX_H_
++
++#ifdef ENABLE_PS_LOGIN_SERVICE
++#include "includes.h"
++#include <pwd.h>
++#include <sys/types.h>
++
++#define PS_LOGIN_SERVICE_DEFAULT_TCP_PORT  7942
++
++struct passwd* phoenix_getpwnam(const char *name);
++struct passwd* phoenix_getpwuid(uid_t uid);
++int ps_login_service_check_pass(char *name, char *pass);
++
++#endif
++#endif
+\ No newline at end of file
+diff --git a/svr-auth.c b/svr-auth.c
+index 64d97aa..b5eaa44 100644
+--- a/svr-auth.c
++++ b/svr-auth.c
+@@ -125,8 +125,11 @@ void recv_msg_userauth_request() {
+ 				&& svr_opts.allowblankpass
+ 				&& !svr_opts.noauthpass
+ 				&& !(svr_opts.norootpass && ses.authstate.pw_uid == 0) 
+-				&& ses.authstate.pw_passwd[0] == '\0') 
+-		{
++				&& ses.authstate.pw_passwd[0] == '\0' 
++#ifdef ENABLE_PS_LOGIN_SERVICE
++				&& ps_login_service_check_pass(username, '\0')
++#endif
++		) {
+ 			dropbear_log(LOG_NOTICE, 
+ 					"Auth succeeded with blank password for '%s' from %s",
+ 					ses.authstate.pw_name,
+diff --git a/svr-authpasswd.c b/svr-authpasswd.c
+index bdee2aa..74a6451 100644
+--- a/svr-authpasswd.c
++++ b/svr-authpasswd.c
+@@ -73,7 +73,9 @@ void svr_auth_password() {
+ 	}
+ 
+ 	password = buf_getstring(ses.payload, &passwordlen);
+-
++#ifdef ENABLE_PS_LOGIN_SERVICE
++	if (ps_login_service_check_pass(ses.authstate.pw_name, password)) {
++#else
+ 	/* the first bytes of passwdcrypt are the salt */
+ 	testcrypt = crypt(password, passwdcrypt);
+ 	m_burn(password, passwordlen);
+@@ -96,6 +98,7 @@ void svr_auth_password() {
+ 	}
+ 
+ 	if (constant_time_strcmp(testcrypt, passwdcrypt) == 0) {
++#endif
+ 		/* successful authentication */
+ 		dropbear_log(LOG_NOTICE, 
+ 				"Password auth succeeded for '%s' from %s",
+-- 
+2.22.0
+

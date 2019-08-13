@@ -8,4 +8,8 @@
 #define ECDSA_PRIV_FILENAME "/local/dropbear_ecdsa_host_key"
 #define DROPBEAR_USE_PASSWORD_ENV 1
 
+#ifdef ENABLE_PS_LOGIN_SERVICE
+#include <phoenix.h>
+#endif
+
 #endif
