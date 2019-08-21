@@ -2,7 +2,7 @@
 
 set -e
 
-LIGHTTPD="lighttpd-1.4.50"
+LIGHTTPD="lighttpd-1.4.53"
 
 b_log "Building lighttpd"
 
