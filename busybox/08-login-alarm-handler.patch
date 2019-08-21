@@ -1,0 +1,15 @@
+diff --git a/loginutils/login.c b/loginutils/login.c
+index be05def..dda5541 100644
+--- a/loginutils/login.c
++++ b/loginutils/login.c
+@@ -301,8 +301,8 @@ static void alarm_handler(int sig UNUSED_PARAM)
+ 	 * when you are back at shell prompt, echo will be still off.
+ 	 */
+ 	tcsetattr_stdin_TCSANOW(&G.tty_attrs);
+-	printf("\r\nLogin timed out after %u seconds\r\n", TIMEOUT);
+-	fflush_all();
++//	printf("\r\nLogin timed out after %u seconds\r\n", TIMEOUT);
++//	fflush_all();
+ 	/* unix API is brain damaged regarding O_NONBLOCK,
+ 	 * we should undo it, or else we can affect other processes */
+ 	ndelay_off(STDOUT_FILENO);
