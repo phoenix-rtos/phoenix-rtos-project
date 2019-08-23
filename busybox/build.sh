@@ -33,7 +33,7 @@ done
 #
 # Clean and configure
 #
-if [ ! -z $CLEAN ]; then
+if [ ! -z $CLEAN ] || [ ! -f "${PREFIX_BUSYBOX_BUILD}/.config" ] || [ "${PREFIX_BUSYBOX}/config" -nt "${PREFIX_BUSYBOX_BUILD}/.config" ]; then
 	cp -a "${PREFIX_BUSYBOX}/config" "${PREFIX_BUSYBOX_BUILD}"/.config
 	make -C ${PREFIX_BUSYBOX_BUILD} KBUILD_SRC="$PREFIX_BUSYBOX_SRC" -f "${PREFIX_BUSYBOX_SRC}"/Makefile CROSS_COMPILE="$CROSS" CONFIG_PREFIX="$PREFIX_FS/root" ${MAKEFLAGS} clean
 fi
