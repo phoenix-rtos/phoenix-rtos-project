@@ -1,0 +1,47 @@
+ networking/ping.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/networking/ping.c b/networking/ping.c
+index 94fb007..dc45f94 100644
+--- a/networking/ping.c
++++ b/networking/ping.c
+@@ -25,6 +25,7 @@
+  * The code was modified by Bart Visscher <magick@linux-fan.com>
+  */
+ 
++#include <sys/socket.h>
+ #include <net/if.h>
+ #include <netinet/ip_icmp.h>
+ #include "libbb.h"
+@@ -693,6 +694,7 @@ static void unpack6(char *packet, int sz, struct sockaddr_in6 *from, int hoplimi
+ static void ping4(len_and_sockaddr *lsa)
+ {
+ 	int sockopt;
++	int flags;
+ 
+ 	pingaddr.sin = lsa->u.sin;
+ 	if (source_lsa) {
+@@ -710,6 +712,9 @@ static void ping4(len_and_sockaddr *lsa)
+ 	sockopt = (datalen * 2) + 7 * 1024; /* giving it a bit of extra room */
+ 	setsockopt_SOL_SOCKET_int(pingsock, SO_RCVBUF, sockopt);
+ 
++	flags = fcntl(pingsock,F_GETFL,0);
++	fcntl(pingsock, F_SETFL, flags | O_NONBLOCK);
++
+ 	if (opt_ttl != 0) {
+ 		setsockopt_int(pingsock, IPPROTO_IP, IP_TTL, opt_ttl);
+ 		/* above doesn't affect packets sent to bcast IP, so... */
+@@ -726,9 +731,11 @@ static void ping4(len_and_sockaddr *lsa)
+ 		struct sockaddr_in from;
+ 		socklen_t fromlen = (socklen_t) sizeof(from);
+ 		int c;
+-
+-		c = recvfrom(pingsock, G.rcv_packet, G.sizeof_rcv_packet, 0,
++		do {
++			usleep(500);
++			c = recvfrom(pingsock, G.rcv_packet, G.sizeof_rcv_packet, 0,
+ 				(struct sockaddr *) &from, &fromlen);
++		} while (c < 0 && errno == EAGAIN);
+ 		if (c < 0) {
+ 			if (errno != EINTR)
+ 				bb_perror_msg("recvfrom");

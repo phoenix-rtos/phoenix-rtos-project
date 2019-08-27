@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.27.2
-# Tue Mar 26 13:01:45 2019
+# Tue Aug 27 11:36:54 2019
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -880,9 +880,9 @@ CONFIG_NC_EXTRA=y
 CONFIG_NTPD=y
 # CONFIG_FEATURE_NTPD_SERVER is not set
 CONFIG_FEATURE_NTPD_CONF=y
-# CONFIG_PING is not set
+CONFIG_PING=y
 # CONFIG_PING6 is not set
-# CONFIG_FEATURE_FANCY_PING is not set
+CONFIG_FEATURE_FANCY_PING=y
 # CONFIG_PSCAN is not set
 CONFIG_ROUTE=y
 # CONFIG_SLATTACH is not set
