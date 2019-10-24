@@ -1,17 +1,20 @@
 #
-# Shell script for building sampe project
+# Shell script for building ia32-qemu project
 #
 # Copyright 2018, 2019 Phoenix Systems
-# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
 set -e
 
-TARGET=arm-imx6ull
+TARGET=ia32-qemu
 TARGET_FAMILY=`echo $TARGET | awk -F- '{ print $1 }'`
+TARGET_SUBFAMILY=$TARGET_FAMILY-`echo $TARGET | awk -F- '{ print $2 }'`
 
-CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb\
-	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections"
+CROSS=i386-pc-phoenix-
+
+CFLAGS="-Os -Wall -Wstrict-prototypes -g\
+	-fomit-frame-pointer -fdata-sections -ffunction-sections"
 
 LDFLAGS="-z max-page-size=0x1000"
 
@@ -19,35 +22,102 @@ LDFLAGS="-z max-page-size=0x1000"
 # Core configuration
 #
 POSIX=y
-USB=y
-LWIP=y
+USB=n
+LWIP=n
 
 #
 # Ports configuration
 #
-export PORTS_BUSYBOX=y
-export PORTS_PCRE=y
-export PORTS_LIGHTTPD=y
-export PORTS_DROPBEAR=y
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
 export PORTS_LUA=n
+export PORTS_LZO=n
 export PORTS_OPENSSL=n
 export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
 
 #
 # Project specific build
 #
 b_build() {
-	b_log "Building project specific applications"
+	b_log "Building ia32-qemu"
 
+	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
+
+	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
+	ln -f $PREFIX_ROOTFS/bin/{psh,bind}
+	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
+	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
+	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
+	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
+	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+
+	b_log "Creating CPIO archive"
+	pushd $PREFIX_PROG_STRIPPED
+		ls dummyfs ext2 pc-ata pc-tty pc-uart psh | cpio -H newc -ov > /tmp/programs
+	popd
+
+	# Relink kernel to include newly created cpio archive
+	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
+	cp -a phoenix-rtos-kernel/phoenix-ia32-qemu.elf _build
+	cp -a phoenix-rtos-kernel/phoenix-ia32-qemu.img _build
 }
-
 
 b_image() {
-	b_log "Creating image"
+	# Image name
+	IMG_NAME="phoenix-$TARGET_FAMILY"
+	# Image target
+	IMG_TARGET="$IMG_NAME.ext2"
+	# Image target path
+	IMG_TARGET_PATH="$PREFIX_BOOT/$IMG_TARGET"
+	# Image size in MB
+	IMG_SIZE=32
 
-#	KERNEL_IMG="$TOPDIR/_build/phoenix-arm-imx6ull.img"
-	$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;64;64;-r;jffs2;0;-p;128;64;-p;192;1856  Xpsh;-i;/etc/rc.psh;primary"  --initrd $PREFIX_ROOTFS/sbin/imx6ull-flash --console $PREFIX_ROOTFS/sbin/imx6ull-uart --append $PREFIX_ROOTFS/bin/psh --output $PREFIX_BOOT/primary.img
-	$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;128;64;-r;jffs2;0;-p;64;64;-p;192;1856 Xpsh;-i;/etc/rc.psh;secondary" --initrd $PREFIX_ROOTFS/sbin/imx6ull-flash --console $PREFIX_ROOTFS/sbin/imx6ull-uart --append $PREFIX_ROOTFS/bin/psh --output $PREFIX_BOOT/secondary.img
+	b_log "Creating $IMG_TARGET image"
+	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-$(git describe --always --dirty))"
+	echo "$IMG_VERSION" > $PREFIX_ROOTFS/etc/version
+	
+	# Build and install grub2
+	./grub/build.sh
 
-	cp $KERNEL_IMG $PREFIX_BOOT/
+	mkdir -p $PREFIX_BOOT
+	# Create the image file
+	dd bs=1M count=$IMG_SIZE iflag=fullblock if=/dev/zero of=$IMG_TARGET_PATH
+	# Make the partition table
+	echo 'type=83, bootable' | sfdisk $IMG_TARGET_PATH
+
+	# Make grub bootable image
+	BOOT_DIR="${PREFIX_ROOTFS}boot"
+	GRUB_DIR="$BOOT_DIR/grub"
+	HOST_GRUB_DIR="/usr/lib/grub"
+	GRUB_MODULES="biosdisk part_msdos ext2 terminal"
+	
+	# Copy necessary boot files into root
+	cp -a "$PREFIX_FS/boot" $PREFIX_ROOTFS
+	cp -a "$HOST_GRUB_DIR/i386-pc" $GRUB_DIR
+	cp -a "_build/phoenix-ia32-qemu.elf" $PREFIX_ROOTFS
+
+	# Make ext2 filesystem and install root
+	mkfs.ext2 -q -F -E offset=$((512*2048)) -d $PREFIX_ROOTFS $IMG_TARGET_PATH
+
+	$PREFIX_BUILD/grub/bin/grub-mkimage \
+		-O i386-pc 						\
+		-p "(hd0,msdos1)/boot/grub" 	\
+		-d "$GRUB_DIR/i386-pc"			\
+		-c "$GRUB_DIR/grub.cfg" 		\
+		-o "$GRUB_DIR/i386-pc/core.img"	\
+		$GRUB_MODULES
+	echo "(hd0) $IMG_TARGET_PATH" > "$GRUB_DIR/device.map"
+	
+	# Install grub
+	$PREFIX_BUILD/grub/sbin/grub-bios-setup \
+		-m "$GRUB_DIR/device.map"			\
+		-d "$GRUB_DIR/i386-pc"				\
+		-r "hd0,msdos1"						\
+		$IMG_TARGET_PATH
 }
+
+b_update_pkg() { :; }
