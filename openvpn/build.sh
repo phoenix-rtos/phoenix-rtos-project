@@ -35,7 +35,7 @@ if [ ! -z "$CLEAN" ]; then
 #
 	cd $PREFIX_OPENVPN_SRC
 	autoreconf -i -v -f	
-	cd $PREFIX_OPENVPN_BUILD && PKG_CONFIG="" $PREFIX_OPENVPN_SRC/configure CFLAGS="$CFLAGS $OPENVPN_CFLAGS" LDFLAGS="$LDFLAGS" --host=arm-phoenix --sbindir=$PREFIX_PROG
+	cd $PREFIX_OPENVPN_BUILD && PKG_CONFIG="" $PREFIX_OPENVPN_SRC/configure CFLAGS="$CFLAGS $OPENVPN_CFLAGS" LDFLAGS="$LDFLAGS" --host="${HOST_TARGET}-phoenix" --sbindir=$PREFIX_PROG
 fi
 
 #

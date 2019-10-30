@@ -24,7 +24,7 @@ if [ ! -z "$CLEAN" ]; then
 #
 # Configure
 #
-	( cd ${PREFIX_PCRE_BUILD} && ${PREFIX_PCRE_SRC}/configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$TARGET_FAMILY" --target="$TARGET_FAMILY" \
+	( cd ${PREFIX_PCRE_BUILD} && ${PREFIX_PCRE_SRC}/configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$HOST_TARGET" \
                 --disable-cpp CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib --prefix="${PREFIX_PCRE_BUILD}" --libdir="${PREFIX_BUILD}/lib" \
                 --includedir="${PREFIX_BUILD}/include" )
 fi

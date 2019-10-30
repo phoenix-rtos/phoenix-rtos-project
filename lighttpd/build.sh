@@ -38,7 +38,7 @@ if [ ! -z "$CLEAN" ]; then
 #
 
 	( cd $PREFIX_LIGHTTPD_BUILD && $PREFIX_LIGHTTPD_SRC/configure LIGHTTPD_STATIC=yes CFLAGS="${LIGHTTPD_CFLAGS} ${CFLAGS}" LDFLAGS="${LDFLAGS}" AR_FLAGS="-r" -C --disable-ipv6 --disable-mmap --with-bzip2=no \
-		--with-zlib=no --enable-shared=no --enable-static=yes --disable-shared --with-openssl --host="$TARGET_FAMILY" -target="$TARGET_FAMILY" CC=${CROSS}gcc \
+		--with-zlib=no --enable-shared=no --enable-static=yes --disable-shared --with-openssl --host="$HOST_TARGET" CC=${CROSS}gcc \
 		AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as --prefix="$PREFIX_LIGHTTPD_BUILD" --sbindir="$PREFIX_PROG")
 
 	set +e

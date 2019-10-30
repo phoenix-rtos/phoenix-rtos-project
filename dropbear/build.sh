@@ -42,7 +42,7 @@ if [ ! -z "$CLEAN" ]; then
 #
 	( cd ${PREFIX_DROPBEAR_BUILD} && ${PREFIX_DROPBEAR_SRC}/configure CPPFLAGS="${CFLAGS} ${DROPBEAR_CFLAGS}" CFLAGS="${CFLAGS} ${DROPBEAR_CFLAGS}" \
 		LDFLAGS="${CFLAGS} ${LDFLAGS} ${DROPBEAR_LDFLAGS}" ARFLAGS="-r" \
-		--host="$TARGET_FAMILY" --target="$TARGET_FAMILY" CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib \
+		--host="$HOST_TARGET" CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib \
 		--includedir="${PREFIX_PROG}" --oldincludedir="${PREFIX_PROG}" \
 		--prefix="${PREFIX_PROG}" --program-prefix="${PREFIX_PROG}" --libdir="${PREFIX_PROG}" --bindir="${PREFIX_PROG}" --disable-zlib --enable-static \
 		--disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx --disable-harden )
