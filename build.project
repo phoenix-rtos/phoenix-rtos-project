@@ -23,21 +23,21 @@ LDFLAGS="-z max-page-size=0x1000"
 #
 POSIX=y
 USB=n
-LWIP=n
+LWIP=y
 
 #
 # Ports configuration
 #
-export PORTS_BUSYBOX=n
-export PORTS_PCRE=n
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
 export PORTS_LIGHTTPD=n
-export PORTS_DROPBEAR=n
-export PORTS_LUA=n
+export PORTS_DROPBEAR=y
+export PORTS_LUA=y
 export PORTS_LZO=n
 export PORTS_OPENSSL=n
 export PORTS_OPENVPN=n
 export PORTS_JANSSON=n
-export PORTS_CURL=n
+export PORTS_CURL=y
 
 #
 # Project specific build
@@ -57,7 +57,7 @@ b_build() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls dummyfs ext2 pc-ata pc-tty pc-uart psh | cpio -H newc -ov > /tmp/programs
+		ls pc-uart pc-tty pc-ata dummyfs ext2 psh | cpio -H newc -ov > /tmp/programs
 	popd
 
 	# Relink kernel to include newly created cpio archive
@@ -73,50 +73,57 @@ b_image() {
 	IMG_TARGET="$IMG_NAME.ext2"
 	# Image target path
 	IMG_TARGET_PATH="$PREFIX_BOOT/$IMG_TARGET"
-	# Image size in MB
-	IMG_SIZE=32
+	# Ext2 partition offset in MB
+	EXT2_OFFSET=1
+	# Ext2 partition and filesystem size in MB
+	EXT2_SIZE=32
+	# Ext2 block size in bytes
+	EXT2_BLOCK_SIZE=1024
+	
 
 	b_log "Creating $IMG_TARGET image"
 	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-$(git describe --always --dirty))"
 	echo "$IMG_VERSION" > $PREFIX_ROOTFS/etc/version
 	
-	# Build and install grub2
 	./grub/build.sh
 
 	mkdir -p $PREFIX_BOOT
 	# Create the image file
-	dd bs=1M count=$IMG_SIZE iflag=fullblock if=/dev/zero of=$IMG_TARGET_PATH
+	dd if=/dev/zero of=$IMG_TARGET_PATH bs=1M count=$(($EXT2_SIZE + $EXT2_OFFSET))
 	# Make the partition table
-	echo 'type=83, bootable' | sfdisk $IMG_TARGET_PATH
+	echo "start=${EXT2_OFFSET}MiB, size=${EXT2_SIZE}MiB, bootable, type=83" | sfdisk $IMG_TARGET_PATH
 
 	# Make grub bootable image
 	BOOT_DIR="${PREFIX_ROOTFS}boot"
 	GRUB_DIR="$BOOT_DIR/grub"
-	HOST_GRUB_DIR="/usr/lib/grub"
 	GRUB_MODULES="biosdisk part_msdos ext2 terminal"
 	
 	# Copy necessary boot files into root
 	cp -a "$PREFIX_FS/boot" $PREFIX_ROOTFS
-	cp -a "$HOST_GRUB_DIR/i386-pc" $GRUB_DIR
+	cp -a "$PREFIX_BUILD/grub/lib/grub/i386-pc" $GRUB_DIR
 	cp -a "_build/phoenix-ia32-qemu.elf" $PREFIX_ROOTFS
 
 	# Make ext2 filesystem and install root
-	mkfs.ext2 -q -F -E offset=$((512*2048)) -d $PREFIX_ROOTFS $IMG_TARGET_PATH
+	mkfs.ext2 -q -F                               \
+		-b $EXT2_BLOCK_SIZE                       \
+		-E offset=$(($EXT2_OFFSET * 1024 * 1024)) \
+		-d $PREFIX_ROOTFS                         \
+		$IMG_TARGET_PATH $(($EXT2_SIZE * 1024 * 1024 / $EXT2_BLOCK_SIZE))
 
 	$PREFIX_BUILD/grub/bin/grub-mkimage \
-		-O i386-pc 						\
-		-p "(hd0,msdos1)/boot/grub" 	\
-		-d "$GRUB_DIR/i386-pc"			\
-		-c "$GRUB_DIR/grub.cfg" 		\
-		-o "$GRUB_DIR/i386-pc/core.img"	\
+		-O i386-pc                      \
+		-p "(hd0,msdos1)/boot/grub"     \
+		-d "$GRUB_DIR/i386-pc"          \
+		-c "$GRUB_DIR/grub.cfg"         \
+		-o "$GRUB_DIR/i386-pc/core.img" \
 		$GRUB_MODULES
 	echo "(hd0) $IMG_TARGET_PATH" > "$GRUB_DIR/device.map"
 	
 	# Install grub
 	$PREFIX_BUILD/grub/sbin/grub-bios-setup \
-		-m "$GRUB_DIR/device.map"			\
-		-d "$GRUB_DIR/i386-pc"				\
-		-r "hd0,msdos1"						\
+		-m "$GRUB_DIR/device.map"           \
+		-d "$GRUB_DIR/i386-pc"              \
+		-r "hd0,msdos1"                     \
 		$IMG_TARGET_PATH
 }
 

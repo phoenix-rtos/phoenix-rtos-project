@@ -14,43 +14,7 @@
 # process   == program to run
 
 # Start system
-::sysinit:/bin/ash /etc/initrc
-::respawn:/sbin/syslogd -n -b 3
+::sysinit:/bin/ash /etc/rc
 
-# Start lemond
-::respawn:/sbin/lemond -v -s -d -p 4
-
-# Start network daemons
-::respawn:/usr/sbin/telnetd -F -S -K
-::respawn:/sbin/lighttpd -D -f /etc/lighttpd.conf
-::respawn:/sbin/dropbear -R -F
-
-# Start login service
-::respawn:/bin/ps_login_server  /etc/passwd  /etc/group  /var/cfg/users  /var/users-req
-
-# Start firmware updater daemon
-#::once:/usr/bin/fw_updaterd
-#::once:/etc/init.d/update.sh
-
-# Start other system services
-#::respawn:/usr/bin/ps_sys_cfg_daemon.sh /var/cfg /var/cfg-req
-
-# start TTY console
-::respawn:/sbin/getty -L 0 /dev/uart1
-::respawn:/sbin/getty -L 0 /dev/uart5
-
-# Start DCU application
-::once:/bin/ash -c "sleep 10 && /etc/init.d/modem.sh"
-::once:/bin/ash -c "sleep 10 && /etc/init.d/dcu.sh start"
-
-#::once:/bin/ash -c "sleep 10 && /usr/bin/ps_dcu_network_emu --cnt 9 --dcsap 16000 --dcsap-channels 10 --db /local/ps_dcu_cache.db"
-
-# Start GSM modem
-# ::once:/etc/init.d/gsm.sh
-
-#::once:/bin/ash -c "sleep 10 && /sbin/ifconfig en2 10.255.6.59 netmask 255.255.255.0"
-#::once:/bin/ash -c "sleep 10 && /sbin/ifconfig en1 10.255.10.22"
-#::once:/bin/ash -c "sleep 10 && /sbin/route add default gw 10.255.6.1 en2"
-
-::once:/bin/ash -c "sleep 15 && /sbin/ifconfig en1 10.70.100.49 netmask 255.255.0.0 && /sbin/route add default gw 10.70.0.200 en1"
-
+# Login as root
+::respawn:-/bin/ash
