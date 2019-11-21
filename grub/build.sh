@@ -9,12 +9,16 @@ PREFIX_GRUB_BUILD=$PREFIX_BUILD/grub
 PREFIX_GRUB_SRC=$PREFIX_GRUB/${GRUB}
 PREFIX_GRUB_MARKERS=$PREFIX_GRUB_BUILD/markers
 
-echo $PREFIX_GRUB_SRC
-
-# Download and unpack
 mkdir -p $PREFIX_GRUB_BUILD $PREFIX_GRUB_MARKERS
-[ -f "$PREFIX_GRUB/${GRUB}.tar.xz" ] || wget "https://ftp.gnu.org/gnu/grub/${GRUB}.tar.xz" -P $PREFIX_GRUB --no-check-certificate
-[ -d $PREFIX_GRUB_SRC ] || ( tar Jxf "$PREFIX_GRUB/${GRUB}.tar.xz" -C $PREFIX_GRUB && find -P $PREFIX_GRUB_MARKERS -size 0 -type f -name "*.applied" -delete )
+
+if [ ! -z "$CLEAN" ]; then
+	# Remove everything except patch markers
+	find $PREFIX_GRUB_BUILD -mindepth 1 -maxdepth 1 ! -name ${PREFIX_GRUB_MARKERS##*/} -exec rm -rf {} +
+	
+	# Download and unpack
+	[ -f "$PREFIX_GRUB/${GRUB}.tar.xz" ] || wget "https://ftp.gnu.org/gnu/grub/${GRUB}.tar.xz" -P $PREFIX_GRUB --no-check-certificate
+	[ -d $PREFIX_GRUB_SRC ] || ( tar Jxf "$PREFIX_GRUB/${GRUB}.tar.xz" -C $PREFIX_GRUB && find -P "$PREFIX_GRUB_MARKERS" -size 0 -type f -name "*.applied" -delete )
+fi
 
 # Apply patches
 for patchfile in $PREFIX_GRUB/*.patch; do
@@ -26,16 +30,17 @@ for patchfile in $PREFIX_GRUB/*.patch; do
 done
 
 pushd $PREFIX_GRUB_SRC
-env -i PATH=$PATH ./configure	\
-	--prefix=$PREFIX_GRUB_BUILD \
-	--disable-grub-mkfont		\
-	--disable-werror			\
-	--disable-libzfs			\
-	--disable-nls
-
-# Clean
-if [ ! -z $CLEAN ]; then
+# Configure and clean
+if [ ! -z "$CLEAN" ]; then
+	env -i PATH=$PATH ./configure	\
+		--prefix=$PREFIX_GRUB_BUILD \
+		--disable-grub-mkfont		\
+		--disable-werror			\
+		--disable-libzfs			\
+		--disable-nls
 	make clean
 fi
+
+# Make
 make install
 popd
