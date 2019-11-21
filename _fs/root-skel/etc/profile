@@ -9,33 +9,15 @@ logcat() {
 logread() {
     tail -F -n 100 "$1" | sed 's/\^\[/'$(echo -e "\x1B")'/g'
 }
+
 log() {
     # add more colored facilities if needed
     tail -F -n 100 /var/log/messages | sed 's/\^\[/'$(echo -e "\x1B")'/g'
 }
 
-gsm_module_start() {
-    sleep 12 && /sbin/usb &
-    sleep 1
-    /sbin/telit-le910 123 &
-}
-
-# ability to access DB from cmd
-sqlite3() {
-    echo "NO FILE LOCKING IMPLEMENTED. USE ONLY WHEN ps_dcu_app IS NOT WORKING"
-    echo "input this as a first line into sqlite:"
-    echo "PRAGMA locking_mode=EXCLUSIVE; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;"
-    echo ""
-    /usr/bin/sqlite3 -scratch 4096 1024 -heap 1638400 -pagecache 1300 4 "$@"
-}
-
-alias logerr="logcat /var/log/dcu.err"
-
 case $- in *i*)
     # interactive shell
-#    export PS1='\u@\h:\w \$ '
-
-    export PS1='\u@incotex:\w \$ '
+    export PS1='\u@\h:\w \$ '
     export HISTSIZE=500
 
     cat /etc/logo
