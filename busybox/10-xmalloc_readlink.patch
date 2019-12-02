@@ -1,0 +1,15 @@
+ libbb/xreadlink.c | 2 +-
+ 1 file changed, 1 inserttions(+), 1 deletions(-)
+
+diff --git a/libbb/xreadlink.c b/libbb/xreadlink.c
+--- a/libbb/xreadlink.c
++++ b/libbb/xreadlink.c
+@@ -29,7 +29,7 @@
+ 		bufsize += GROWBY;
+ 		buf = xrealloc(buf, bufsize);
+ 		readsize = readlink(path, buf, bufsize);
+-		if (readsize == -1) {
++		if (readsize < 0) {
+ 			free(buf);
+ 			return NULL;
+ 		}
