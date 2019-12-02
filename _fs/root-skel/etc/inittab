@@ -15,6 +15,7 @@
 
 # Start system
 ::sysinit:/bin/ash /etc/rc
+::respawn:/sbin/syslogd -n -b 3
 
-# Login as root
+# Login as root, no password
 ::respawn:-/bin/ash
