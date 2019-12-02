@@ -18,6 +18,10 @@ CFLAGS="-Os -Wall -Wstrict-prototypes -g\
 
 LDFLAGS="-z max-page-size=0x1000"
 
+export CONSOLE=vga
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
 #
 # Core configuration
 #
@@ -57,7 +61,7 @@ b_build() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pc-uart pc-tty pc-ata dummyfs ext2 psh | cpio -H newc -ov > /tmp/programs
+		ls pc-tty ext2 psh | cpio -H newc -ov > /tmp/programs
 	popd
 
 	# Relink kernel to include newly created cpio archive
@@ -125,6 +129,7 @@ b_image() {
 		-d "$GRUB_DIR/i386-pc"              \
 		-r "hd0,msdos1"                     \
 		$IMG_TARGET_PATH
+	rm -f "$GRUB_DIR/device.map"
 }
 
 b_update_pkg() { :; }
