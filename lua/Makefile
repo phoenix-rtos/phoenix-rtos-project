@@ -10,11 +10,7 @@ MAKEFLAGS += --no-print-directory
 CROSS ?= arm-phoenix-
 CC = $(CROSS)gcc
 
-CFLAGS += -Os -Wall -Wstrict-prototypes -g\
-	-mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb\
-	-fomit-frame-pointer -mno-unaligned-access
-
-CFLAGS += -fdata-sections -ffunction-sections -DLUA_USE_POSIX
+CFLAGS += -DLUA_USE_POSIX
 
 AR = $(CROSS)ar
 ARFLAGS = -r
