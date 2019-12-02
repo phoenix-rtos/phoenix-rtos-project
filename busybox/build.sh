@@ -8,6 +8,7 @@ PREFIX_BUSYBOX=${TOPDIR}/phoenix-rtos-ports/busybox
 PREFIX_BUSYBOX_BUILD=$PREFIX_BUILD/busybox/
 PREFIX_BUSYBOX_SRC=$PREFIX_BUSYBOX/${BUSYBOX}/
 PREFIX_BUSYBOX_MARKERS=$PREFIX_BUSYBOX_BUILD/markers/
+: "${BUSYBOX_CONFIG:="${PREFIX_BUSYBOX}/config"}"
 
 echo $PREFIX_BUSYBOX_SRC
 
@@ -22,7 +23,6 @@ mkdir -p "$PREFIX_BUSYBOX_BUILD" "$PREFIX_BUSYBOX_MARKERS"
 # Apply patches
 #
 for patchfile in $PREFIX_BUSYBOX/*.patch; do
-	
 	if [ ! -f "$PREFIX_BUSYBOX_MARKERS/$(basename $patchfile.applied)" ]; then
 		echo "applying patch: $patchfile"
 		patch -d "$PREFIX_BUSYBOX_SRC" -p1 < "$patchfile"
@@ -33,13 +33,9 @@ done
 #
 # Clean and configure
 #
-if [ ! -z $CLEAN ] || [ ! -f "${PREFIX_BUSYBOX_BUILD}/.config" ] || [ "${PREFIX_BUSYBOX}/config" -nt "${PREFIX_BUSYBOX_BUILD}/.config" ]; then
-	cp -a "${PREFIX_BUSYBOX}/config" "${PREFIX_BUSYBOX_BUILD}"/.config
+if [ ! -z $CLEAN ] || [ ! -f "${PREFIX_BUSYBOX_BUILD}/.config" ] || [ "${BUSYBOX_CONFIG}" -nt "${PREFIX_BUSYBOX_BUILD}/.config" ]; then
+	cp -a "${BUSYBOX_CONFIG}" "${PREFIX_BUSYBOX_BUILD}"/.config
 	make -C ${PREFIX_BUSYBOX_BUILD} KBUILD_SRC="$PREFIX_BUSYBOX_SRC" -f "${PREFIX_BUSYBOX_SRC}"/Makefile CROSS_COMPILE="$CROSS" CONFIG_PREFIX="$PREFIX_FS/root" ${MAKEFLAGS} clean
-fi
-
-if [ ! -z $BUSYBOX_CONFIG ]; then
-	MAKEFLAGS="${MAKEFLAGS} menuconfig"
 fi
 
 # hackish: remove the final binary to re-link potential libc changes
