@@ -14,7 +14,7 @@ cd phoenix-rtos-project/
 git submodule update --init --recursive
 ```
 
-1. Run build.sh script.
+3. Run build.sh script.
 ```bash
 ./phoenix-rtos-build/build.sh clean all
 ```
@@ -31,7 +31,8 @@ After the build successfully completes, *phoenix-ia32.ext2* image file will be c
 		```
 
    - **with networking**
-	We're going to create a NAT-based network with a little help from *qemu-bridge-helper*.
+
+		We're going to create a NAT-based network with a little help from *qemu-bridge-helper*.
 	
 	1. Run ```ifconfig``` and make sure *virbr0* bridged interface exists on the host (it should be created with QEMU installation).
 	
