@@ -64,7 +64,19 @@ After the build successfully completes, *phoenix-ia32.ext2* image file will be c
 	echo "allow virbr0" | sudo tee -a /etc/qemu/bridge.conf > /dev/null
 	```
 
-	5. Run ia32-qemu.sh script.
+	The bridged network is now configured and we're ready to start the VM:
+   
 	```bash
 	./ia32-qemu.sh
 	```
+
+### Connecting via SSH
+
+The phoenix-ia32.ext image comes with root account only. The default root password is '1234'. The guest IP is static and set to 192.168.122.10.
+
+To connect from the host to the guest via SSH run:
+```bash
+ssh root@192.168.122.10
+```
+
+and enter the root password '1234'.
