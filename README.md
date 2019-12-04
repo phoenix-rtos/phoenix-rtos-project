@@ -43,7 +43,7 @@ After the build successfully completes, *phoenix-ia32.ext2* image file will be c
 
 ### Starting the VM
 
-- with QEMU:
+- with QEMU (installed with ```sudo apt-get install qemu```):
 
 	First, we're going to set up a NAT-based network using *libvirt* and *qemu-bridge-helper*:
 
@@ -59,8 +59,9 @@ After the build successfully completes, *phoenix-ia32.ext2* image file will be c
 	sudo chmod u+s /usr/lib/qemu/qemu-bridge-helper
 	```
 	
-	4. Add ```allow virbr0``` line to the */etc/qemu/bridge.conf*:
+	4. Add ```allow virbr0``` line to the */etc/qemu/bridge.conf* (create the file if it doesn't exist):
 	```bash
+	sudo mkdir -p /etc/qemu
 	echo "allow virbr0" | sudo tee -a /etc/qemu/bridge.conf > /dev/null
 	```
 
