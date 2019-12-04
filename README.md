@@ -17,7 +17,7 @@ git submodule update --init --recursive
 3. Build and install *i386-pc-phoenix* toolchain, if you haven't already:
    - Install necessary packages:
 	```bash
-	sudo apt-get install m4
+	sudo apt-get install build-essential m4
 	```
    - Build the toolchain:
 	```bash
