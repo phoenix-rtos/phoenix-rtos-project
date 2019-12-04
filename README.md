@@ -1,5 +1,6 @@
 # phoenix-rtos-project
-Sample project using Phoenix-RTOS
+
+Sample project using Phoenix-RTOS. Built and tested on minimal clean installation of Ubuntu 18.04.3 LTS for desktops.
 
 ### Building
 
