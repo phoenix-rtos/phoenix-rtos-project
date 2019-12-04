@@ -21,7 +21,7 @@ git submodule update --init --recursive
 	```
    - Build the toolchain:
 	```bash
-	./phoenix-rtos-kernel/toolchain/build-toolchain.sh i386-pc-phoenix ~/toolchains/i386-pc-phoenix
+	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh i386-pc-phoenix ~/toolchains/i386-pc-phoenix)
 	```
    - Add toolchain binaries to $PATH:
 	```bash
