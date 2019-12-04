@@ -1,5 +1,5 @@
  libbb/xreadlink.c | 2 +-
- 1 file changed, 1 inserttions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/libbb/xreadlink.c b/libbb/xreadlink.c
 --- a/libbb/xreadlink.c
