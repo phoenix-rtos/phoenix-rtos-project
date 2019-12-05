@@ -32,11 +32,11 @@ done
 pushd $PREFIX_GRUB_SRC
 # Configure and clean
 if [ ! -z "$CLEAN" ]; then
-	env -i PATH=$PATH ./configure	\
+	env -i PATH=$PATH ./configure   \
 		--prefix=$PREFIX_GRUB_BUILD \
-		--disable-grub-mkfont		\
-		--disable-werror			\
-		--disable-libzfs			\
+		--disable-grub-mkfont       \
+		--disable-werror            \
+		--disable-libzfs            \
 		--disable-nls
 	make clean
 fi

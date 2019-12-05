@@ -60,7 +60,7 @@ After the build successfully completes, *phoenix-ia32.ext2* image file will be c
 	sudo chmod u+s /usr/lib/qemu/qemu-bridge-helper
 	```
 	
-	4. Add ```allow virbr0``` line to the */etc/qemu/bridge.conf* (create the file if it doesn't exist):
+	1. Add ```allow virbr0``` line to */etc/qemu/bridge.conf* (create the file if it doesn't exist):
 	```bash
 	sudo mkdir -p /etc/qemu
 	echo "allow virbr0" | sudo tee -a /etc/qemu/bridge.conf > /dev/null
