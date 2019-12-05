@@ -23,13 +23,6 @@ export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 
 #
-# Core configuration
-#
-POSIX=y
-USB=n
-LWIP=y
-
-#
 # Ports configuration
 #
 export PORTS_BUSYBOX=y
