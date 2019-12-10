@@ -15,7 +15,7 @@ cd phoenix-rtos-project/
 git submodule update --init --recursive
 ```
 
-3. Build and install *i386-pc-phoenix* toolchain, if you haven't already:
+3. Build and install *i386-pc-phoenix* toolchain:
    - Install necessary packages:
 	```bash
 	sudo apt-get install build-essential m4
@@ -29,7 +29,7 @@ git submodule update --init --recursive
 	export PATH=$PATH:~/toolchains/i386-pc-phoenix/i386-pc-phoenix/bin/
 	```
 
-4. Build the sample project:
+4. Build the project:
    - Install necessary packages:
 	```bash
 	# Required by GRUB
@@ -40,11 +40,11 @@ git submodule update --init --recursive
 	./phoenix-rtos-build/build.sh clean all
 	```
 
-After the build successfully completes, *phoenix-ia32.ext2* image file will be created and placed in the *_boot* directory.
+After the build successfully completes, *phoenix-ia32.ext2* raw image file will be created and placed in the *_boot* directory.
 
 ### Starting the VM
 
-- with QEMU (installed with ```sudo apt-get install qemu```):
+- **with QEMU** (installed with ```sudo apt-get install qemu```):
 
 	First, we're going to set up a NAT-based network using *libvirt* and *qemu-bridge-helper*:
 
@@ -69,16 +69,23 @@ After the build successfully completes, *phoenix-ia32.ext2* image file will be c
 	The bridged network is now configured and we're ready to start the VM:
    
 	```bash
-	./ia32-qemu.sh
+	./phoenix-ia32-qemu.sh
 	```
+- **with Virtualbox, no networking** (installed with ```sudo apt-get install virtualbox```):
+
+	To create and start the VM run:
+	```bash
+	./phoenix-ia32-virtualbox.sh
+	```
+	If you want to force rebuild the VM, pass *-f* option to the script.
 
 ### Connecting via SSH
 
-The phoenix-ia32.ext image comes with root account only. The default root password is '1234'. The guest IP is static and set to 192.168.122.10.
+The phoenix-ia32 image comes with root account only. The default root password is *1234*. The guest IP is static and set to 192.168.122.10.
 
-To connect from the host to the guest via SSH run:
+To connect from host to the guest via SSH run:
 ```bash
 ssh root@192.168.122.10
 ```
 
-and enter the root password '1234'.
+and enter the password.

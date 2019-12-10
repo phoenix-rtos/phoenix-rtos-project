@@ -40,7 +40,7 @@ export PORTS_CURL=y
 # Project specific build
 #
 b_build() {
-	b_log "Building ia32-qemu"
+	b_log "Building sample project"
 
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
@@ -98,7 +98,7 @@ b_image() {
 	# Copy necessary boot files into root
 	cp -a "$PREFIX_FS/boot" $PREFIX_ROOTFS
 	cp -a "$PREFIX_BUILD/grub/lib/grub/i386-pc" $GRUB_DIR
-	cp -a "_build/phoenix-ia32-qemu.elf" $PREFIX_ROOTFS
+	cp -a "_build/phoenix-ia32-qemu.elf" "$PREFIX_ROOTFS/boot/phoenix-ia32.elf"
 
 	# Make ext2 filesystem and install root
 	mkfs.ext2 -q -F                               \
