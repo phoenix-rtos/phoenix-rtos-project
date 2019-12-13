@@ -25,8 +25,8 @@ create_vm() {
 	popd
 }
 
-if [ $(VBoxManage list vms | grep -c -e $VM) -eq 1 ]; then
-	if [ $(VBoxManage showvminfo $VM | grep -c "running (since") -eq 1 ]; then
+if [ "$(VBoxManage list vms | grep -c -e $VM)" == "1" ]; then
+	if [ "$(VBoxManage showvminfo $VM | grep -c "running (since")" == "1" ]; then
 		if [ "$1" == "-f" ]; then
 			echo "${VM} Virtualbox VM is running. Can't force rebuild the VM"
 		else
