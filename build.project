@@ -64,6 +64,9 @@ b_build() {
 }
 
 b_image() {
+	# Add /sbin and /usr/sbin to PATH (we use sfdisk and mkfs.ext2)
+	PATH=$PATH:/sbin:/usr/sbin
+
 	# Image name
 	IMG_NAME="phoenix-$TARGET_FAMILY"
 	# Image target
