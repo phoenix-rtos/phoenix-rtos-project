@@ -26,7 +26,7 @@ export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 # Ports configuration
 #
 export PORTS_BUSYBOX=y
-export PORTS_PCRE=y
+export PORTS_PCRE=n
 export PORTS_LIGHTTPD=n
 export PORTS_DROPBEAR=y
 export PORTS_LUA=y
@@ -34,7 +34,7 @@ export PORTS_LZO=n
 export PORTS_OPENSSL=n
 export PORTS_OPENVPN=n
 export PORTS_JANSSON=n
-export PORTS_CURL=y
+export PORTS_CURL=n
 
 #
 # Project specific build
@@ -54,7 +54,7 @@ b_build() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty ext2 psh | cpio -H newc -ov > /tmp/programs
+		ls pinit psh dummyfs pc-tty pc-ata ptysrv lwip | cpio -H newc -ov > /tmp/programs
 	popd
 
 	# Relink kernel to include newly created cpio archive

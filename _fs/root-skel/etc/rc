@@ -28,13 +28,17 @@ if [ ! -f /local/etc/passwd ]; then
 fi
 
 # Configure network
-/etc/rc.d/network.sh start
+#/etc/rc.d/network.sh start
 # Start NTP
-/etc/rc.d/ntpd.sh start
+#/etc/rc.d/ntpd.sh start
 # Start Telnet server
-/etc/rc.d/telnetd.sh start
+#/etc/rc.d/telnetd.sh start
 # Start SSH server
-/etc/rc.d/sshd.sh start
+#/etc/rc.d/sshd.sh start
+
+ifconfig en1 dynamic
+telnetd -K -l /bin/sh
+
 
 # Custom (per-project, per-customer initialization)
 if [ -f /etc/rc.local ]; then
