@@ -54,7 +54,7 @@ b_build() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pinit psh dummyfs pc-tty pc-ata ptysrv lwip | cpio -H newc -ov > /tmp/programs
+		ls pinit dummyfs pc-ata | cpio -H newc -ov > /tmp/programs
 	popd
 
 	# Relink kernel to include newly created cpio archive
