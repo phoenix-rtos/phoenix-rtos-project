@@ -20,7 +20,7 @@ if [ ! -z "$CLEAN" ]; then
 
 	rm -fr $PREFIX_OPENSSL_BUILD/*
 
-	[ -f "$PREFIX_OPENSSL/${OPENSSL}.tar.gz" ] || wget https://www.openssl.org/source/${OPENSSL}.tar.gz -P "$PREFIX_OPENSSL"
+	[ -f "$PREFIX_OPENSSL/${OPENSSL}.tar.gz" ] || wget https://www.openssl.org/source/old/1.1.1/openssl-1.1.1a.tar.gz -P "$PREFIX_OPENSSL"
 	[ -d "$PREFIX_OPENSSL_SRC" ] || tar zxf "$PREFIX_OPENSSL/${OPENSSL}.tar.gz" -C "$PREFIX_OPENSSL"
 
 #
