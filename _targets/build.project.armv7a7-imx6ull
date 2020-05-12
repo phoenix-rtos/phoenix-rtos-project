@@ -1,0 +1,83 @@
+#
+# Shell script for building ia32-qemu project
+#
+# Copyright 2018, 2019 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+
+set -e
+
+CROSS=arm-phoenix-
+#CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb\
+#	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections"
+CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mthumb\
+	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
+
+
+LDFLAGS="-z max-page-size=0x1000"
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
+export PORTS_OPENSSL=y
+export PORTS_LIGHTTPD=y
+export PORTS_DROPBEAR=y
+export PORTS_LUA=n
+export PORTS_LZO=y
+export PORTS_OPENVPN=y
+export PORTS_JANSSON=y
+export PORTS_CURL=y
+
+
+#
+# Project specific build
+#
+b_build_target() {
+	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
+
+	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
+	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
+	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
+	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
+	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
+	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+
+	b_log "Creating CPIO archive"
+	pushd $PREFIX_PROG_STRIPPED
+		ls psh dummyfs imx6ull-flash imx6ull-uart psd | cpio -H newc -ov > /tmp/programs
+	popd
+
+	# Relink kernel to include newly created cpio archive
+	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
+	cp -a phoenix-rtos-kernel/phoenix-armv7a7-imx6ull.elf _build
+
+	mtd-utils/build.sh
+}
+
+
+b_image_target() {
+	b_log "Creating image from $PREFIX_ROOTFS"
+	size=`du -k -s $PREFIX_ROOTFS | awk '{ print $1 }'`
+	size=`expr ${size} \* 2`
+
+	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-$(git describe --always --dirty))"
+	echo "$IMG_VERSION" > $PREFIX_ROOTFS/etc/version
+
+	_build/host/prog/mkfs.jffs2 -n -U -m none -e $((64*4096)) -s 4096 -r "$PREFIX_ROOTFS"/ -o _boot/phoenix-armv7a7-imx6ull.jffs2
+
+	#ROOTFS_SIZE=$(stat -c %s "$ROOTFS_IMG")
+	#echo "ROOTFS SIZE: $((ROOTFS_SIZE/1024)) kB"
+
+	#KERNEL_IMG="$TOPDIR/_build/phoenix-arm-imx6ull.img"
+	#$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;128;64;-r;jffs2;0;-p;64;64;-p;192;1856;-p;4032;16 Xpsh;-i;/etc/rc.psh;secondary" --output $PREFIX_BOOT/secondary.img
+
+	#cp $KERNEL_IMG $PREFIX_BOOT/
+}
+
+
+export -f b_build_target

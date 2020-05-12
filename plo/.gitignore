@@ -1,0 +1,11 @@
+*.o
+*.a
+*.elf
+*.img
+*.flash
+*.cmd
+*~
+*.bin
+.depend
+.DS_Store
+toolchain/

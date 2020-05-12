@@ -1,0 +1,15 @@
+file plo/arm/arm-plo.elf
+
+set history save on
+set pagination off
+
+shell JLinkGDBServer -select USB -device VF6xx_A5 -if JTAG -speed auto -singlerun >/dev/null &
+
+target remote :2331
+monitor reset
+monitor reset
+
+load
+
+break plo_init
+c

@@ -1,131 +1,33 @@
 #
-# Shell script for building ia32-qemu project
+# Shell script for building Phoenix-RTOS microdistribution
 #
-# Copyright 2018, 2019 Phoenix Systems
+# Copyright 2018, 2019, 2020 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
 set -e
 
-TARGET=ia32-qemu
+#TARGET=ia32-generic
+#TARGET=armv7a7-imx6ull
+TARGET=riscv64-spike
+
 TARGET_FAMILY=`echo $TARGET | awk -F- '{ print $1 }'`
 TARGET_SUBFAMILY=$TARGET_FAMILY-`echo $TARGET | awk -F- '{ print $2 }'`
 
-CROSS=i386-pc-phoenix-
-
-CFLAGS="-Os -Wall -Wstrict-prototypes -g\
-	-fomit-frame-pointer -fdata-sections -ffunction-sections"
-
-LDFLAGS="-z max-page-size=0x1000"
-
-export CONSOLE=vga
-export BUSYBOX_CONFIG=$(realpath "busybox_config")
-export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
-
-#
-# Ports configuration
-#
-export PORTS_BUSYBOX=y
-export PORTS_PCRE=y
-export PORTS_LIGHTTPD=n
-export PORTS_DROPBEAR=y
-export PORTS_LUA=y
-export PORTS_LZO=n
-export PORTS_OPENSSL=n
-export PORTS_OPENVPN=n
-export PORTS_JANSSON=n
-export PORTS_CURL=y
+. _targets/build.project.${TARGET_SUBFAMILY}
 
 #
 # Project specific build
 #
 b_build() {
-	b_log "Building sample project"
 
-	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
+	b_build_target
 
-	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
-	ln -f $PREFIX_ROOTFS/bin/{psh,bind}
-	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
-	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
-	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
-	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
-	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
-
-	b_log "Creating CPIO archive"
-	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty ext2 psh | cpio -H newc -ov > /tmp/programs
-	popd
-
-	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
-	cp -a phoenix-rtos-kernel/phoenix-ia32-qemu.elf _build
-	cp -a phoenix-rtos-kernel/phoenix-ia32-qemu.img _build
 }
 
+#
+# Project specific image
+#
 b_image() {
-	# Add /sbin and /usr/sbin to PATH (we use sfdisk and mkfs.ext2)
-	PATH=$PATH:/sbin:/usr/sbin
-
-	# Image name
-	IMG_NAME="phoenix-$TARGET_FAMILY"
-	# Image target
-	IMG_TARGET="$IMG_NAME.ext2"
-	# Image target path
-	IMG_TARGET_PATH="$PREFIX_BOOT/$IMG_TARGET"
-	# Ext2 partition offset in MB
-	EXT2_OFFSET=1
-	# Ext2 partition and filesystem size in MB
-	EXT2_SIZE=32
-	# Ext2 block size in bytes
-	EXT2_BLOCK_SIZE=1024
-	
-
-	b_log "Creating $IMG_TARGET image"
-	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-$(git describe --always --dirty))"
-	echo "$IMG_VERSION" > $PREFIX_ROOTFS/etc/version
-	
-	./grub/build.sh
-
-	mkdir -p $PREFIX_BOOT
-	# Create the image file
-	dd if=/dev/zero of=$IMG_TARGET_PATH bs=1M count=$(($EXT2_SIZE + $EXT2_OFFSET))
-	# Make the partition table
-	echo "start=${EXT2_OFFSET}MiB, size=${EXT2_SIZE}MiB, bootable, type=83" | sfdisk $IMG_TARGET_PATH
-
-	# Make grub bootable image
-	BOOT_DIR="${PREFIX_ROOTFS}boot"
-	GRUB_DIR="$BOOT_DIR/grub"
-	GRUB_MODULES="biosdisk part_msdos ext2 terminal"
-	
-	# Copy necessary boot files into root
-	cp -a "$PREFIX_FS/boot" $PREFIX_ROOTFS
-	cp -a "$PREFIX_BUILD/grub/lib/grub/i386-pc" $GRUB_DIR
-	cp -a "_build/phoenix-ia32-qemu.elf" "$PREFIX_ROOTFS/boot/phoenix-ia32.elf"
-
-	# Make ext2 filesystem and install root
-	mkfs.ext2 -q -F                               \
-		-b $EXT2_BLOCK_SIZE                       \
-		-E offset=$(($EXT2_OFFSET * 1024 * 1024)) \
-		-d $PREFIX_ROOTFS                         \
-		$IMG_TARGET_PATH $(($EXT2_SIZE * 1024 * 1024 / $EXT2_BLOCK_SIZE))
-
-	$PREFIX_BUILD/grub/bin/grub-mkimage \
-		-O i386-pc                      \
-		-p "(hd0,msdos1)/boot/grub"     \
-		-d "$GRUB_DIR/i386-pc"          \
-		-c "$GRUB_DIR/grub.cfg"         \
-		-o "$GRUB_DIR/i386-pc/core.img" \
-		$GRUB_MODULES
-	echo "(hd0) $IMG_TARGET_PATH" > "$GRUB_DIR/device.map"
-	
-	# Install grub
-	$PREFIX_BUILD/grub/sbin/grub-bios-setup \
-		-m "$GRUB_DIR/device.map"           \
-		-d "$GRUB_DIR/i386-pc"              \
-		-r "hd0,msdos1"                     \
-		$IMG_TARGET_PATH
-	rm -f "$GRUB_DIR/device.map"
+	b_image_target
 }
-
-b_update_pkg() { :; }

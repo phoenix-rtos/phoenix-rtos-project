@@ -16,9 +16,6 @@
 [submodule "phoenix-rtos-filesystems"]
 	path = phoenix-rtos-filesystems
 	url = https://github.com/phoenix-rtos/phoenix-rtos-filesystems
-[submodule "phoenixd"]
-	path = phoenixd
-	url = https://github.com/phoenix-rtos/phoenixd
 [submodule "phoenix-rtos-usb"]
 	path = phoenix-rtos-usb
 	url = https://github.com/phoenix-rtos/phoenix-rtos-usb
@@ -31,6 +28,12 @@
 [submodule "phoenix-rtos-tests"]
 	path = phoenix-rtos-tests
 	url = https://github.com/phoenix-rtos/phoenix-rtos-tests
-[submodule "psh"]
-	path = psh
-	url = https://github.com/phoenix-rtos/psh
+[submodule "phoenix-rtos-corelibs"]
+	path = phoenix-rtos-corelibs
+	url = ./phoenix-rtos-corelibs/
+[submodule "phoenix-rtos-hostutils"]
+	path = phoenix-rtos-hostutils
+	url = ./phoenix-rtos-hostutils/
+[submodule "phoenix-rtos-utils"]
+	path = phoenix-rtos-utils
+	url = ./phoenix-rtos-utils/
