@@ -1,1 +1,0 @@
-kernel/errno.h

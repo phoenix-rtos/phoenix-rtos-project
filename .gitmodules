@@ -37,3 +37,6 @@
 [submodule "phoenix-rtos-utils"]
 	path = phoenix-rtos-utils
 	url = ./phoenix-rtos-utils/
+[submodule "plo"]
+	path = plo
+	url = https://github.com/phoenix-rtos/plo.git
