@@ -18,7 +18,7 @@ if [ ! -z "$CLEAN" ]; then
 
 	rm -fr $PREFIX_OPENVPN_BUILD/*
 
-	[ -f "$PREFIX_OPENVPN/${OPENVPN}.tar.gz" ] || wget https://swupdate.openvpn.org/community/releases/${OPENVPN}.tar.gz -P "$PREFIX_OPENVPN"
+	[ -f "$PREFIX_OPENVPN/${OPENVPN}.tar.gz" ] || wget https://swupdate.openvpn.org/community/releases/${OPENVPN}.tar.gz -P "$PREFIX_OPENVPN" --no-check-certificate
 	if [ ! -d "$PREFIX_OPENVPN_SRC" ]; then
 	   	tar zxf "$PREFIX_OPENVPN/${OPENVPN}.tar.gz" -C "$PREFIX_OPENVPN"
 
@@ -34,8 +34,8 @@ if [ ! -z "$CLEAN" ]; then
 # Configure
 #
 	cd $PREFIX_OPENVPN_SRC
-	autoreconf -i -v -f	
-	cd $PREFIX_OPENVPN_BUILD && PKG_CONFIG="" $PREFIX_OPENVPN_SRC/configure CFLAGS="$CFLAGS $OPENVPN_CFLAGS" LDFLAGS="$LDFLAGS" --host="${HOST_TARGET}-phoenix" --sbindir=$PREFIX_PROG
+	autoreconf -i -v -f
+	cd $PREFIX_OPENVPN_BUILD && PKG_CONFIG="" $PREFIX_OPENVPN_SRC/configure CFLAGS="$CFLAGS $OPENVPN_CFLAGS" LDFLAGS="$LDFLAGS" --host="${HOST}" --sbindir=$PREFIX_PROG
 fi
 
 #

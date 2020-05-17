@@ -8,7 +8,7 @@ b_log "Building dropbear"
 PREFIX_DROPBEAR=${TOPDIR}/phoenix-rtos-ports/dropbear
 PREFIX_DROPBEAR_BUILD=${PREFIX_BUILD}/dropbear
 PREFIX_DROPBEAR_SRC=${PREFIX_DROPBEAR}/${DROPBEAR}
-PREFIX_DROPBEAR_MARKERS=${PREFIX_DROPBEAR_BUILD}/markers
+PREFIX_DROPBEAR_MARKERS=${PREFIX_DROPBEAR}/markers
 #
 # Download and unpack
 #
@@ -46,8 +46,8 @@ if [ ! -z "$CLEAN" ]; then
 		--includedir="${PREFIX_PROG}" --oldincludedir="${PREFIX_PROG}" \
 		--prefix="${PREFIX_PROG}" --program-prefix="${PREFIX_PROG}" --libdir="${PREFIX_PROG}" --bindir="${PREFIX_PROG}" --disable-zlib --enable-static \
 		--disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx --disable-harden )
-
 fi
+
 #
 # Make
 #

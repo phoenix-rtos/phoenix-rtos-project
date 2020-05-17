@@ -19,15 +19,15 @@ if [ ! -z "$CLEAN" ]; then
 
 	rm -rf $PREFIX_CURL_BUILD/*
 
-	[ -f "$PREFIX_CURL/${CURL}.tar.gz" ] || wget https://curl.haxx.se/download/${CURL}.tar.gz -P "$PREFIX_CURL"
+	[ -f "$PREFIX_CURL/${CURL}.tar.gz" ] || wget https://curl.haxx.se/download/${CURL}.tar.gz -P "$PREFIX_CURL" --no-check-certificate
 	[ -d "$PREFIX_CURL_SRC" ] || tar zxf "$PREFIX_CURL/${CURL}.tar.gz" -C "$PREFIX_CURL"
 
 #
 # Configure
 #
 	cd $PREFIX_CURL_BUILD && PKG_CONFIG="" $PREFIX_CURL_SRC/configure CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
-		--host="${HOST_TARGET}-phoenix" --sbindir=$PREFIX_PROG --disable-pthreads --disable-threaded-resolver \
-		--disable-ipv6 --prefix=$PREFIX_CURL_INSTALL --disable-ntlm-wb
+		--host="${HOST}" --sbindir=$PREFIX_PROG --disable-pthreads --disable-threaded-resolver \
+		--disable-ipv6 --prefix=$PREFIX_CURL_INSTALL --disable-ntlm-wb --without-zlib
 fi
 
 #

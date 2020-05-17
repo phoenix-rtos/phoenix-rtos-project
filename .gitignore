@@ -1,5 +1,7 @@
 busybox/busybox-*
+busybox/markers/
 dropbear/dropbear-*
+dropbear/markers/
 lighttpd/lighttpd-*
 openssl/openssl-*
 openvpn/openvpn-*

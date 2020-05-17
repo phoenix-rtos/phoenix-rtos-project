@@ -24,15 +24,13 @@ if [ ! -z "$CLEAN" ]; then
 #
 # Configure
 #
-	( cd "${PREFIX_JANSSON_BUILD}" && "${PREFIX_JANSSON_SRC}/configure" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$HOST_TARGET" \
-                --disable-cpp CC="${CROSS}gcc" AR="${CROSS}ar" LD="${CROSS}ld" AS="${CROSS}as" RANLIB="${CROSS}gcc-ranlib" --prefix="${PREFIX_JANSSON_BUILD}" --libdir="${PREFIX_BUILD}/lib" \
-                --includedir="${PREFIX_BUILD}/include" )
-
-make -C "$PREFIX_JANSSON_BUILD" ${MAKEFLAGS} ${CLEAN}
+	( cd "${PREFIX_JANSSON_BUILD}" && "${PREFIX_JANSSON_SRC}/configure" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$HOST" \
+		--prefix="${PREFIX_JANSSON_BUILD}" --libdir="${PREFIX_BUILD}/lib" \
+		--includedir="${PREFIX_BUILD}/include" )
 
 fi
 
 #
 # Make
 #
-make -C "$PREFIX_JANSSON_BUILD" ${MAKEFLAGS} install
+make -C "$PREFIX_JANSSON_BUILD" ${MAKEFLAGS} ${CLEAN} install

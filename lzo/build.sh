@@ -16,8 +16,9 @@ mkdir -p "$PREFIX_LZO_BUILD"
 
 pushd $PREFIX_LZO_BUILD
 if [ ! -z "$CLEAN" ]; then
-	$PREFIX_LZO_SRC/configure --prefix=$PREFIX_LZO_BUILD --exec-prefix=$PREFIX_LZO_BUILD --libdir=$PREFIX_BUILD/lib/ --includedir=$PREFIX_BUILD/include/ \
-		--host="${HOST_TARGET}-phoenix" CROSS="$CROSS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+
+	 $PREFIX_LZO_SRC/configure --prefix=$PREFIX_LZO_BUILD --exec-prefix=$PREFIX_LZO_BUILD --libdir=$PREFIX_BUILD/lib/ --includedir=$PREFIX_BUILD/include/ \
+		--host="${HOST}"  CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
 	make $CLEAN
 fi
 

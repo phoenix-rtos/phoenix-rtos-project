@@ -11,6 +11,9 @@ PREFIX_LIGHTTPD=${TOPDIR}/phoenix-rtos-ports/lighttpd
 PREFIX_LIGHTTPD_BUILD=${PREFIX_BUILD}/lighttpd
 PREFIX_LIGHTTPD_SRC=${PREFIX_LIGHTTPD}/${LIGHTTPD}
 
+PREFIX_OPENSSL=${PREFIX_BUILD}/include
+PREFIX_PCRE=${PREFIX_BUILD}/include
+
 #
 # Download and unpack
 #
@@ -27,7 +30,8 @@ if [ ! -z "$CLEAN" ]; then
 		done
 	fi
 
-	CONFIGFILE=$(find "$PREFIX_FS/root-skel/etc" -name "lighttpd.conf")
+
+	CONFIGFILE=$(find "${TOPDIR}/_fs/root-skel/etc" -name "lighttpd.conf")
 	grep mod_ $CONFIGFILE | cut -d'"' -f2 | xargs -L1 -I{} echo "PLUGIN_INIT({})" > $PREFIX_LIGHTTPD_SRC/src/plugin-static.h
 
 	[ -f "$PREFIX_LIGHTTPD_SRC/config.cache" ] && rm $PREFIX_LIGHTTPD_SRC/config.cache
@@ -37,9 +41,10 @@ if [ ! -z "$CLEAN" ]; then
 # Configure
 #
 
-	( cd $PREFIX_LIGHTTPD_BUILD && $PREFIX_LIGHTTPD_SRC/configure LIGHTTPD_STATIC=yes CFLAGS="${LIGHTTPD_CFLAGS} ${CFLAGS}" LDFLAGS="${LDFLAGS}" AR_FLAGS="-r" -C --disable-ipv6 --disable-mmap --with-bzip2=no \
-		--with-zlib=no --enable-shared=no --enable-static=yes --disable-shared --with-openssl --host="$HOST_TARGET" CC=${CROSS}gcc \
-		AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as --prefix="$PREFIX_LIGHTTPD_BUILD" --sbindir="$PREFIX_PROG")
+	( cd $PREFIX_LIGHTTPD_BUILD && $PREFIX_LIGHTTPD_SRC/configure LIGHTTPD_STATIC=yes CFLAGS="${LIGHTTPD_CFLAGS} ${CFLAGS}" CPPFLAGS="" LDFLAGS="${LDFLAGS}" AR_FLAGS="-r" \
+		-C --disable-ipv6 --disable-mmap --with-bzip2=no \
+		--with-zlib=no --enable-shared=no --enable-static=yes --disable-shared  --host="$HOST" --with-openssl=${PREFIX_OPENSSL} --with-pcre=${PREFIX_PCRE} \
+		--prefix="$PREFIX_LIGHTTPD_BUILD" --sbindir="$PREFIX_PROG")
 
 	set +e
 	ex "+/HAVE_MMAP 1/d" "+/HAVE_MUNMAP 1/d" "+/HAVE_GETRLIMIT 1/d" "+/HAVE_SYS_POLL_H 1/d" \

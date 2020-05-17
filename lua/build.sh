@@ -9,7 +9,7 @@ PREFIX_LUA=${TOPDIR}/phoenix-rtos-ports/lua
 PREFIX_LUA_SRC=${PREFIX_LUA}/${LUA}
 
 
-[ -f "$PREFIX_LUA/${LUA}.tar.gz" ] || wget https://www.lua.org/ftp/lua-5.3.5.tar.gz -P "$PREFIX_LUA"
+[ -f "$PREFIX_LUA/${LUA}.tar.gz" ] || wget https://www.lua.org/ftp/lua-5.3.5.tar.gz -P "$PREFIX_LUA" --no-check-certificate
 if [ ! -d "$PREFIX_LUA_SRC" ]; then
 	tar zxf "$PREFIX_LUA/${LUA}.tar.gz" -C "$PREFIX_LUA"
 	cp $PREFIX_LUA/Makefile $PREFIX_LUA_SRC/src/

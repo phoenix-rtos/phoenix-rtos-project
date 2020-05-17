@@ -7,7 +7,7 @@ b_log "Building busybox"
 PREFIX_BUSYBOX=${TOPDIR}/phoenix-rtos-ports/busybox
 PREFIX_BUSYBOX_BUILD=$PREFIX_BUILD/busybox/
 PREFIX_BUSYBOX_SRC=$PREFIX_BUSYBOX/${BUSYBOX}/
-PREFIX_BUSYBOX_MARKERS=$PREFIX_BUSYBOX_BUILD/markers/
+PREFIX_BUSYBOX_MARKERS=$PREFIX_BUSYBOX/markers/
 : "${BUSYBOX_CONFIG:="${PREFIX_BUSYBOX}/config"}"
 
 echo $PREFIX_BUSYBOX_SRC
@@ -23,6 +23,9 @@ mkdir -p "$PREFIX_BUSYBOX_BUILD" "$PREFIX_BUSYBOX_MARKERS"
 # Apply patches
 #
 for patchfile in $PREFIX_BUSYBOX/*.patch; do
+
+	echo "$PREFIX_BUSYBOX_MARKERS/$(basename $patchfile.applied)"
+	
 	if [ ! -f "$PREFIX_BUSYBOX_MARKERS/$(basename $patchfile.applied)" ]; then
 		echo "applying patch: $patchfile"
 		patch -d "$PREFIX_BUSYBOX_SRC" -p1 < "$patchfile"

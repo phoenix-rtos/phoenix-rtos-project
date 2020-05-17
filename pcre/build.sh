@@ -24,12 +24,12 @@ if [ ! -z "$CLEAN" ]; then
 #
 # Configure
 #
-	( cd ${PREFIX_PCRE_BUILD} && ${PREFIX_PCRE_SRC}/configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$HOST_TARGET" \
-                --disable-cpp CC=${CROSS}gcc AR=${CROSS}ar LD=${CROSS}ld AS=${CROSS}as RANLIB=${CROSS}gcc-ranlib --prefix="${PREFIX_PCRE_BUILD}" --libdir="${PREFIX_BUILD}/lib" \
-                --includedir="${PREFIX_BUILD}/include" )
+	( cd ${PREFIX_PCRE_BUILD} && ${PREFIX_PCRE_SRC}/configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ARFLAGS="-r" --enable-static --disable-shared --host="$HOST" \
+		--disable-cpp --prefix="${PREFIX_PCRE_BUILD}" --libdir="${PREFIX_BUILD}/lib"  \
+		--includedir="${PREFIX_BUILD}/include" )
 fi
 
 #
 # Make
 #
-make -C "$PREFIX_PCRE_BUILD" CROSS_COMPILE="$CROSS" ${MAKEFLAGS} ${CLEAN} install
+make -C "$PREFIX_PCRE_BUILD" ${MAKEFLAGS} ${CLEAN} install

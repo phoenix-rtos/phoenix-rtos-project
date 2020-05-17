@@ -20,14 +20,16 @@ if [ ! -z "$CLEAN" ]; then
 
 	rm -fr $PREFIX_OPENSSL_BUILD/*
 
-	[ -f "$PREFIX_OPENSSL/${OPENSSL}.tar.gz" ] || wget https://www.openssl.org/source/${OPENSSL}.tar.gz -P "$PREFIX_OPENSSL"
+	[ -f "$PREFIX_OPENSSL/${OPENSSL}.tar.gz" ] || wget https://www.openssl.org/source/${OPENSSL}.tar.gz -P "$PREFIX_OPENSSL" --no-check-certificate
 	[ -d "$PREFIX_OPENSSL_SRC" ] || tar zxf "$PREFIX_OPENSSL/${OPENSSL}.tar.gz" -C "$PREFIX_OPENSSL"
 
 #
 # Configure
 #
 	cp $PREFIX_OPENSSL/30-phoenix.conf $PREFIX_OPENSSL_SRC/Configurations/
-	${PREFIX_OPENSSL_SRC}/Configure phoenix-arm --prefix=$PREFIX_OPENSSL_INSTALL
+	
+	${PREFIX_OPENSSL_SRC}/Configure phoenix-${TARGET} --prefix=$PREFIX_OPENSSL_INSTALL
+	
 fi
 
 #
