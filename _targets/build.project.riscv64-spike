@@ -8,10 +8,9 @@
 set -e
 
 CROSS=riscv64-phoenix-elf-
-CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin -mcmodel=medany"
-#LDFLAGS="-z max-page-size=0x1000"
+CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
+#LDFLAGS="-z max-page-size=0x1000" -fno-builtin
 
-export CONSOLE=vga
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 
@@ -49,24 +48,29 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty dummyfs psh | cpio -H newc -ov > /tmp/programs
+		ls dummyfs psh | cpio -H newc -ov > /tmp/programs
 	popd
 
 	# Relink kernel to include newly created cpio archive
 	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
-	cp -a phoenix-rtos-kernel/phoenix-ia32-generic.elf _build
+	cp -a phoenix-rtos-kernel/phoenix-riscv64-spike.elf _build
 
-}
+	# Add kernel to boot loader
 
+	mkdir -p riscv-pk/build
+	pushd riscv-pk/build
+		OLDCFLAGS="$CFLAGS"
+		CFLAGS=""
+	
+		if [ "X${CLEAN}" == "Xclean" ]; then
 
-function b_add2img {
-	# Assume sector size = 512 bytes
-	sector=`expr $offs \* 2`
-	printf "Copying %s (offs=%dKB, sector=0x%x)\n" $1 $offs $sector
+			make distclean
+			../configure --host=riscv64-phoenix-elf --with-payload=../../_build/phoenix-riscv64-spike.elf --disable-fp-emulation
+		fi
 
-	sz=`du -k $1 | awk '{ print $1 }'`
-	dd if=$1 of=$2 seek=$offs bs=1024 >/dev/null 2>&1
-	offs=`expr $offs + $sz + 1`
+		make ${MAKEFLAGS} all
+		CFLAGS="$OLDCFLAGS"
+	popd	
 }
 
 
@@ -78,23 +82,9 @@ b_image_target() {
 
 	genext2fs -b $size -d $PREFIX_ROOTFS $PREFIX_BUILD/disk.ext2
 
-	PLO=plo/ia32/plo
-	IMG=$PREFIX_BOOT/phoenix-ia32-generic.disk
+	cp riscv-pk/build/bbl $PREFIX_BOOT/phoenix-riscv64-spike.bbl
+	cp $PREFIX_BUILD/disk.ext2 $PREFIX_BOOT/phoenix-riscv64-spike.disk
 
-	# Adding Phoenix-RTOS Loader
-	cp $PLO $IMG
-	sz=`du -k $PLO | awk '{ print $1 }'`
-	echo "Loader size: ${sz}KB"
-	echo "Adding padding after plo"
-	padsz=`expr 32 - $sz`
-	dd if=/dev/zero of=$IMG seek=$sz bs=1024 count=$padsz >/dev/null 2>&1
-	offs=32
-
-	b_add2img _build/phoenix-ia32-generic.elf $IMG
-	b_add2img $PREFIX_BUILD/disk.ext2 $IMG
 }
-
-b_update_pkg() { :; }
-
 
 export -f b_build_target

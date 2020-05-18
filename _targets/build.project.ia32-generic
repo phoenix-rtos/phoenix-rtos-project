@@ -93,6 +93,8 @@ b_image_target() {
 
 	b_add2img _build/phoenix-ia32-generic.elf $IMG
 	b_add2img $PREFIX_BUILD/disk.ext2 $IMG
+
+	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
 }
 
 b_update_pkg() { :; }

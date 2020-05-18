@@ -76,7 +76,7 @@ b_image_target() {
 	#KERNEL_IMG="$TOPDIR/_build/phoenix-arm-imx6ull.img"
 	#$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;128;64;-r;jffs2;0;-p;64;64;-p;192;1856;-p;4032;16 Xpsh;-i;/etc/rc.psh;secondary" --output $PREFIX_BOOT/secondary.img
 
-	#cp $KERNEL_IMG $PREFIX_BOOT/
+	cp -a _build/phoenix-armv7a7-imx6ull.elf $PREFIX_BOOT
 }
 
 
