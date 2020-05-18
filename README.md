@@ -15,6 +15,7 @@ git submodule update --init --recursive
 
 3. Build and install toolchains for all required target architectures:
    - Build the toolchain:
+   
 	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh i386-pc-phoenix ~/toolchains/i386-pc-phoenix)
 	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh arm-phoenix ~/toolchains/arm-phoenix)
 	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh riscv64-phoenix-elf ~/toolchains/riscv64-phoenix-elf)
@@ -36,4 +37,4 @@ After the build successfully completes, kernel and disk images will be created a
 
 ### Starting the image
 
-To start the created target image please see [phoenix-rtos.com/quickstart](phoenix-rtos.com/quickstart) quide
+To start the created target image please see [phoenix-rtos.com/quickstart](http://phoenix-rtos.com/quickstart) quide
