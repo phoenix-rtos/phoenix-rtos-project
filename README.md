@@ -21,13 +21,13 @@ git submodule update --init --recursive
 	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh arm-phoenix ~/toolchains/arm-phoenix)
 	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh riscv64-phoenix-elf ~/toolchains/riscv64-phoenix-elf)
 
-   - Add toolchain binaries to $PATH:
+   - Add toolchain binaries to PATH variable:
 	export PATH=$PATH:~/toolchains/i386-pc-phoenix/i386-pc-phoenix/bin/
 	export PATH=$PATH:~/toolchains/arm-phoenix/arm-phoenix/bin/
 	export PATH=$PATH:~/toolchains/riscv64-phoenix-elf/riscv64-phoenix-elf/bin/
 ````
 4. Build the project:
-````bash
+````
    - Edit build.properties file and set TARGET variable to define the targer architecture
 
    - Run build.sh script:
