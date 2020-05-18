@@ -15,77 +15,30 @@ cd phoenix-rtos-project/
 git submodule update --init --recursive
 ```
 
-3. Build and install *i386-pc-phoenix* toolchain:
-   - Install necessary packages:
-	```bash
-	sudo apt-get install build-essential m4
+3. Build and install toolchains for all required target architectures:
 	```
    - Build the toolchain:
 	```bash
 	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh i386-pc-phoenix ~/toolchains/i386-pc-phoenix)
+	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh arm-phoenix ~/toolchains/arm-phoenix)
+	(cd phoenix-rtos-kernel/toolchain/ && ./build-toolchain.sh riscv64-phoenix-elf ~/toolchains/riscv64-phoenix-elf)
 	```
    - Add toolchain binaries to $PATH:
 	```bash
 	export PATH=$PATH:~/toolchains/i386-pc-phoenix/i386-pc-phoenix/bin/
+	export PATH=$PATH:~/toolchains/arm-phoenix/arm-phoenix/bin/
+	export PATH=$PATH:~/toolchains/riscv64-phoenix-elf/riscv64-phoenix-elf/bin/
 	```
-
 4. Build the project:
-   - Install necessary packages:
-	```bash
-	# Required by GRUB
-	sudo apt-get install bison flex
+   - Edit build.properties file and set TARGET variable to define the targer architecture
 	```
    - Run build.sh script:
 	```bash
 	./phoenix-rtos-build/build.sh clean all
 	```
 
-After the build successfully completes, *phoenix-ia32.ext2* raw image file will be created and placed in the *_boot* directory.
+After the build successfully completes, kernel and disk images will be created and placed in the *_boot* directory.
 
-### Starting the VM
+### Starting the image
 
-- **with QEMU** (installed with ```sudo apt-get install qemu```):
-
-	First, we're going to set up a NAT-based network using *libvirt* and *qemu-bridge-helper*:
-
-	1. Install *libvirt*:
-	```bash
-	sudo apt-get install libvirt-bin
-	```
-
-	2. Run ```sudo virsh net-list --all``` and make sure that the *'default'* network is active (it should automatically start after *libvirt* installation). If it's inactive, make sure that the *'tun'* module is loaded (run ```sudo modprobe tun```) and try starting it manually with ```sudo virsh net-start default```. Successfully running *'default'* network provides us with *virbr0* bridged network interface listed in ```ifconfig```.
-
-	3. The setuid attribute needs to be turned on for the default network helper (*qemu-network-helper* needs root permissions to create the tap device):
-	```bash
-	sudo chmod u+s /usr/lib/qemu/qemu-bridge-helper
-	```
-	
-	4. Add ```allow virbr0``` line to */etc/qemu/bridge.conf* (create the file if it doesn't exist):
-	```bash
-	sudo mkdir -p /etc/qemu
-	echo "allow virbr0" | sudo tee -a /etc/qemu/bridge.conf > /dev/null
-	```
-
-	The bridged network is now configured and we're ready to start the VM:
-   
-	```bash
-	./phoenix-ia32-qemu.sh
-	```
-- **with Virtualbox, no networking** (installed with ```sudo apt-get install virtualbox```):
-
-	To create and start the VM run:
-	```bash
-	./phoenix-ia32-virtualbox.sh
-	```
-	If you want to force rebuild the VM, pass *-f* option to the script.
-
-### Connecting via SSH
-
-The phoenix-ia32 image comes with root account only. The default root password is *1234*. The guest IP is static and set to 192.168.122.10.
-
-To connect from host to the guest via SSH run:
-```bash
-ssh root@192.168.122.10
-```
-
-and enter the password.
+To start the created target image please see phoenix-rtos.com/quickstart quide
