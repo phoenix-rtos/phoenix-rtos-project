@@ -28,7 +28,7 @@ git submodule update --init --recursive
 ````
 4. Build the project:
 ````
-   - Edit build.properties file and set TARGET variable to define the targer architecture
+   - Edit build.project file and set TARGET variable to define the target architecture
 
    - Run build.sh script:
 	./phoenix-rtos-build/build.sh clean all
