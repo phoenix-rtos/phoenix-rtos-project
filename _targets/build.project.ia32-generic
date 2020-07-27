@@ -73,13 +73,10 @@ function b_add2img {
 
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
-	size=`find ${PREFIX_ROOTFS} -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }'`
-	size=`expr ${size} \* 150 / 100`
-	echo "Filesystem size: $size"
-
-	genext2fs -b $size -d $PREFIX_ROOTFS $PREFIX_BUILD/disk.ext2
 
 	PLO=plo/ia32/plo
+	KERNEL=_build/phoenix-ia32-generic.elf
+	ROOTFS=$PREFIX_BUILD/disk.ext2
 	IMG=$PREFIX_BOOT/phoenix-ia32-generic.disk
 
 	# Adding Phoenix-RTOS Loader
@@ -91,8 +88,20 @@ b_image_target() {
 	dd if=/dev/zero of=$IMG seek=$sz bs=1024 count=$padsz >/dev/null 2>&1
 	offs=32
 
-	b_add2img _build/phoenix-ia32-generic.elf $IMG
-	b_add2img $PREFIX_BUILD/disk.ext2 $IMG
+	# Adding Phoenix-RTOS kernel
+	b_add2img $KERNEL $IMG
+	sz=`du -k $KERNEL | awk '{ print $1 }'`
+	echo "Kernel size: ${sz}KB"
+	echo "Adding padding after kernel"
+	padsz=`expr 2048 - $sz`
+	dd if=/dev/zero of=$IMG seek=`expr 32 + $sz` bs=1024 count=$padsz >/dev/null 2>&1
+	offs=2048
+
+	# Adding ext2 rootfs
+	sz=`expr 128 \* 1024`
+	echo "Filesystem size: ${sz}KB"
+	genext2fs -b $sz -d $PREFIX_ROOTFS $ROOTFS
+	b_add2img $ROOTFS $IMG
 
 	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
 }
