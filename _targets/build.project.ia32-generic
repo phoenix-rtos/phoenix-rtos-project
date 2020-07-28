@@ -37,6 +37,8 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
+	cp -a _fs/root-skel/ _fs/$TARGET/root
+
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
 	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
@@ -49,7 +51,7 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty dummyfs psh | cpio -H newc -ov > /tmp/programs
+		ls pc-tty pc-ata psh | cpio -H newc -ov > /tmp/programs
 	popd
 
 	# Relink kernel to include newly created cpio archive
