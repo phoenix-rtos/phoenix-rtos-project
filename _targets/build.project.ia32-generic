@@ -48,6 +48,7 @@ b_build_target() {
 	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
 	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
 	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+	ln -f $PREFIX_ROOTFS/bin/{psh,top}
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
