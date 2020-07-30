@@ -37,7 +37,7 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	cp -a _fs/root-skel/ _fs/$TARGET/root
+	cp -a _fs/root-skel/. _fs/$TARGET/root
 
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
