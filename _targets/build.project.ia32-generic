@@ -103,7 +103,7 @@ b_image_target() {
 	# Adding ext2 rootfs
 	sz=`expr 128 \* 1024`
 	echo "Filesystem size: ${sz}KB"
-	genext2fs -b $sz -d $PREFIX_ROOTFS $ROOTFS
+	genext2fs -b $sz -i 2048 -d $PREFIX_ROOTFS $ROOTFS
 	b_add2img $ROOTFS $IMG
 
 	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
