@@ -51,12 +51,11 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty pc-ata psh | cpio -H newc -ov > /tmp/programs
+		ls pc-tty pc-ata psh | cpio -H newc -ov > $PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
 	popd
 
 	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
-	cp -a phoenix-rtos-kernel/phoenix-ia32-generic.elf _build
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 
 	(cd plo/ia32; make clean all)
 }
@@ -77,7 +76,7 @@ b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
 	PLO=plo/ia32/plo
-	KERNEL=_build/phoenix-ia32-generic.elf
+	KERNEL=$PREFIX_PROG/phoenix-ia32-generic.elf
 	ROOTFS=$PREFIX_BUILD/disk.ext2
 	IMG=$PREFIX_BOOT/phoenix-ia32-generic.disk
 
@@ -105,7 +104,7 @@ b_image_target() {
 	genext2fs -b $sz -d $PREFIX_ROOTFS $ROOTFS
 	b_add2img $ROOTFS $IMG
 
-	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
+#	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
 }
 
 b_update_pkg() { :; }

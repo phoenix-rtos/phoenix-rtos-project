@@ -8,7 +8,7 @@
 set -e
 
 CROSS=riscv64-phoenix-elf-
-CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
+#CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
 #LDFLAGS="-z max-page-size=0x1000" -fno-builtin
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
@@ -48,12 +48,11 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls dummyfs psh | cpio -H newc -ov > /tmp/programs
+		ls dummyfs psh | cpio -H newc -ov > $PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
 	popd
 
 	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
-	cp -a phoenix-rtos-kernel/phoenix-riscv64-spike.elf _build
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 
 	# Add kernel to boot loader
 
@@ -64,13 +63,15 @@ b_build_target() {
 	
 		if [ "X${CLEAN}" == "Xclean" ]; then
 
-			make distclean
-			../configure --host=riscv64-phoenix-elf --with-payload=../../_build/phoenix-riscv64-spike.elf --disable-fp-emulation
+			#make distclean
+			../configure --host=riscv64-phoenix-elf --with-payload=../../_build/riscv64-spike/prog/phoenix-riscv64-spike.elf --disable-fp-emulation
 		fi
 
 		make ${MAKEFLAGS} all
 		CFLAGS="$OLDCFLAGS"
-	popd	
+	popd
+
+	cp riscv-pk/build/bbl $PREFIX_BOOT/phoenix-riscv64-spike.bbl
 }
 
 
@@ -81,8 +82,6 @@ b_image_target() {
 	echo "Filesystem size: $size"
 
 	genext2fs -b $size -d $PREFIX_ROOTFS $PREFIX_BUILD/disk.ext2
-
-	cp riscv-pk/build/bbl $PREFIX_BOOT/phoenix-riscv64-spike.bbl
 	cp $PREFIX_BUILD/disk.ext2 $PREFIX_BOOT/phoenix-riscv64-spike.disk
 
 }
