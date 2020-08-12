@@ -37,8 +37,6 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	cp -a _fs/root-skel/ _fs/$TARGET/root
-
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
 	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
@@ -48,6 +46,7 @@ b_build_target() {
 	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
 	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
 	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+	ln -f $PREFIX_ROOTFS/bin/{psh,top}
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
@@ -101,7 +100,7 @@ b_image_target() {
 	# Adding ext2 rootfs
 	sz=`expr 128 \* 1024`
 	echo "Filesystem size: ${sz}KB"
-	genext2fs -b $sz -d $PREFIX_ROOTFS $ROOTFS
+	genext2fs -b $sz -i 2048 -d $PREFIX_ROOTFS $ROOTFS
 	b_add2img $ROOTFS $IMG
 
 #	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
