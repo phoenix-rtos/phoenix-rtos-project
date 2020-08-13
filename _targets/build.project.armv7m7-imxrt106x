@@ -47,9 +47,10 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED >/dev/null
-		ls psh dummyfs psd | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+		ls psh dummyfs psd imxrt-multi imxrt-flash | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
 	popd >/dev/null
 
+	b_log "Building plo"
 	(cd plo; make clean all)
 }
 
