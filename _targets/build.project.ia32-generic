@@ -50,7 +50,7 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty pc-ata psh | cpio -H newc -ov > $PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+		ls pc-tty pc-ata psh | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
 	popd
 
 	# Relink kernel to include newly created cpio archive

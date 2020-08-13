@@ -1,7 +1,7 @@
 #
 # Shell script for building ia32-qemu project
 #
-# Copyright 2018, 2019 Phoenix Systems
+# Copyright 2018, 2019, 2020 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
@@ -47,14 +47,15 @@ b_build_target() {
 	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
 
 	b_log "Creating CPIO archive"
-	pushd $PREFIX_PROG_STRIPPED
-		ls dummyfs psh | cpio -H newc -ov > $PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
-	popd
+	pushd $PREFIX_PROG_STRIPPED >/dev/null
+		ls dummyfs psh | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+	popd >/dev/null
 
 	# Relink kernel to include newly created cpio archive
 	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 
 	# Add kernel to boot loader
+	b_log "Adding kernel to boot loader"
 
 	mkdir -p riscv-pk/build
 	pushd riscv-pk/build

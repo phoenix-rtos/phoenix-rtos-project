@@ -1,15 +1,13 @@
 #
 # Shell script for building ia32-qemu project
 #
-# Copyright 2018, 2019 Phoenix Systems
+# Copyright 2018, 2019, 2020 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
 set -e
 
 CROSS=arm-phoenix-
-#CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -mthumb\
-#	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections"
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mthumb\
 	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
 
@@ -48,15 +46,12 @@ b_build_target() {
 	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
 
 	b_log "Creating CPIO archive"
-	pushd $PREFIX_PROG_STRIPPED
-		ls psh dummyfs imx6ull-flash imx6ull-uart psd | cpio -H newc -ov > /tmp/programs
-	popd
+	pushd $PREFIX_PROG_STRIPPED >/dev/null
+		ls psh dummyfs imx6ull-flash imx6ull-uart psd | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+	popd >/dev/null
 
 	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel/src && make $MAKEFLAGS all)
-	cp -a phoenix-rtos-kernel/phoenix-armv7a7-imx6ull.elf _build
-
-	mtd-utils/build.sh
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 }
 
 
@@ -68,15 +63,14 @@ b_image_target() {
 	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-$(git describe --always --dirty))"
 	echo "$IMG_VERSION" > $PREFIX_ROOTFS/etc/version
 
+	mtd-utils/build.sh
+
 	_build/host/prog/mkfs.jffs2 -n -U -m none -e $((64*4096)) -s 4096 -r "$PREFIX_ROOTFS"/ -o _boot/phoenix-armv7a7-imx6ull.jffs2
 
-	#ROOTFS_SIZE=$(stat -c %s "$ROOTFS_IMG")
-	#echo "ROOTFS SIZE: $((ROOTFS_SIZE/1024)) kB"
+	sz=`du -k _boot/phoenix-armv7a7-imx6ull.jffs2 | awk '{ print $1 }'`
+	echo "Filesystem size: ${sz}KB"
 
-	#KERNEL_IMG="$TOPDIR/_build/phoenix-arm-imx6ull.img"
-	#$PREFIX_BOOT/phoenixd --plugin --kernel $KERNEL_IMG="Ximx6ull-uart Ximx6ull-flash;-p;128;64;-r;jffs2;0;-p;64;64;-p;192;1856;-p;4032;16 Xpsh;-i;/etc/rc.psh;secondary" --output $PREFIX_BOOT/secondary.img
-
-	cp -a _build/phoenix-armv7a7-imx6ull.elf $PREFIX_BOOT
+#	cp -a _build/phoenix-armv7a7-imx6ull.elf $PREFIX_BOOT
 }
 
 
