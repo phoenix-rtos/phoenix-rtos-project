@@ -8,7 +8,7 @@
 set -e
 
 CROSS=arm-phoenix-
-CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mthumb\
+CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-m7 -mtune=cortex-m7 -mfloat-abi=hard -mthumb\
 	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
 
 
