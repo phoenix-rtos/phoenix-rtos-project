@@ -1,0 +1,90 @@
+#
+# Shell script for building ia32-qemu project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+
+set -e
+
+CROSS=riscv64-phoenix-elf-
+#CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
+#LDFLAGS="-z max-page-size=0x1000" -fno-builtin
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
+export PORTS_OPENSSL=y
+export PORTS_LIGHTTPD=y
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=y
+export PORTS_OPENVPN=y
+export PORTS_JANSSON=y
+export PORTS_CURL=y
+
+
+#
+# Project specific build
+#
+b_build_target() {
+
+	b_log "Building sample project for $TARGET"
+
+	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
+
+	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
+	ln -f $PREFIX_ROOTFS/bin/{psh,bind}
+	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
+	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
+	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
+	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
+	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+
+	b_log "Creating CPIO archive"
+	pushd $PREFIX_PROG_STRIPPED >/dev/null
+		ls dummyfs uart16550 psh | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+	popd >/dev/null
+
+	# Relink kernel to include newly created cpio archive
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+
+	# Add kernel to boot loader
+	b_log "Adding kernel to boot loader"
+
+	mkdir -p riscv-pk/build
+	pushd riscv-pk/build
+		OLDCFLAGS="$CFLAGS"
+		CFLAGS=""
+	
+		if [ "X${CLEAN}" == "Xclean" ]; then
+
+			#make distclean
+			../configure --host=riscv64-phoenix-elf --with-payload=../../_build/riscv64-virt/prog/phoenix-riscv64-virt.elf --disable-fp-emulation
+		fi
+
+		make ${MAKEFLAGS} all
+		CFLAGS="$OLDCFLAGS"
+	popd
+
+	cp riscv-pk/build/bbl $PREFIX_BOOT/phoenix-riscv64-virt.bbl
+}
+
+
+b_image_target() {
+	b_log "Creating image from $PREFIX_ROOTFS"
+	size=`find ${PREFIX_ROOTFS} -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }'`
+	size=`expr ${size} \* 150 / 100`
+	echo "Filesystem size: $size"
+
+	genext2fs -b $size -d $PREFIX_ROOTFS $PREFIX_BUILD/disk.ext2
+	cp $PREFIX_BUILD/disk.ext2 $PREFIX_BOOT/phoenix-riscv64-virt.disk
+
+}
+
+export -f b_build_target
