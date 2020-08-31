@@ -57,8 +57,8 @@ b_build_target() {
 	# Add kernel to boot loader
 	b_log "Adding kernel to boot loader"
 
-	mkdir -p riscv-pk/build
-	pushd riscv-pk/build
+	mkdir -p riscv-pk/build-${TARGET}
+	pushd riscv-pk/build-${TARGET}
 		OLDCFLAGS="$CFLAGS"
 		CFLAGS=""
 	
@@ -72,7 +72,7 @@ b_build_target() {
 		CFLAGS="$OLDCFLAGS"
 	popd
 
-	cp riscv-pk/build/bbl $PREFIX_BOOT/phoenix-riscv64-virt.bbl
+	cp riscv-pk/build-${TARGET}/bbl $PREFIX_BOOT/phoenix-riscv64-virt.bbl
 }
 
 
