@@ -29,7 +29,7 @@ if [ ! -z "$CLEAN" ]; then
 		for i in ${PREFIX_OPENVPN}/*.patch; do patch -t -p1 < $i; done
 
 	fi
-	OPENVPN_CFLAGS="-std=gnu99"
+	OPENVPN_CFLAGS="-std=gnu99 -I${PREFIX_BUILD}/include"
 #
 # Configure
 #
