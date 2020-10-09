@@ -11,6 +11,8 @@ CROSS=riscv64-phoenix-
 #CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
 #LDFLAGS="-z max-page-size=0x1000" -fno-builtin
 
+#export RISCV_LOADER="bbl"
+export RISCV_LOADER="opensbi"
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 
@@ -54,26 +56,33 @@ b_build_target() {
 	# Relink kernel to include newly created cpio archive
 	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 
+	# Convert kernel to flat binary
+	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin"
+
 	# Add kernel to boot loader
 	b_log "Adding kernel to boot loader"
 	BBL_BUILD_DIR="$PREFIX_BUILD/riscv-pk"
+	OSBI_BUILD_DIR="$PREFIX_BUILD/opensbi"
 
-	mkdir -p "$BBL_BUILD_DIR"
-	pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
-		OLDCFLAGS="$CFLAGS"
-		CFLAGS=""
+	if [ "$RISCV_LOADER" = "bbl" ]; then
+		mkdir -p "$BBL_BUILD_DIR"
+		pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
+			if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
+				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" --disable-fp-emulation
+				touch "$BBL_BUILD_DIR/stamp.configured"
+			fi
 
-		# FIXME: why the not-stripped version?
-		if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
-			"$TOPDIR/riscv-pk/configure" --host=riscv64-phoenix --with-payload="$PREFIX_PROG/phoenix-riscv64-virt.elf" --disable-fp-emulation
-			touch "$BBL_BUILD_DIR/stamp.configured"
-		fi
+			env -i PATH="$PATH" make $MAKEFLAGS all
+		popd > /dev/null
 
-		make ${MAKEFLAGS} all
-		CFLAGS="$OLDCFLAGS"
-	popd >/dev/null
+		cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix-$TARGET.bbl"
+	elif [ "$RISCV_LOADER" = "opensbi" ]; then
+		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin")
 
-	cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix-riscv64-virt.bbl"
+		cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix-$TARGET.osbi"
+	else
+		cp "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin" "$PREFIX_BOOT/."
+	fi
 }
 
 
@@ -84,7 +93,8 @@ b_image_target() {
 	echo "Filesystem size: $size"
 
 	genext2fs -b $size -d "$PREFIX_ROOTFS" "$PREFIX_BUILD/disk.ext2"
-	cp "$PREFIX_BUILD/disk.ext2" "$PREFIX_BOOT/phoenix-riscv64-virt.disk"
+	mv "$PREFIX_BUILD/disk.ext2" "$PREFIX_BOOT/phoenix-$TARGET.disk"
 }
+
 
 export -f b_build_target
