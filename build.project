@@ -45,9 +45,7 @@ fi
 # Project specific build
 #
 b_build() {
-
 	b_build_target
-
 }
 
 #
