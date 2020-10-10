@@ -19,7 +19,7 @@ if [ ! -z "$CLEAN" ]; then
 	mkdir -p "$PREFIX_DROPBEAR_BUILD"
 	mkdir -p "$PREFIX_DROPBEAR_MARKERS"
 	
-	[ -f "$PREFIX_DROPBEAR/${DROPBEAR}.tar.bz2" ] || wget http://matt.ucc.asn.au/dropbear/releases/${DROPBEAR}.tar.bz2 -P "${PREFIX_DROPBEAR}"
+	[ -f "$PREFIX_DROPBEAR/${DROPBEAR}.tar.bz2" ] || wget http://matt.ucc.asn.au/dropbear/releases/${DROPBEAR}.tar.bz2 -P "${PREFIX_DROPBEAR}" --no-check-certificate
 	[ -d "$PREFIX_DROPBEAR_SRC" ] || ( tar jxf "$PREFIX_DROPBEAR/${DROPBEAR}.tar.bz2" -C "${PREFIX_DROPBEAR}" && find -P "$PREFIX_DROPBEAR_MARKERS" -size 0 -type f -name "*.applied" -delete )
 
 	cp $PREFIX_DROPBEAR/localoptions.h $PREFIX_DROPBEAR_BUILD
