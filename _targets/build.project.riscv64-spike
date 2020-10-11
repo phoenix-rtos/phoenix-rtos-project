@@ -1,5 +1,5 @@
 #
-# Shell script for building ia32-qemu project
+# Shell script for building riscv64-spike project
 #
 # Copyright 2018, 2019, 2020 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
@@ -61,7 +61,7 @@ b_build_target() {
 	pushd riscv-pk/build-${TARGET}
 		OLDCFLAGS="$CFLAGS"
 		CFLAGS=""
-	
+
 		if [ "X${CLEAN}" == "Xclean" ]; then
 
 			#make distclean
