@@ -35,5 +35,9 @@ The number of detected cores is presented during kernel initialization or can be
 
 
 ## Running image on regular hardware
+To run the image on a regular hardware please be sure that a target system is equipped with ATA disk supporting PATA interface. The image should be copied to the boot disk using `dd` command (it is assumed that target disk is represented by /dev/sda blok device).
 
+```
+  dd if=_boot/phoenix-ia32-generic.disk of=/dev/sda
+```
 
