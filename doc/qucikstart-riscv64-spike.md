@@ -17,7 +17,7 @@ To run image under spike you should type:
 To run image under qemu you should type:
 
 ```
-  qemu-system-riscv64 -machine spike -serial stdio  -kernel _boot/phoenix-riscv64-spike.bbl
+  qemu-system-riscv64 -machine spike_v1.10 -serial stdio  -kernel _boot/phoenix-riscv64-spike.bbl
 ```
 
 <img src="qemu-riscv64-spike.png" width="700px">
