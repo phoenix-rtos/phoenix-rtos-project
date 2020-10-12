@@ -7,7 +7,7 @@ The disk image can be downloaded from
 To run image under qemu you should type:
 
 ```
-  qemu-system-i386 -hda _boot/phoenix-ia32-generic.disk`
+  qemu-system-i386 -hda _boot/phoenix-ia32-generic.disk
 ```
 
 <img src="qemu-ia32-generic.png" width="600px">
@@ -23,6 +23,15 @@ To launch UN*X environment POSIX emulation server and `ash` shell should be laun
   # posixsrv &`
 ```
 <img src="qemu-ia32-generic-posixsrv.png" width="600px">
+
+Phoenix-RTOS image can be also launched on multiple processor cores. To do this please define number of cores (e.g. 4) using following command.
+
+```
+qemu-system-i386 -hda _boot/phoenix-ia32-generic.disk -smp 4
+```
+The number of detected cores is presented during kernel initialization or can be obtained by counting number of idle threads.
+
+<img src="qemu-ia32-generic-ps-t-smp.png" width="600px">
 
 
 ## Running image on regular hardware
