@@ -1,0 +1,51 @@
+#
+# Shell script for building ia32-qemu project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+
+set -e
+
+CROSS=arm-phoenix-
+LDFLAGS="-z max-page-size=0x1000"
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+
+
+#
+# Project specific build
+#
+b_build_target() {
+	b_log "Building phoenix-rtos-devices"
+	(cd phoenix-rtos-devices; CFLAGS="-DUART_CONSOLE=2"; make $MAKEFLAGS $CLEAN all)
+}
+
+b_image_target() {
+	b_log "Creating image"
+
+	IMG=_boot/phoenix-${TARGET}.bin
+	PROGS="_build/armv7m4-stm32l4x6/prog/"
+
+	phoenix-rtos-build/scripts/mkimg-stm32.sh \
+		$PROGS"phoenix-armv7m4-stm32l4x6.elf" "" $IMG \
+		"""$PROGS"stm32-multi";0""" """$PROGS"dummyfs";0""" """$PROGS"psh";0"""
+}
+
+
+export -f b_build_target
