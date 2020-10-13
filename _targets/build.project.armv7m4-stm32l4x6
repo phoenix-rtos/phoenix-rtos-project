@@ -1,5 +1,5 @@
 #
-# Shell script for building ia32-qemu project
+# Shell script for building armv7m4-stm32l4x6 project
 #
 # Copyright 2018, 2019, 2020 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
@@ -40,11 +40,11 @@ b_image_target() {
 	b_log "Creating image"
 
 	IMG=_boot/phoenix-${TARGET}.bin
-	PROGS="_build/armv7m4-stm32l4x6/prog/"
+	PROGS="_build/${TARGET}/prog"
 
 	phoenix-rtos-build/scripts/mkimg-stm32.sh \
-		$PROGS"phoenix-armv7m4-stm32l4x6.elf" "" $IMG \
-		"""$PROGS"stm32-multi";0""" """$PROGS"dummyfs";0""" """$PROGS"psh";0"""
+		"${PROGS}/phoenix-${TARGET}.elf" "" "${IMG}" \
+		"${PROGS}/stm32-multi;0" "${PROGS}/dummyfs;0" "${PROGS}/psh;0"
 }
 
 
