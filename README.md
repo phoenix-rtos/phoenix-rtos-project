@@ -37,4 +37,4 @@ After the build successfully completes, kernel and disk images will be created a
 
 ### Starting the image
 
-To start the created image on target architecture please see [phoenix-rtos.com/quickstart](http://phoenix-rtos.com/quickstart) quide.
+To start the created image on target architecture please see [../phoenix-rtos-doc/quickstart](http://phoenix-rtos.com/quickstart) quide.
