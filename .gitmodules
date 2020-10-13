@@ -43,3 +43,6 @@
 [submodule "riscv-pk"]
 	path = riscv-pk
 	url = https://github.com/riscv/riscv-pk.git
+[submodule "phoenix-rtos-doc"]
+	path = phoenix-rtos-doc
+	url = https://github.com/phoenix-rtos/phoenix-rtos-doc
