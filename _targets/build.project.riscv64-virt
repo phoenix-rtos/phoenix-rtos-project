@@ -7,7 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-CROSS=riscv64-phoenix-elf-
+CROSS=riscv64-phoenix-
 #CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
 #LDFLAGS="-z max-page-size=0x1000" -fno-builtin
 
