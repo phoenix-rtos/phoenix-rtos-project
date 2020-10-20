@@ -7,8 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-set -e
-
+#TODO: remove
 #TARGET=armv7m4-stm32l4x6
 #TARGET=armv7m7-imxrt105x
 #TARGET=armv7m7-imxrt106x
@@ -16,13 +15,31 @@ set -e
 #TARGET=armv7a7-imx6ull
 #TARGET=ia32-generic
 #TARGET=riscv64-spike
-TARGET=riscv64-virt
+#TARGET=riscv64-virt
 
+# optional args will be printed in red
+b_list_available_targets() {
+    [ "$#" -gt 0 ] && echo -e "\e[1;31m$*\e[0m"
+    echo -e "Please specify a valid traget by setting TARGET variable to one of:"
+    ls -1 _targets/build.project.* | cut -d. -f 3
+}
 
-TARGET_FAMILY=`echo $TARGET | awk -F- '{ print $1 }'`
-TARGET_SUBFAMILY=$TARGET_FAMILY-`echo $TARGET | awk -F- '{ print $2 }'`
+# it's best to provide TARGET by env variable
+if [ -z "$TARGET" ]; then
+    b_list_available_targets "TARGET variable not set"
+    exit 1
+fi
 
-. _targets/build.project.${TARGET_SUBFAMILY}
+TARGET_FAMILY=$(echo "$TARGET" | awk -F- '{ print $1 }')
+TARGET_SUBFAMILY="$(echo "$TARGET" | awk -F- '{ print $1"-"$2 }')"
+
+BUILD_TARGET_FILE="_targets/build.project.${TARGET_SUBFAMILY}"
+if [ ! -f "$BUILD_TARGET_FILE" ]; then
+    b_list_available_targets "TARGET='$TARGET' is unavailable for this project"
+    exit 1
+fi
+
+. "$BUILD_TARGET_FILE"
 
 #
 # Project specific build
