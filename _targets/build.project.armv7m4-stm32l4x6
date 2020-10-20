@@ -5,8 +5,6 @@
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
-set -e
-
 CROSS=arm-phoenix-
 LDFLAGS="-z max-page-size=0x1000"
 
@@ -39,7 +37,7 @@ b_build_target() {
 b_image_target() {
 	b_log "Creating image"
 
-	IMG=_boot/phoenix-${TARGET}.bin
+	IMG="$PREFIX_BOOT"/phoenix-${TARGET}.bin
 	PROGS="_build/${TARGET}/prog"
 
 	phoenix-rtos-build/scripts/mkimg-stm32.sh \

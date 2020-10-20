@@ -5,8 +5,6 @@
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
-set -e
-
 CROSS=arm-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-m7 -mtune=cortex-m7 -mfloat-abi=hard -mthumb\
 	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
@@ -38,49 +36,53 @@ export PORTS_CURL=y
 b_build_target() {
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
-	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
-	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
-	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
-	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
-	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
-	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+	# TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
 
 	b_log "Creating CPIO archive"
-	pushd $PREFIX_PROG_STRIPPED >/dev/null
-		ls psh dummyfs psd imxrt-multi imxrt-flash | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
+		ls psh dummyfs psd imxrt-multi imxrt-flash | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
 	popd >/dev/null
 
 	# Relink kernel to include newly created cpio archive
 	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 
+	# FIXME: build plo out of tree and without clean
 	b_log "Building plo"
 	(cd plo; make clean all)
 }
 
 
 b_add2img() {
-	printf "Copying %s (offs=%dKB)\n" $1 $offs
-	sz=`du -k $1 | awk '{ print $1 }'`
-	dd if=$1 of=$2 seek=$offs bs=1024 >/dev/null 2>&1
-	offs=`expr $offs + $sz + 1`
+	printf "Copying %s (offs=%dKB)\n" "$1" "$offs"
+	sz=$(du -k "$1" | awk '{ print $1 }')
+	dd if="$1" of="$2" seek="$offs" bs=1024 >/dev/null 2>&1
+	offs=$((offs + sz + 1))
 }
 
 
 b_image_target() {
 	b_log "Creating image"
 
-	IMG=_boot/phoenix-${TARGET}.disk
+	IMG="$PREFIX_BOOT/phoenix-${TARGET}.disk"
 
 	# Loader
 	offs=0
-	b_add2img ${PREFIX_PROG_STRIPPED}plo-${TARGET}.img $IMG
+	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET}.img" "$IMG"
 
 	# Kernel
 	offs=32
-	b_add2img ${PREFIX_PROG}phoenix-${TARGET}.elf $IMG
+	b_add2img "${PREFIX_PROG}phoenix-${TARGET}.elf" "$IMG"
 
 	# Programs
-	b_add2img $PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio $IMG
+	b_add2img "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" "$IMG"
 }
 
 

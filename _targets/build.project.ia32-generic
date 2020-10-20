@@ -5,8 +5,6 @@
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
-set -e
-
 CROSS=i386-pc-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin"
 LDFLAGS="-z max-page-size=0x1000"
@@ -39,35 +37,38 @@ b_build_target() {
 
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
-	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
-	ln -f $PREFIX_ROOTFS/bin/{psh,bind}
-	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
-	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
-	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
-	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
-	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
-	ln -f $PREFIX_ROOTFS/bin/{psh,top}
+	# TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
 
 	b_log "Creating CPIO archive"
-	pushd $PREFIX_PROG_STRIPPED
-		ls pc-tty pc-ata psh | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
-	popd
+	pushd "$PREFIX_PROG_STRIPPED" > /dev/null || exit 1
+		ls pc-tty pc-ata psh | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
+	popd > /dev/null
 
 	# Relink kernel to include newly created cpio archive
 	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
 
+	# FIXME: build plo out of tree and without clean
+	b_log "Building plo"
 	(cd plo/ia32; make clean all)
 }
 
 
 function b_add2img {
 	# Assume sector size = 512 bytes
-	sector=`expr $offs \* 2`
-	printf "Copying %s (offs=%dKB, sector=0x%x)\n" $1 $offs $sector
+	sector=$((offs * 2))
+	printf "Copying %s (offs=%dKB, sector=0x%x)\n" "$1" "$offs" "$sector"
 
-	sz=`du -k $1 | awk '{ print $1 }'`
-	dd if=$1 of=$2 seek=$offs bs=1024 >/dev/null 2>&1
-	offs=`expr $offs + $sz + 1`
+	sz=$(du -k "$1" | awk '{ print $1 }')
+	dd if="$1" of="$2" seek="$offs" bs=1024 >/dev/null 2>&1
+	offs=$((offs + sz + 1))
 }
 
 
@@ -80,28 +81,28 @@ b_image_target() {
 	IMG=$PREFIX_BOOT/phoenix-ia32-generic.disk
 
 	# Adding Phoenix-RTOS Loader
-	cp $PLO $IMG
-	sz=`du -k $PLO | awk '{ print $1 }'`
+	cp "$PLO" "$IMG"
+	sz=$(du -k "$PLO" | awk '{ print $1 }')
 	echo "Loader size: ${sz}KB"
 	echo "Adding padding after plo"
-	padsz=`expr 32 - $sz`
-	dd if=/dev/zero of=$IMG seek=$sz bs=1024 count=$padsz >/dev/null 2>&1
+	padsz=$((32 - sz))
+	dd if=/dev/zero of="$IMG" seek="$sz" bs=1024 count="$padsz" >/dev/null 2>&1
 	offs=32
 
 	# Adding Phoenix-RTOS kernel
-	b_add2img $KERNEL $IMG
-	sz=`du -k $KERNEL | awk '{ print $1 }'`
+	b_add2img "$KERNEL" "$IMG"
+	sz=$(du -k "$KERNEL" | awk '{ print $1 }')
 	echo "Kernel size: ${sz}KB"
 	echo "Adding padding after kernel"
-	padsz=`expr 2048 - $sz`
-	dd if=/dev/zero of=$IMG seek=`expr 32 + $sz` bs=1024 count=$padsz >/dev/null 2>&1
+	padsz=$((2048 - sz))
+	dd if=/dev/zero of="$IMG" seek="$((32 + sz))" bs=1024 count="$padsz" >/dev/null 2>&1
 	offs=2048
 
 	# Adding ext2 rootfs
-	sz=`expr 128 \* 1024`
+	sz=$((128 * 1024))
 	echo "Filesystem size: ${sz}KB"
-	genext2fs -b $sz -i 2048 -d $PREFIX_ROOTFS $ROOTFS
-	b_add2img $ROOTFS $IMG
+	genext2fs -b $sz -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
+	b_add2img "$ROOTFS" "$IMG"
 
 #	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
 }
