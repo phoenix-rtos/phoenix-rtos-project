@@ -1,9 +1,11 @@
+#!/bin/bash
 #
 # Shell script for building armv7a7-imx6ull project
 #
 # Copyright 2018, 2019, 2020 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 CROSS=arm-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mthumb\

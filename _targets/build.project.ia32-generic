@@ -1,9 +1,11 @@
+#!/bin/bash
 #
 # Shell script for building ia32-generic project
 #
 # Copyright 2018, 2019 Phoenix Systems
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 CROSS=i386-pc-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin"
