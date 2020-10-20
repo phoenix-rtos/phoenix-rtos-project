@@ -1,0 +1,56 @@
+# vim:sw=2:ts=2
+# action name
+name: 'phoenix-build'
+
+# action author
+author: 'Marek Białowąs <marek.bialowas@phoenix-rtos.com>'
+
+# action description
+description: 'Builds Phoenix-RTOS based projects'
+
+# action input values
+inputs:
+  target:
+    description: 'Target env variable'
+    default: 'ia32-generic'
+    required: false
+  # github doesn't allow array of arguments, we need to pass them one-by-one
+  param1:
+    description: 'Parameters to the main build script - 1st param'
+    default: 'clean'
+    required: false
+  param2:
+    description: 'Parameters to the main build script - 2nd param'
+    default: ''
+    required: false
+  param3:
+    description: 'Parameters to the main build script - 3rd param'
+    default: ''
+    required: false
+  param4:
+    description: 'Parameters to the main build script - 4th param'
+    default: ''
+    required: false
+  param5:
+    description: 'Parameters to the main build script - 5th param'
+    default: ''
+    required: false
+
+# action runner
+runs:
+  using: 'docker'
+  image: 'phoenixrtos/build'
+  env:
+    TARGET: ${{ inputs.target }}
+  args:
+    - ${{ inputs.param1 }}
+    - ${{ inputs.param2 }}
+    - ${{ inputs.param3 }}
+    - ${{ inputs.param4 }}
+    - ${{ inputs.param5 }}
+
+
+# branding
+branding:
+  icon: terminal
+  color: green
