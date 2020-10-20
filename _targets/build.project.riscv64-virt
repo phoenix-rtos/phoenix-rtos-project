@@ -58,23 +58,24 @@ b_build_target() {
 
 	# Add kernel to boot loader
 	b_log "Adding kernel to boot loader"
+	BBL_BUILD_DIR="$PREFIX_BUILD/riscv-pk"
 
-	mkdir -p riscv-pk/build-${TARGET}
-	pushd riscv-pk/build-${TARGET}
+	mkdir -p "$BBL_BUILD_DIR"
+	pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
 		OLDCFLAGS="$CFLAGS"
 		CFLAGS=""
 
-		if [ "X${CLEAN}" == "Xclean" ]; then
-
-			#make distclean
-			../configure --host=riscv64-phoenix-elf --with-payload=../../_build/riscv64-virt/prog/phoenix-riscv64-virt.elf --disable-fp-emulation
+		# FIXME: why the not-stripped version?
+		if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
+			"$TOPDIR/riscv-pk/configure" --host=riscv64-phoenix --with-payload="$PREFIX_PROG/phoenix-riscv64-virt.elf" --disable-fp-emulation
+			touch "$BBL_BUILD_DIR/stamp.configured"
 		fi
 
 		make ${MAKEFLAGS} all
 		CFLAGS="$OLDCFLAGS"
 	popd >/dev/null
 
-	cp riscv-pk/build-${TARGET}/bbl $PREFIX_BOOT/phoenix-riscv64-virt.bbl
+	cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix-riscv64-virt.bbl"
 }
 
 
