@@ -5,8 +5,6 @@
 # Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
 #
 
-set -e
-
 CROSS=riscv64-phoenix-elf-
 #CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
 #LDFLAGS="-z max-page-size=0x1000" -fno-builtin
@@ -38,17 +36,19 @@ b_build_target() {
 
 	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
 
-	ln -f $PREFIX_ROOTFS/bin/{psh,mount}
-	ln -f $PREFIX_ROOTFS/bin/{psh,bind}
-	ln -f $PREFIX_ROOTFS/bin/{psh,ps}
-	ln -f $PREFIX_ROOTFS/bin/{psh,mem}
-	ln -f $PREFIX_ROOTFS/bin/{psh,perf}
-	ln -f $PREFIX_ROOTFS/bin/{psh,sync}
-	ln -f $PREFIX_ROOTFS/bin/{psh,reboot}
+	#TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
 
 	b_log "Creating CPIO archive"
-	pushd $PREFIX_PROG_STRIPPED >/dev/null
-		ls dummyfs spike-tty psh | cpio -H newc -ov >$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio 2>/dev/null
+	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
+		ls dummyfs spike-tty psh | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
 	popd >/dev/null
 
 	# Relink kernel to include newly created cpio archive
@@ -70,7 +70,7 @@ b_build_target() {
 
 		make ${MAKEFLAGS} all
 		CFLAGS="$OLDCFLAGS"
-	popd
+	popd >/dev/null
 
 	cp riscv-pk/build-${TARGET}/bbl $PREFIX_BOOT/phoenix-riscv64-spike.bbl
 }
@@ -78,13 +78,12 @@ b_build_target() {
 
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
-	size=`find ${PREFIX_ROOTFS} -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }'`
-	size=`expr ${size} \* 150 / 100`
+	size=$(find "${PREFIX_ROOTFS}" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
+	size=$((size * 150 / 100))
 	echo "Filesystem size: $size"
 
-	genext2fs -b $size -d $PREFIX_ROOTFS $PREFIX_BUILD/disk.ext2
-	cp $PREFIX_BUILD/disk.ext2 $PREFIX_BOOT/phoenix-riscv64-spike.disk
-
+	genext2fs -b $size -d "$PREFIX_ROOTFS" "$PREFIX_BUILD/disk.ext2"
+	cp "$PREFIX_BUILD/disk.ext2" "$PREFIX_BOOT/phoenix-riscv64-spike.disk"
 }
 
 export -f b_build_target
