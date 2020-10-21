@@ -37,8 +37,6 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
-
 	# TODO: move to psh install target
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}

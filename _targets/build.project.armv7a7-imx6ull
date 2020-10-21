@@ -36,7 +36,8 @@ export PORTS_CURL=y
 # Project specific build
 #
 b_build_target() {
-	mkdir -p "$PREFIX_ROOTFS"/dev "$PREFIX_ROOTFS"/local "$PREFIX_ROOTFS"/data "$PREFIX_ROOTFS"/mnt "$PREFIX_ROOTFS"/var
+
+	b_log "Building sample project for $TARGET"
 
 	# TODO: move to psh install target
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
