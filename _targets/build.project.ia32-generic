@@ -60,51 +60,31 @@ b_build_target() {
 	(cd plo/ia32; make clean all)
 }
 
-
-function b_add2img {
-	# Assume sector size = 512 bytes
-	sector=$((offs * 2))
-	printf "Copying %s (offs=%dKB, sector=0x%x)\n" "$1" "$offs" "$sector"
-
-	sz=$(du -k "$1" | awk '{ print $1 }')
-	dd if="$1" of="$2" seek="$offs" bs=1024 >/dev/null 2>&1
-	offs=$((offs + sz + 1))
-}
-
-
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
-	PLO=plo/ia32/plo
-	KERNEL=$PREFIX_PROG/phoenix-ia32-generic.elf
-	ROOTFS=$PREFIX_BUILD/disk.ext2
-	IMG=$PREFIX_BOOT/phoenix-ia32-generic.disk
+	PLO="plo/ia32/plo"
+	KERNEL="$PREFIX_PROG/phoenix-ia32-generic.elf"
+	ROOTFS="$PREFIX_BUILD/disk.ext2"
+	IMG="$PREFIX_BUILD/phoenix-ia32-generic.disk"
+	IMG_DST="$PREFIX_BOOT/phoenix-ia32-generic.disk"
 
-	# Adding Phoenix-RTOS Loader
-	cp "$PLO" "$IMG"
-	sz=$(du -k "$PLO" | awk '{ print $1 }')
-	echo "Loader size: ${sz}KB"
-	echo "Adding padding after plo"
-	padsz=$((32 - sz))
-	dd if=/dev/zero of="$IMG" seek="$sz" bs=1024 count="$padsz" >/dev/null 2>&1
-	offs=32
+	# partitions layout: (0kB)[MBR+plo] (32kB)[kernel] (2MB)[rootfs]
+	#FIXME: MBR should be constructed on per-project basic (here) instead of being embedded in plo
 
-	# Adding Phoenix-RTOS kernel
-	b_add2img "$KERNEL" "$IMG"
-	sz=$(du -k "$KERNEL" | awk '{ print $1 }')
-	echo "Kernel size: ${sz}KB"
-	echo "Adding padding after kernel"
-	padsz=$((2048 - sz))
-	dd if=/dev/zero of="$IMG" seek="$((32 + sz))" bs=1024 count="$padsz" >/dev/null 2>&1
-	offs=2048
+	# first 2MBs: plo + kernel
+	dd of="$IMG" if=/dev/zero bs=2M count=1 >/dev/null 2>&1
+	dd of="$IMG" if="$PLO" bs=1M conv=notrunc >/dev/null 2>&1
+	dd of="$IMG" if="$KERNEL" seek=1 bs=32k conv=notrunc >/dev/null 2>&1
 
 	# Adding ext2 rootfs
-	sz=$((128 * 1024))
-	echo "Filesystem size: ${sz}KB"
-	genext2fs -b $sz -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
-	b_add2img "$ROOTFS" "$IMG"
+	ext2_size=$((128 * 1024))
+	echo "Root filesystem size: ${ext2_size}KB"
+	genext2fs -b $ext2_size -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
+	dd of="$IMG" if="$ROOTFS" bs=2M seek=1 status=none
 
-#	cp _build/phoenix-ia32-generic.elf $PREFIX_BOOT
+	# produce image only if it's complete (no errors in the lines above)
+	mv "$IMG" "$IMG_DST"
 }
 
 b_update_pkg() { :; }
