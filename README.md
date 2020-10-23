@@ -55,7 +55,7 @@ You need to compile the toolchains Yourself:
     ```bash
     export PATH=$PATH:~/toolchains/i386-pc-phoenix/i386-pc-phoenix/bin/
     export PATH=$PATH:~/toolchains/arm-phoenix/arm-phoenix/bin/
-    export PATH=$PATH:~/toolchains/riscv64-phoenix-elf/riscv64-phoenix-elf/bin/
+    export PATH=$PATH:~/toolchains/riscv64-phoenix/riscv64-phoenix/bin/
     ```
 
 2. Build project - provide a `TARGET` via ENV variable:
