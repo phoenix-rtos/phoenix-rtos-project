@@ -16,7 +16,7 @@ elif [ $TARGET_FAMILY == "armv7a7" ]; then
 	HOST="arm-phoenix"
 elif [ $TARGET_FAMILY == "riscv64" ]; then
 	HOST_TARGET="riscv64"
-	HOST="riscv64-phoenix-elf"
+	HOST="riscv64-phoenix"
 else
 	HOST_TARGET="$TARGET_FAMILY"
 	HOST="${TARGET_FAMILY}-phoenix"
