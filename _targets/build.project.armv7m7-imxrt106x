@@ -7,6 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+# TODO: remove CFLAGS and LDFLAGS and use ones from phoenix-rtos-build/Makefile.armv7m
 CROSS=arm-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-m7 -mtune=cortex-m7 -mfloat-abi=hard -mthumb\
 	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
@@ -32,9 +33,43 @@ export PORTS_JANSSON=y
 export PORTS_CURL=y
 
 
+
+#
+# Platform dependent parameters
+#
+SIZE_PAGE=$((0x200))
+PAGE_MASK=$((0xfffffe00))
+KERNEL_OFFS=$((0x9000))
+
+
+#
+# List of programs located in storage
+#
+export PROGS
+
+
+
 #
 # Project specific build
 #
+
+
+b_mkscript() {
+	ksz=$((($(stat -c "%s" ${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf) + $SIZE_PAGE - 1)&$PAGE_MASK))
+	poffs=$(($KERNEL_OFFS + $ksz))
+
+	for prog in "${PROGS[@]}"; do
+		psz=$((($(stat -c "%s" ${PREFIX_PROG_STRIPPED}$prog) + $SIZE_PAGE - 1)&$PAGE_MASK))
+		printf "@%s(%x:%x)\n" $prog $poffs $psz >> $PREFIX_BUILD/plo/script.plo
+		((poffs+=$psz))
+	done
+
+	cat _targets/armv7m7-imxrt106x.plo >> $PREFIX_BUILD/plo/script.plo
+	printf "\0" >> $PREFIX_BUILD/plo/script.plo
+}
+
+
+
 b_build_target() {
 
 	b_log "Building sample project for $TARGET"
@@ -49,43 +84,46 @@ b_build_target() {
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
 
-	b_log "Creating CPIO archive"
-	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
-		ls psh dummyfs psd imxrt-multi imxrt-flash | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
-	popd >/dev/null
 
-	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+	PROGS=("dummyfs" "imxrt-multi" "psh" "imxrt-flash")
 
 	# FIXME: build plo out of tree and without clean
 	b_log "Building plo"
-	(cd plo; make clean all)
+	(cd plo; make $MAKEFLAGS clean all)
+
+	b_mkscript
+
+	b_log "Relink plo to include the new script"
+	(cd plo && make $MAKEFLAGS all)
 }
 
 
 b_add2img() {
-	printf "Copying %s (offs=%dKB)\n" "$1" "$offs"
-	sz=$(du -k "$1" | awk '{ print $1 }')
-	dd if="$1" of="$2" seek="$offs" bs=1024 >/dev/null 2>&1
-	offs=$((offs + sz + 1))
+	printf "Copying %s (offs=%dB)\n" $1 $OFFSET
+	dd if=$1 of=$2 bs=1 seek=$OFFSET conv=notrunc 2>/dev/null
+	SZ=$((($(stat -c "%s" $1) + $SIZE_PAGE - 1)&$PAGE_MASK))
+	OFFSET=$(($OFFSET+$SZ))
 }
 
 
 b_image_target() {
 	b_log "Creating image"
 
-	IMG="$PREFIX_BOOT/phoenix-${TARGET}.disk"
+	IMG=_boot/phoenix-${TARGET}.disk
+	rm -f $IMG
 
 	# Loader
-	offs=0
-	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET}.img" "$IMG"
+	OFFSET=0
+	b_add2img ${PREFIX_PROG_STRIPPED}plo-${TARGET}.img $IMG
 
 	# Kernel
-	offs=32
-	b_add2img "${PREFIX_PROG}phoenix-${TARGET}.elf" "$IMG"
+	OFFSET=$KERNEL_OFFS
+	b_add2img ${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf $IMG
 
-	# Programs
-	b_add2img "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" "$IMG"
+	#Programs
+	for prog in "${PROGS[@]}"; do
+		b_add2img ${PREFIX_PROG_STRIPPED}$prog $IMG
+	done
 }
 
 
