@@ -39,7 +39,7 @@ export PORTS_CURL=y
 #
 SIZE_PAGE=$((0x200))
 PAGE_MASK=$((0xfffffe00))
-KERNEL_OFFS=$((0x9000))
+KERNEL_OFFS=$((0x11000))
 
 
 #
@@ -48,24 +48,23 @@ KERNEL_OFFS=$((0x9000))
 export PROGS
 
 
-
 #
 # Project specific build
 #
 
 
 b_mkscript() {
-	ksz=$((($(stat -c "%s" ${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf) + $SIZE_PAGE - 1)&$PAGE_MASK))
-	poffs=$(($KERNEL_OFFS + $ksz))
+	ksz=$((($(stat -c "%s" "${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
+	poffs=$((KERNEL_OFFS + ksz))
 
 	for prog in "${PROGS[@]}"; do
-		psz=$((($(stat -c "%s" ${PREFIX_PROG_STRIPPED}$prog) + $SIZE_PAGE - 1)&$PAGE_MASK))
-		printf "@%s(%x:%x)\n" $prog $poffs $psz >> $PREFIX_BUILD/plo/script.plo
-		((poffs+=$psz))
+		psz=$((($(stat -c "%s" "${PREFIX_PROG_STRIPPED}$prog") + SIZE_PAGE - 1) & PAGE_MASK))
+		printf "@%s(%x:%x)\n" "$prog" "$poffs" "$psz" >> "$PREFIX_BUILD/plo/script.plo"
+		((poffs+=psz))
 	done
 
-	cat _targets/armv7m7-imxrt106x.plo >> $PREFIX_BUILD/plo/script.plo
-	printf "\0" >> $PREFIX_BUILD/plo/script.plo
+	cat _targets/armv7m7-imxrt106x.plo >> "$PREFIX_BUILD/plo/script.plo"
+	printf "\0" >> "$PREFIX_BUILD/plo/script.plo"
 }
 
 
@@ -95,14 +94,16 @@ b_build_target() {
 
 	b_log "Relink plo to include the new script"
 	(cd plo && make $MAKEFLAGS all)
+
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET}.img" _boot/
 }
 
 
 b_add2img() {
-	printf "Copying %s (offs=%dB)\n" $1 $OFFSET
-	dd if=$1 of=$2 bs=1 seek=$OFFSET conv=notrunc 2>/dev/null
-	SZ=$((($(stat -c "%s" $1) + $SIZE_PAGE - 1)&$PAGE_MASK))
-	OFFSET=$(($OFFSET+$SZ))
+	printf "Copying %s (offs=%dB)\n" "$1" "$OFFSET"
+	dd if="$1" of="$2" bs=1 seek="$OFFSET" conv=notrunc 2>/dev/null
+	SZ=$((($(stat -c "%s" "$1") + SIZE_PAGE - 1) & PAGE_MASK))
+	OFFSET=$((OFFSET + SZ))
 }
 
 
@@ -110,19 +111,19 @@ b_image_target() {
 	b_log "Creating image"
 
 	IMG=_boot/phoenix-${TARGET}.disk
-	rm -f $IMG
+	rm -f "$IMG"
 
 	# Loader
 	OFFSET=0
-	b_add2img ${PREFIX_PROG_STRIPPED}plo-${TARGET}.img $IMG
+	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET}.img" "$IMG"
 
 	# Kernel
-	OFFSET=$KERNEL_OFFS
-	b_add2img ${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf $IMG
+	OFFSET="$KERNEL_OFFS"
+	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf" "$IMG"
 
 	#Programs
 	for prog in "${PROGS[@]}"; do
-		b_add2img ${PREFIX_PROG_STRIPPED}$prog $IMG
+		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
 	done
 }
 
