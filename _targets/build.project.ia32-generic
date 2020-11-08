@@ -73,15 +73,15 @@ b_image_target() {
 	#FIXME: MBR should be constructed on per-project basic (here) instead of being embedded in plo
 
 	# first 2MBs: plo + kernel
-	dd of="$IMG" if=/dev/zero bs=2M count=1 >/dev/null 2>&1
-	dd of="$IMG" if="$PLO" bs=1M conv=notrunc >/dev/null 2>&1
-	dd of="$IMG" if="$KERNEL" seek=1 bs=32k conv=notrunc >/dev/null 2>&1
+	dd of="$IMG" if=/dev/zero bs=2097152 count=1 >/dev/null 2>&1
+	dd of="$IMG" if="$PLO" bs=10486576 conv=notrunc >/dev/null 2>&1
+	dd of="$IMG" if="$KERNEL" seek=1 bs=32768 conv=notrunc >/dev/null 2>&1
 
 	# Adding ext2 rootfs
 	ext2_size=$((128 * 1024))
 	echo "Root filesystem size: ${ext2_size}KB"
 	genext2fs -b $ext2_size -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
-	dd of="$IMG" if="$ROOTFS" bs=2M seek=1 status=none
+	dd of="$IMG" if="$ROOTFS" bs=2097152 seek=1 >/dev/null 2>&1
 
 	# produce image only if it's complete (no errors in the lines above)
 	mv "$IMG" "$IMG_DST"
