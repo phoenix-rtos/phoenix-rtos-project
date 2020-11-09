@@ -4,7 +4,7 @@
 
 Phoenix-RTOS is a scalable real-time operating system for IoT. It is based on its own microkernel and can be used either on small devices based on microcontrollers and on advanced computer systems based on multiple processors and equipped with gigabytes of RAM.
 
-The POSIX application environment can be emulated to enable the execution of regular UN*X applications. The ARINC653 execution environment (APEX), advanced partitioning and DO-178C certification packaged for aerospace applications are under development.
+The POSIX application environment can be emulated to enable the execution of regular UN*X applications. The ARINC653 execution environment (APEX), advanced partitioning and DO-178C certification package for aerospace applications are under development.
 
 Phoenix-RTOS supports multiple architectures, including ARM Cortex-M, ARM Cortex-A, Intel x86, RISC-V and some popular microcontrollers and reference boards. The system is still under development but it was implemented in numerous Smart Utility appliances e.g. in smart gas meters, smart energy meters and data concetrators (DCU).
 
