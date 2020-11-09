@@ -2,7 +2,15 @@
 name: ci
 
 # on events
-on: ['push', 'pull_request']
+on:
+  push:
+    branches:
+      - master
+      - posix_rev
+  pull_request:
+    branches:
+      - master
+      - posix_rev
 
 # jobs
 jobs:
