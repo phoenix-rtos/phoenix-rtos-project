@@ -2,68 +2,22 @@
 
 # phoenix-rtos-project
 
-Sample project using Phoenix-RTOS. Built and tested on minimal clean installation of Ubuntu 18.04.3 LTS for desktops.
+Phoenix-RTOS is a scalable real-time operating system for IoT devices. It is based on its own microkernel and can be used either on small devices based on microcontrollers and on advanced computer systems based on multiple processors and equipped with gigabytes of RAM.
 
-## Obtaining sources
+The POSIX application environment can be emulated to enable the execution of regular UN*X application. The ARINC653 execution environment (APEX), advanced partitioning and DO-178C certification packaged for aerospace applications are under development.
 
-Clone the repository **recursively** (to get the submodules):
-```bash
-git clone --recursive https://github.com/phoenix-rtos/phoenix-rtos-project.git
-```
+Phoenix-RTOS supports multiple architecture, including ARM Cortex-M, ARM Cortex-A, Intel x86, RISC-V and some popoular microcontrollers and reference boards. The system is still under development but it was implemented in numerous Smart Utility appliances e.g. in smart gas meters, smart energy meters and data concetrators (DCU).
+
+This repository contains sample Phoenix-RTOS project. It aggregates all system components - kernel, standard library, device drivers, filesystems, loader, building tools. After building for target platform the final image is created and can by run on hardware or on emulators. The project was built and tested on minimal clean installation of Ubuntu 18.04.3 LTS for desktops.
 
 ## Building
+The building process was described in [phoenix-rtos-doc/building/](https://github.com/phoenix-rtos/phoenix-rtos-doc/building/README.md).
 
-### Available targets
-If You don't provide a valid `TARGET` via ENV, all possible targets will be listed, eg:
+## Running
+To launch the created image on target architecture please see [phoenix-rtos-doc/quickstart/](https://github.com/phoenix-rtos/phoenix-rtos-doc/quickstart/README.md).
 
-```bash
-$ ./phoenix-rtos-build/build.sh
-TARGET variable not set
-Please specify a valid traget by setting TARGET variable to one of:
-armv7a7-imx6ull
-armv7m4-stm32l4x6
-armv7m7-imxrt105x
-armv7m7-imxrt106x
-ia32-generic
-riscv64-spike
-riscv64-virt
-```
+## Documentation
+Phoenix-RTOS philosophy, architecture and insights can be found here [phoenix-rtos-doc/](https://github.com/phoenix-rtos/phoenix-rtos-doc/README.md).
 
-### Using docker
-
-This is the quickest way to start development - all necessary tools are distributed in docker image.
-
-To build - provide a `TARGET` via ENV variable:
-```bash
-cd phoenix-rtos-project/
-TARGET=ia32-generic ./docker-build.sh clean all
-```
-
-### Using native toolchain
-
-You need to compile the toolchains Yourself:
-1. Build and install toolchains for all required target architectures:
-   - Build the toolchain:
-    ```bash
-    cd phoenix-rtos-project
-    (cd phoenix-rtos-build/toolchain/ && ./build-toolchain.sh i386-pc-phoenix ~/toolchains/i386-pc-phoenix)
-    (cd phoenix-rtos-build/toolchain/ && ./build-toolchain.sh arm-phoenix ~/toolchains/arm-phoenix)
-    (cd phoenix-rtos-build/toolchain/ && ./build-toolchain.sh riscv64-phoenix ~/toolchains/riscv64-phoenix)
-    ```
-
-   - Add toolchain binaries to PATH variable:
-    ```bash
-    export PATH=$PATH:~/toolchains/i386-pc-phoenix/i386-pc-phoenix/bin/
-    export PATH=$PATH:~/toolchains/arm-phoenix/arm-phoenix/bin/
-    export PATH=$PATH:~/toolchains/riscv64-phoenix/riscv64-phoenix/bin/
-    ```
-
-2. Build project - provide a `TARGET` via ENV variable:
-```bash
-TARGET=ia32-generic ./phoenix-rtos-build/build.sh clean all
-```
-After the build successfully completes, kernel and disk images will be created and placed in the *_boot* directory.
-
-## Starting the image
-
-To start the created image on target architecture please see [phoenix-rtos-doc/quickstart](https://github.com/phoenix-rtos/phoenix-rtos-doc/tree/master/quickstart) guide.
+## Product website
+Phoenix-RTOS website: [phoenix-rtos.com](https://phoenix-rtos.com).
