@@ -11,13 +11,13 @@ Phoenix-RTOS supports multiple architecture, including ARM Cortex-M, ARM Cortex-
 This repository contains sample Phoenix-RTOS project. It aggregates all system components - kernel, standard library, device drivers, filesystems, loader, building tools. After building for target platform the final image is created and can by run on hardware or on emulators. The project was built and tested on minimal clean installation of Ubuntu 18.04.3 LTS for desktops.
 
 ## Building
-The building process was described in [phoenix-rtos-doc/building/](https://github.com/phoenix-rtos/phoenix-rtos-doc/building/README.md).
+The building process was described in [phoenix-rtos-doc/building/](phoenix-rtos-doc/building/README.md).
 
 ## Running
-To launch the created image on target architecture please see [phoenix-rtos-doc/quickstart/](https://github.com/phoenix-rtos/phoenix-rtos-doc/quickstart/README.md).
+To launch the created image on target architecture please see [phoenix-rtos-doc/quickstart/](phoenix-rtos-doc/quickstart/README.md).
 
 ## Documentation
-Phoenix-RTOS philosophy, architecture and insights can be found here [phoenix-rtos-doc/](https://github.com/phoenix-rtos/phoenix-rtos-doc/README.md).
+Phoenix-RTOS philosophy, architecture and insights can be found here [phoenix-rtos-doc/](phoenix-rtos-doc/README.md).
 
 ## Product website
 Phoenix-RTOS website: [phoenix-rtos.com](https://phoenix-rtos.com).
