@@ -96,6 +96,7 @@ b_build_target() {
 	(cd plo && make $MAKEFLAGS all)
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET}.img" _boot/
+	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET}.sdp" _boot/
 }
 
 
