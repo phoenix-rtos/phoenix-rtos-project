@@ -3,7 +3,7 @@
 # Shell script for building armv7m7-imxrt105x, armv7m7-imxrt106x project
 #
 # Copyright 2018, 2019, 2020 Phoenix Systems
-# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski, Hubert Buczynski
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
@@ -43,18 +43,14 @@ KERNEL_OFFS=$((0x11000))
 
 
 #
-# List of programs located in storage
-#
-export PROGS
-
-
-#
 # Project specific build
 #
 
+PROGS=("dummyfs" "imxrt-multi" "psh" "imxrt-flash")
+
 
 b_mkscript() {
-	ksz=$((($(stat -c "%s" "${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
+	ksz=$((($(stat -c "%s" "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
 	poffs=$((KERNEL_OFFS + ksz))
 
 	for prog in "${PROGS[@]}"; do
@@ -84,8 +80,6 @@ b_build_target() {
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
 
 
-	PROGS=("dummyfs" "imxrt-multi" "psh" "imxrt-flash")
-
 	# FIXME: build plo out of tree and without clean
 	b_log "Building plo"
 	(cd plo; make $MAKEFLAGS clean all)
@@ -95,7 +89,8 @@ b_build_target() {
 	b_log "Relink plo to include the new script"
 	(cd plo && make $MAKEFLAGS all)
 
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET}.img" _boot/
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
+	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" _boot/
 }
 
 
@@ -115,11 +110,11 @@ b_image_target() {
 
 	# Loader
 	OFFSET=0
-	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET}.img" "$IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$IMG"
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
-	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET}.elf" "$IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$IMG"
 
 	#Programs
 	for prog in "${PROGS[@]}"; do
