@@ -8,7 +8,8 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 CROSS=arm-phoenix-
-LDFLAGS="-z max-page-size=0x1000"
+
+export BOARD_CONFIG=" -DUART_CONSOLE=2 -DTTY2=1 "
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
@@ -32,8 +33,7 @@ export PORTS_CURL=n
 # Project specific build
 #
 b_build_target() {
-	b_log "Building phoenix-rtos-devices"
-	(cd phoenix-rtos-devices; CFLAGS="-DUART_CONSOLE=2"; make $MAKEFLAGS $CLEAN all)
+	:
 }
 
 b_image_target() {
@@ -44,7 +44,7 @@ b_image_target() {
 
 	phoenix-rtos-build/scripts/mkimg-stm32.sh \
 		"${PROGS}/phoenix-${TARGET}.elf" "" "${IMG}" \
-		"${PROGS}/stm32-multi;0" "${PROGS}/dummyfs;0" "${PROGS}/psh;0"
+		"${PROGS}/stm32-multi;17" "${PROGS}/dummyfs;17" "${PROGS}/psh;17"
 }
 
 
