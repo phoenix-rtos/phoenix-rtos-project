@@ -6,7 +6,7 @@ if [ $(uname) = "Darwin" ]; then
 	b_log "Building mtd-utils"
 
 	PREFIX_MTD_UTILS=${TOPDIR}/mtd-utils
-	PREFIX_MTD_UTILS_BUILD=${TOPDIR}/_build/host/mtd-utils
+	PREFIX_MTD_UTILS_BUILD=${TOPDIR}/_build/host-pc/mtd-utils
 
 	mkdir -p $PREFIX_MTD_UTILS_BUILD
 
@@ -24,9 +24,9 @@ if [ $(uname) = "Darwin" ]; then
 
 	make mkfs.jffs2
 	
-	mkdir -p ${TOPDIR}/_build/host/prog
-	mkdir -p ${TOPDIR}/_build/host/prog.stripped
-	cp mkfs.jffs2 ${TOPDIR}/_build/host/prog/
-	cp mkfs.jffs2 ${TOPDIR}/_build/host/prog.stripped/
+	mkdir -p ${TOPDIR}/_build/host-pc/prog
+	mkdir -p ${TOPDIR}/_build/host-pc/prog.stripped
+	cp mkfs.jffs2 ${TOPDIR}/_build/host-pc/prog/
+	cp mkfs.jffs2 ${TOPDIR}/_build/host-pc/prog.stripped/
 	popd
 fi
