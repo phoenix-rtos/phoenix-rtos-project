@@ -11,7 +11,8 @@ CROSS=i386-pc-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin"
 LDFLAGS="-z max-page-size=0x1000"
 
-export CONSOLE=vga
+: ${CONSOLE=vga}
+export CONSOLE
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 
