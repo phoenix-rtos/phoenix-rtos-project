@@ -1,0 +1,3 @@
+map ddr 100000 900000 R+W+E
+kernel com1
+go!

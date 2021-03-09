@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Shell script for building armv7a9-zynq7000 project
+#
+# Copyright 2021 Phoenix Systems
+# Author: Hubert Buczynski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+
+b_build_target() {
+	echo "b_build_target"
+
+	cat _targets/armv7a9-zynq7000.plo >> "$PREFIX_BUILD/plo/script.plo"
+	printf "\0" >> "$PREFIX_BUILD/plo/script.plo"
+
+	b_log "Building plo"
+	(cd plo; make $MAKEFLAGS all)
+
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
+	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" _boot/
+}
+
+
+b_add2img() {
+	echo "b_add2img"
+}
+
+
+b_image_target() {
+	echo "b_image_target"
+}
+
+
+export -f b_build_target
