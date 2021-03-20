@@ -54,10 +54,12 @@ while [ "$#" -gt 0 ]; do
 		# Add VirtIO GPU device
 		-virtio-gpu|-vgpu)
 			GPUS+=" -device virtio-gpu-pci"
-			if [ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null; then
-				GPUS+=",max_outputs=$2"
-				shift
-			fi
+			case "$2" in
+				[1-9])
+					GPUS+=",max_outputs=$2"
+					shift
+					;;
+			esac
 			shift
 			;;
 		# Add VirtIO network device
@@ -67,10 +69,13 @@ while [ "$#" -gt 0 ]; do
 				exit 1
 			fi
 			NETDEVS+=" -netdev $2,id=net$net -device virtio-net-pci,netdev=net$net,id=nic$net"
-			if [ ! -z "$3" ] && case "$3" in -*) false;; esac; then
-				NETDEVS+=",$3"
-				shift
-			fi
+			case "$3" in
+				''|-*)
+					;;
+				*)
+					NETDEVS+=",$3"
+					shift
+			esac
 			((net++))
 			shift 2
 			;;
@@ -81,10 +86,13 @@ while [ "$#" -gt 0 ]; do
 				exit 1
 			fi
 			NETDEVS+=" -netdev $2,id=net$net -device rtl8139,netdev=net$net,id=nic$net"
-			if [ ! -z "$3" ] && case "$3" in -*) false;; esac; then
-				NETDEVS+=",$3"
-				shift
-			fi
+			case "$3" in
+				''|-*)
+					;;
+				*)
+					NETDEVS+=",$3"
+					shift
+			esac
 			((net++))
 			shift 2
 			;;
@@ -97,4 +105,5 @@ while [ "$#" -gt 0 ]; do
 done
 
 # Print and execute QEMU command
-echo "qemu-system-i386 $DRIVES $GPUS $NETDEVS $SYSTEM" && exec qemu-system-i386 $DRIVES $GPUS $NETDEVS $SYSTEM
+echo "qemu-system-i386 $DRIVES $GPUS $NETDEVS $SYSTEM"
+exec qemu-system-i386 $DRIVES $GPUS $NETDEVS $SYSTEM
