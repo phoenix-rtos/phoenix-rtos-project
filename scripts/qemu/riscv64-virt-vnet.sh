@@ -7,9 +7,9 @@
 #
 
 if [ "$#" -eq 0 ]; then
-	NETDEVS="-vnet user"
+	NETDEVS=("-vnet" "user")
 else
-	NETDEVS="-vnet $*"
+	NETDEVS=("-vnet" "$@")
 fi
 
-exec bash "$(dirname "$BASH_SOURCE")/riscv64-virt.sh" $NETDEVS
+exec bash "$(dirname "${BASH_SOURCE[0]}")/riscv64-virt.sh" "${NETDEVS[@]}"

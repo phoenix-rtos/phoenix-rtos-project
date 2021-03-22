@@ -6,11 +6,11 @@
 # Author: Lukasz Kosinski
 #
 
-DIR="$(dirname "$BASH_SOURCE")"                                                       # Script directory
-DRIVES=""                                                                             # Default drives
-GPUS=""                                                                               # Default graphics adapters
-NETDEVS=""                                                                            # Default network devices
-SYSTEM="-machine virt -serial stdio -bios $DIR/../../_boot/phoenix-riscv64-virt.osbi" # Default system options
+DIR="$(dirname "${BASH_SOURCE[0]}")"                                                              # Script directory
+DRIVES=()                                                                                         # Default drives
+GPUS=()                                                                                           # Default graphics adapters
+NETDEVS=()                                                                                        # Default network devices
+SYSTEM=("-machine" "virt" "-serial" "stdio" "-bios" "$DIR/../../_boot/phoenix-riscv64-virt.osbi") # Default system options
 
 # Device counters (used for generating device ID)
 vblk=0
@@ -35,40 +35,49 @@ while [ "$#" -gt 0 ]; do
 				echo "$1: missing disk path"
 				exit 1
 			fi
-			DRIVES+=" -drive file=$2,cache=unsafe,if=none,id=vblk$vblk -device virtio-blk-device,drive=vblk$vblk"
+			DRIVES+=("-drive" "file=$2,cache=unsafe,if=none,id=vblk$vblk" "-device" "virtio-blk-device,drive=vblk$vblk")
 			((vblk++))
 			shift 2
 			;;
 		# Add MMIO VirtIO GPU device
 		-virtio-gpu|-vgpu)
-			GPUS+=" -device virtio-gpu-device"
-			if [ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null; then
-				GPUS+=",max_outputs=$2"
-				shift
-			fi
+			GPU="virtio-gpu-device"
+			case "$2" in
+				[0-9])
+					GPU+=",max_outputs=$2"
+					shift
+					;;
+			esac
+			GPUS+=("-device" "$GPU")
 			shift
 			;;
-		# Add VirtIO network device
+		# Add MMIO VirtIO network device
 		-virtio-net|-vnet)
 			if [ -z "$2" ]; then
 				echo "$1: missing backend"
 				exit 1
 			fi
-			NETDEVS+=" -netdev $2,id=net$net -device virtio-net-device,netdev=net$net,id=nic$net"
-			if [ ! -z "$3" ] && case "$3" in -*) false;; esac; then
-				NETDEVS+=",$3"
-				shift
-			fi
+			NETDEVS+=("-netdev" "$2,id=net$net")
+			NETDEV="virtio-net-device,netdev=net$net,id=nic$net"
+			case "$3" in
+				''|-*)
+					;;
+				*)
+					NETDEV+=",$3"
+					shift
+			esac
+			NETDEVS+=("-device" "$NETDEV")
 			((net++))
 			shift 2
 			;;
 		# Pass other options directly to QEMU startup command
 		*)
-			SYSTEM+=" $1"
+			SYSTEM+=("$1")
 			shift
 			;;
 	esac
 done
 
 # Print and execute QEMU command
-echo "qemu-system-riscv64 $DRIVES $GPUS $NETDEVS $SYSTEM" && exec qemu-system-riscv64 $DRIVES $GPUS $NETDEVS $SYSTEM
+echo "qemu-system-riscv64 ${DRIVES[*]} ${GPUS[*]} ${NETDEVS[*]} ${SYSTEM[*]}"
+exec qemu-system-riscv64 "${DRIVES[@]}" "${GPUS[@]}" "${NETDEVS[@]}" "${SYSTEM[@]}"

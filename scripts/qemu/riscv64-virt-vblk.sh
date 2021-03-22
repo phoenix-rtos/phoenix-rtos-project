@@ -8,8 +8,8 @@
 
 # Add VirtIO drives
 while [ "$#" -gt 0 ]; do
-	DRIVES+=" -vblk $1"
+	DRIVES+=("-vblk" "$1")
 	shift
 done
 
-exec bash "$(dirname "$BASH_SOURCE")/riscv64-virt.sh" $DRIVES
+exec bash "$(dirname "${BASH_SOURCE[0]}")/riscv64-virt.sh" "${DRIVES[@]}"

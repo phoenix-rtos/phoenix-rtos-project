@@ -8,8 +8,8 @@
 
 # Add ATA drives
 while [ "$#" -gt 0 ]; do
-	DRIVES+=" -ata $1"
+	DRIVES+=("-ata" "$1")
 	shift
 done
 
-exec bash "$(dirname "$BASH_SOURCE")/ia32-generic.sh" $DRIVES
+exec bash "$(dirname "${BASH_SOURCE[0]}")/ia32-generic.sh" "${DRIVES[@]}"
