@@ -8,8 +8,8 @@
 
 # Add VirtIO drives
 while [ "$#" -gt 0 ]; do
-	DRIVES+=" -vblk $1"
+	DRIVES+=("-vblk" "$1")
 	shift
 done
 
-exec bash "$(dirname "$BASH_SOURCE")/ia32-generic.sh" $DRIVES
+exec bash "$(dirname "${BASH_SOURCE[0]}")/ia32-generic.sh" "${DRIVES[@]}"

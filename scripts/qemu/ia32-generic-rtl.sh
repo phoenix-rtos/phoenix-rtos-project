@@ -7,9 +7,9 @@
 #
 
 if [ "$#" -eq 0 ]; then
-	NETDEVS="-rtl user"
+	NETDEVS=("-rtl" "user")
 else
-	NETDEVS="-rtl $*"
+	NETDEVS=("-rtl" "$@")
 fi
 
-exec bash "$(dirname "$BASH_SOURCE")/ia32-generic.sh" $NETDEVS
+exec bash "$(dirname "${BASH_SOURCE[0]}")/ia32-generic.sh" "${NETDEVS[@]}"

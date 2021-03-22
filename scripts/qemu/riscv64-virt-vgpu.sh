@@ -6,10 +6,9 @@
 # Author: Lukasz Kosinski
 #
 
-# Add VirtIO GPU
 if [ "$#" -gt 1 ]; then
 	echo "Usage: $0 [outputs]"
 	exit 1
 fi
 
-exec bash "$(dirname "$BASH_SOURCE")/riscv64-virt.sh" -vgpu $1
+exec bash "$(dirname "${BASH_SOURCE[0]}")/riscv64-virt.sh" "-vgpu" "$@"
