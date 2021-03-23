@@ -11,6 +11,7 @@ CROSS=i386-pc-phoenix-
 CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin"
 LDFLAGS="-z max-page-size=0x1000"
 
+: "${SYSPAGE=pc-tty pc-ata psh}"
 : ${CONSOLE=vga}
 export CONSOLE
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
@@ -50,7 +51,7 @@ b_build_target() {
 
 	b_log "Creating CPIO archive"
 	pushd "$PREFIX_PROG_STRIPPED" > /dev/null || exit 1
-		ls pc-tty pc-ata psh | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
+		ls ${SYSPAGE} | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
 	popd > /dev/null
 
 	# Relink kernel to include newly created cpio archive
