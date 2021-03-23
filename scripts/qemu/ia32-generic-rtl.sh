@@ -6,7 +6,7 @@
 # Author: Lukasz Kosinski
 #
 
-if [ "$#" -eq 0 ]; then
+if [ $# -eq 0 ]; then
 	NETDEVS=("-rtl" "user")
 else
 	NETDEVS=("-rtl" "$@")

@@ -17,7 +17,7 @@ vblk=0
 net=0
 
 # Parse args
-while [ "$#" -gt 0 ]; do
+while [ $# -gt 0 ]; do
 	case "$1" in
 		# Print help message
 		-help|-h)

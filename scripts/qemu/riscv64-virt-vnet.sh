@@ -6,7 +6,7 @@
 # Author: Lukasz Kosinski
 #
 
-if [ "$#" -eq 0 ]; then
+if [ $# -eq 0 ]; then
 	NETDEVS=("-vnet" "user")
 else
 	NETDEVS=("-vnet" "$@")

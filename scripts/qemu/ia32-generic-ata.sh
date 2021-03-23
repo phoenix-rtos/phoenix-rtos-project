@@ -6,8 +6,10 @@
 # Author: Lukasz Kosinski
 #
 
+DRIVES=()
+
 # Add ATA drives
-while [ "$#" -gt 0 ]; do
+while [ $# -gt 0 ]; do
 	DRIVES+=("-ata" "$1")
 	shift
 done
