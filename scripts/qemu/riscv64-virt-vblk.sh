@@ -6,8 +6,10 @@
 # Author: Lukasz Kosinski
 #
 
+DRIVES=()
+
 # Add VirtIO drives
-while [ "$#" -gt 0 ]; do
+while [ $# -gt 0 ]; do
 	DRIVES+=("-vblk" "$1")
 	shift
 done
