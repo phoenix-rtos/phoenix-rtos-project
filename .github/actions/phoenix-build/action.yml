@@ -14,6 +14,10 @@ inputs:
     description: 'Target env variable'
     default: 'ia32-generic'
     required: false
+  syspage:
+    description: 'Syspage env variable'
+    default: ''
+    required: false
   # github doesn't allow array of arguments, we need to pass them one-by-one
   param1:
     description: 'Parameters to the main build script - 1st param'
@@ -35,19 +39,26 @@ inputs:
     description: 'Parameters to the main build script - 5th param'
     default: ''
     required: false
+  param6:
+    description: 'Parameters to the main build script - 6th param'
+    default: ''
+    required: false
 
 # action runner
 runs:
   using: 'docker'
   image: 'phoenixrtos/build'
   env:
+    CONSOLE: 'serial'
     TARGET: ${{ inputs.target }}
+    SYSPAGE: ${{ inputs.syspage }}
   args:
     - ${{ inputs.param1 }}
     - ${{ inputs.param2 }}
     - ${{ inputs.param3 }}
     - ${{ inputs.param4 }}
     - ${{ inputs.param5 }}
+    - ${{ inputs.param6 }}
 
 
 # branding
