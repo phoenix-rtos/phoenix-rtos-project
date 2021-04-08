@@ -17,6 +17,8 @@ export CONSOLE
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 
+export TEST_MAKECMDGOALS=install
+
 #
 # Ports configuration
 #

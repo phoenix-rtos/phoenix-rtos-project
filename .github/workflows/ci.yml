@@ -20,6 +20,9 @@ jobs:
     strategy:
       matrix:
         target: ['armv7a7-imx6ull', 'armv7a9-zynq7000', 'armv7m7-imxrt106x', 'armv7m4-stm32l4x6', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
+        include:
+          - target: 'ia32-generic'
+            syspage: 'psh pc-ata uart16550'
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -35,11 +38,13 @@ jobs:
         uses: ./.github/actions/phoenix-build
         with:
           target: ${{ matrix.target }}
+          syspage: ${{ matrix.syspage }}
           param1: 'clean'
           param2: 'core'
           param3: 'fs'
-          param4: 'project'
-          param5: 'image'
+          param4: 'test'
+          param5: 'project'
+          param6: 'image'
 
       # step 3: upload contents of "_boot" as build artifacts
       - name: Upload build artifacts
@@ -47,3 +52,28 @@ jobs:
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: _boot
+
+  test:
+    needs: build
+    name: run tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: ['ia32-generic']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+          path: _boot
+
+      - name: Test runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
