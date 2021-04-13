@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# Shell script for building host-pc project
+#
+# Copyright 2021 Phoenix Systems
+# Author: Tomasz Korniluk
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+
+b_build_target() {
+    :
+}
+
+
+b_image_target() {
+    :
+}
+
+
+export -f b_build_target
