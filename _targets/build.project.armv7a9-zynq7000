@@ -31,5 +31,9 @@ b_image_target() {
 	echo "b_image_target"
 }
 
+b_test_target() {
+	:
+}
+
 
 export -f b_build_target

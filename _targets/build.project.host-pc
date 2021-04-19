@@ -7,7 +7,6 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-
 b_build_target() {
     :
 }
@@ -15,6 +14,14 @@ b_build_target() {
 
 b_image_target() {
     :
+}
+
+b_test_target() {
+	b_log "Installing tests in the phoenix-rtos filesystem"
+	(cd phoenix-rtos-tests && make $MAKEFLAGS install)
+
+	b_log "Copying binaries into $PREFIX_BOOT/$TARGET"
+	cp -av "$PREFIX_ROOTFS/bin/." "$PREFIX_BOOT/$TARGET"
 }
 
 

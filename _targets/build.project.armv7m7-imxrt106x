@@ -122,5 +122,8 @@ b_image_target() {
 	done
 }
 
+b_test_target() {
+	:
+}
 
 export -f b_build_target

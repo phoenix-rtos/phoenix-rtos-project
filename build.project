@@ -75,8 +75,5 @@ b_image() {
 # Project specific build test
 #
 b_build_test() {
-	b_log "Installing tests in the phoenix-rtos filesystem"
-	if [ -n "$TEST_MAKECMDGOALS" ]; then
-		(cd phoenix-rtos-tests && make $MAKEFLAGS $TEST_MAKECMDGOALS)
-	fi
+	b_test_target
 }

@@ -17,8 +17,6 @@ export CONSOLE
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 
-export TEST_MAKECMDGOALS=install
-
 #
 # Ports configuration
 #
@@ -91,7 +89,11 @@ b_image_target() {
 	mv "$IMG" "$IMG_DST"
 }
 
-b_update_pkg() { :; }
+b_test_target() {
+	b_log "Installing tests in the phoenix-rtos filesystem"
+	(cd phoenix-rtos-tests && make $MAKEFLAGS install)
+}
 
+b_update_pkg() { :; }
 
 export -f b_build_target

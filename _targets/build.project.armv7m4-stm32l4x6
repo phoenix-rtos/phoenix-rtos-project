@@ -47,5 +47,9 @@ b_image_target() {
 		"${PROGS}/stm32-multi;17" "${PROGS}/dummyfs;17" "${PROGS}/psh;17"
 }
 
+b_test_target() {
+	:
+}
+
 
 export -f b_build_target
