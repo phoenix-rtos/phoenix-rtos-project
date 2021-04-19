@@ -96,5 +96,8 @@ b_image_target() {
 	mv "$PREFIX_BUILD/disk.ext2" "$PREFIX_BOOT/phoenix-$TARGET.disk"
 }
 
+b_test_target() {
+	:
+}
 
 export -f b_build_target

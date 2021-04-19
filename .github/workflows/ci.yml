@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull', 'armv7a9-zynq7000', 'armv7m7-imxrt106x', 'armv7m4-stm32l4x6', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
+        target: ['armv7a7-imx6ull', 'armv7a9-zynq7000', 'armv7m7-imxrt106x', 'armv7m4-stm32l4x6', 'host-pc', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
         include:
           - target: 'ia32-generic'
             syspage: 'psh pc-ata uart16550'
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: ['ia32-generic']
+        target: ['host-pc', 'ia32-generic']
 
     steps:
       - name: Checkout the repository
@@ -74,6 +74,10 @@ jobs:
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: _boot
+
+      - name: Fix file permissions
+        if: ${{ matrix.target == 'host-pc' }}
+        run: find _boot/host-pc/ -type f -exec chmod 755 {} \;
 
       - name: Test runner
         uses: ./.github/actions/phoenix-runner

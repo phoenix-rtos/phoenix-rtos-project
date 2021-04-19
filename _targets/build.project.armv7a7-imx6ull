@@ -76,5 +76,8 @@ b_image_target() {
 	echo "Filesystem size: ${sz}KB"
 }
 
+b_test_target() {
+	:
+}
 
 export -f b_build_target
