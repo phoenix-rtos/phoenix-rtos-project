@@ -1,0 +1,97 @@
+#!/bin/bash
+#
+# Shell script for building ia32-generic project
+#
+# Copyright 2018, 2019 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+CROSS=i386-pc-phoenix-
+CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin"
+LDFLAGS="-z max-page-size=0x1000"
+
+: "${SYSPAGE=pc-tty pc-ata psh}"
+: ${CONSOLE=vga}
+export CONSOLE
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+export TEST_MAKECMDGOALS=install
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
+export PORTS_OPENSSL=y
+export PORTS_LIGHTTPD=y
+export PORTS_DROPBEAR=y
+export PORTS_LUA=n
+export PORTS_LZO=y
+export PORTS_OPENVPN=y
+export PORTS_JANSSON=y
+export PORTS_CURL=y
+
+
+#
+# Project specific build
+#
+b_build_target() {
+
+	b_log "Building sample project for $TARGET"
+
+	# TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
+
+	b_log "Creating CPIO archive"
+	pushd "$PREFIX_PROG_STRIPPED" > /dev/null || exit 1
+		ls ${SYSPAGE} | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
+	popd > /dev/null
+
+	# Relink kernel to include newly created cpio archive
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+
+	# FIXME: build plo out of tree and without clean
+	b_log "Building plo"
+	(cd plo/ia32; make clean all)
+}
+
+b_image_target() {
+	b_log "Creating image from $PREFIX_ROOTFS"
+
+	PLO="plo/ia32/plo"
+	KERNEL="$PREFIX_PROG/phoenix-ia32-generic.elf"
+	ROOTFS="$PREFIX_BUILD/disk.ext2"
+	IMG="$PREFIX_BUILD/phoenix-ia32-generic.disk"
+	IMG_DST="$PREFIX_BOOT/phoenix-ia32-generic.disk"
+
+	# partitions layout: (0kB)[MBR+plo] (32kB)[kernel] (2MB)[rootfs]
+	#FIXME: MBR should be constructed on per-project basic (here) instead of being embedded in plo
+
+	# first 2MBs: plo + kernel
+	dd of="$IMG" if=/dev/zero bs=2097152 count=1 >/dev/null 2>&1
+	dd of="$IMG" if="$PLO" bs=10486576 conv=notrunc >/dev/null 2>&1
+	dd of="$IMG" if="$KERNEL" seek=1 bs=32768 conv=notrunc >/dev/null 2>&1
+
+	# Adding ext2 rootfs
+	ext2_size=$((128 * 1024))
+	echo "Root filesystem size: ${ext2_size}KB"
+	genext2fs -b $ext2_size -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
+	dd of="$IMG" if="$ROOTFS" bs=2097152 seek=1 >/dev/null 2>&1
+
+	# produce image only if it's complete (no errors in the lines above)
+	mv "$IMG" "$IMG_DST"
+}
+
+b_update_pkg() { :; }
+
+
+export -f b_build_target

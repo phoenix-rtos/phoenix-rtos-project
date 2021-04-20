@@ -1,0 +1,27 @@
+# vim:sw=2:ts=2
+# action name
+name: 'phoenix-runner'
+
+# action description
+description: 'Runs Phoenix-RTOS tests'
+
+inputs:
+  target:
+    description: 'Specifies target to run tests'
+    default: 'ia32-generic'
+    required: false
+
+
+# action runner
+runs:
+  using: 'docker'
+  image: 'phoenixrtos/devel'
+  entrypoint: ./phoenix-rtos-tests/runner.py
+  args:
+    - '-T${{ inputs.target }}'
+
+
+# branding
+branding:
+  icon: terminal
+  color: green

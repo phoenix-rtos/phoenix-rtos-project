@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# Shell script for building armv7a7-imx6ull project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+CROSS=arm-phoenix-
+CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-a7 -mtune=cortex-a7 -mfloat-abi=hard -mthumb\
+	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
+
+
+LDFLAGS="-z max-page-size=0x1000"
+
+export BUSYBOX_CONFIG="$(realpath "busybox_config")"
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
+export PORTS_OPENSSL=y
+export PORTS_LIGHTTPD=y
+export PORTS_DROPBEAR=y
+export PORTS_LUA=n
+export PORTS_LZO=y
+export PORTS_OPENVPN=y
+export PORTS_JANSSON=y
+export PORTS_CURL=y
+
+
+#
+# Project specific build
+#
+b_build_target() {
+
+	b_log "Building sample project for $TARGET"
+
+	# TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
+
+	b_log "Creating CPIO archive"
+	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
+		ls psh dummyfs imx6ull-flash imx6ull-uart psd | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
+	popd >/dev/null
+
+	# Relink kernel to include newly created cpio archive
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+}
+
+
+b_image_target() {
+	b_log "Creating image from $PREFIX_ROOTFS"
+
+	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-"$(git describe --always --dirty)")"
+	echo "$IMG_VERSION" > "$PREFIX_ROOTFS/etc/version"
+
+	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
+	mtd-utils/build.sh
+	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
+	IMG="$PREFIX_BOOT/phoenix-armv7a7-imx6ull.jffs2"
+
+	mkfs.jffs2 -n -U -m none -e $((64*4096)) -s 4096 -r "$PREFIX_ROOTFS"/ -o "$IMG"
+
+	sz=$(du -k "$IMG" | awk '{ print $1 }')
+	echo "Filesystem size: ${sz}KB"
+}
+
+
+export -f b_build_target

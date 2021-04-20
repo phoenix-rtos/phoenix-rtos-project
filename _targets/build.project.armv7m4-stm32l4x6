@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Shell script for building armv7m4-stm32l4x6 project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+CROSS=arm-phoenix-
+
+export BOARD_CONFIG=" -DUART_CONSOLE=2 -DTTY2=1 "
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+
+
+#
+# Project specific build
+#
+b_build_target() {
+	:
+}
+
+b_image_target() {
+	b_log "Creating image"
+
+	IMG="$PREFIX_BOOT"/phoenix-${TARGET}.bin
+	PROGS="_build/${TARGET}/prog"
+
+	phoenix-rtos-build/scripts/mkimg-stm32.sh \
+		"${PROGS}/phoenix-${TARGET}.elf" "" "${IMG}" \
+		"${PROGS}/stm32-multi;17" "${PROGS}/dummyfs;17" "${PROGS}/psh;17"
+}
+
+
+export -f b_build_target

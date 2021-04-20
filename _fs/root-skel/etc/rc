@@ -1,0 +1,42 @@
+#!/bin/busybox sh
+
+. /etc/rc.subr
+
+export PATH=/bin:/usr/bin
+
+# Mount RAM disks
+mkdir -p /var/log /var/run /var/cfg /var/cfg-req /var/tmp /var/login /var/users-req
+
+# Create directories if local is empty
+if [ ! -d /local/etc ]; then
+	mkdir /local/etc
+fi
+if [ ! -d /local/etc/rc.conf.d ]; then
+	mkdir /local/etc/rc.conf.d
+fi
+
+# RTC has failed, set last "build" date
+# sleep 1
+# TIMESTAMP_FILE="/bin/ash"
+# if [ "$(date +%s)" -lt 1446055000 ] && [ -f "$TIMESTAMP_FILE" ]; then
+# 	date -s "@$(date -r $TIMESTAMP_FILE +%s)" > /dev/null
+# 	#hwclock -w
+# fi
+
+if [ ! -f /local/etc/passwd ]; then
+	cp /etc/passwd /local/etc/passwd
+fi
+
+# Configure network
+/etc/rc.d/network.sh start
+# Start NTP
+/etc/rc.d/ntpd.sh start
+# Start Telnet server
+/etc/rc.d/telnetd.sh start
+# Start SSH server
+/etc/rc.d/sshd.sh start
+
+# Custom (per-project, per-customer initialization)
+if [ -f /etc/rc.local ]; then
+	/etc/rc.local
+fi

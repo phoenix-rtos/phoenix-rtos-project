@@ -1,0 +1,100 @@
+#!/bin/bash
+#
+# Shell script for building riscv64-spike project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+CROSS=riscv64-phoenix-
+#CFLAGS="-Os -Wall -g -fomit-frame-pointer -fdata-sections -ffunction-sections -mcmodel=medany -fno-builtin -Wstrict-prototypes"
+#LDFLAGS="-z max-page-size=0x1000" -fno-builtin
+
+export RISCV_LOADER="bbl"
+#export RISCV_LOADER="opensbi"
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=y
+export PORTS_PCRE=y
+export PORTS_OPENSSL=y
+export PORTS_LIGHTTPD=y
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=y
+export PORTS_OPENVPN=y
+export PORTS_JANSSON=y
+export PORTS_CURL=y
+
+
+#
+# Project specific build
+#
+b_build_target() {
+
+	b_log "Building sample project for $TARGET"
+
+	#TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
+
+	b_log "Creating CPIO archive"
+	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
+		ls dummyfs spike-tty psh | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
+	popd >/dev/null
+
+	# Relink kernel to include newly created cpio archive
+	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+
+	# Convert kernel to flat binary
+	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin"
+
+	# Add kernel to boot loader
+	b_log "Adding kernel to boot loader"
+	BBL_BUILD_DIR="$PREFIX_BUILD/riscv-pk"
+	OSBI_BUILD_DIR="$PREFIX_BUILD/opensbi"
+
+	if [ "$RISCV_LOADER" = "bbl" ]; then
+		mkdir -p "$BBL_BUILD_DIR"
+		pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
+			if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
+				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" --disable-fp-emulation
+				touch "$BBL_BUILD_DIR/stamp.configured"
+			fi
+
+			env -i PATH="$PATH" make $MAKEFLAGS all
+		popd > /dev/null
+
+		cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix-$TARGET.bbl"
+	elif [ "$RISCV_LOADER" = "opensbi" ]; then
+		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin")
+
+		cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix-$TARGET.osbi"
+	else
+		cp "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin" "$PREFIX_BOOT/."
+	fi
+}
+
+
+b_image_target() {
+	b_log "Creating image from $PREFIX_ROOTFS"
+	size=$(find "${PREFIX_ROOTFS}" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
+	size=$((size * 150 / 100))
+	echo "Filesystem size: $size"
+
+	genext2fs -b $size -d "$PREFIX_ROOTFS" "$PREFIX_BUILD/disk.ext2"
+	mv "$PREFIX_BUILD/disk.ext2" "$PREFIX_BOOT/phoenix-$TARGET.disk"
+}
+
+
+export -f b_build_target
