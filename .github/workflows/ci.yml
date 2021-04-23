@@ -7,10 +7,12 @@ on:
     branches:
       - master
       - posix_rev
+      - 'feature/*'
   pull_request:
     branches:
       - master
       - posix_rev
+      - 'feature/*'
 
 # jobs
 jobs:
@@ -28,7 +30,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v2
         with:
-          submodules: true
+          submodules: recursive
 
       # attach GCC problem matcher... might not work because of submodules... just trying
       - uses: ammaraskar/gcc-problem-matcher@master
