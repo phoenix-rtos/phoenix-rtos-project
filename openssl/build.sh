@@ -28,7 +28,7 @@ if [ ! -z "$CLEAN" ]; then
 #
 	cp $PREFIX_OPENSSL/30-phoenix.conf $PREFIX_OPENSSL_SRC/Configurations/
 	
-	${PREFIX_OPENSSL_SRC}/Configure phoenix-${TARGET} --prefix=$PREFIX_OPENSSL_INSTALL
+	${PREFIX_OPENSSL_SRC}/Configure phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY} --prefix=$PREFIX_OPENSSL_INSTALL
 	
 fi
 
