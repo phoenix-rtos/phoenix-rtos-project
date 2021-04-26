@@ -2,8 +2,8 @@
 #
 # Shell script for building armv7a7-imx6ull project
 #
-# Copyright 2018, 2019, 2020 Phoenix Systems
-# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+# Copyright 2018, 2019, 2020, 2021 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski, Maciej Purski
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
@@ -56,6 +56,9 @@ b_build_target() {
 
 	# Relink kernel to include newly created cpio archive
 	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+
+	BIN="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}"
+	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/${BIN}.elf" "$PREFIX_BOOT/${BIN}.img"
 }
 
 
