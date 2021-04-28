@@ -51,4 +51,6 @@ fi
 
 [ "X${PORTS_JANSSON}" == "Xy" ] && ./phoenix-rtos-ports/jansson/build.sh
 
+[ "X${PORTS_MICROPYTHON}" == "Xy" ] && ./phoenix-rtos-ports/micropython/build.sh
+
 exit 0
