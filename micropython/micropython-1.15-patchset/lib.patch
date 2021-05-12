@@ -1,0 +1,461 @@
+diff -Naur micropython-1.15/lib/libm/libm.h micropython-phoenix/lib/libm/libm.h
+--- micropython-1.15/lib/libm/libm.h	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm/libm.h	2021-04-14 13:27:45.000000000 +0200
+@@ -21,10 +21,11 @@
+ 
+ #define FLT_EVAL_METHOD 0
+ 
++#ifndef FORCE_EVAL
+ #define FORCE_EVAL(x) do {                        \
+ 	if (sizeof(x) == sizeof(float)) {         \
+ 		volatile float __x;               \
+-		__x = (x);                        \
++		__x = (float)(x);                        \
+                 (void)__x;                        \
+ 	} else if (sizeof(x) == sizeof(double)) { \
+ 		volatile double __x;              \
+@@ -36,6 +37,7 @@
+                 (void)__x;                        \
+ 	}                                         \
+ } while(0)
++#endif
+ 
+ /* Get a 32 bit int from a float.  */
+ #define GET_FLOAT_WORD(w,d)                       \
+diff -Naur micropython-1.15/lib/libm_dbl/asinh.c micropython-phoenix/lib/libm_dbl/asinh.c
+--- micropython-1.15/lib/libm_dbl/asinh.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/asinh.c	2021-04-14 13:27:45.000000000 +0200
+@@ -1,4 +1,4 @@
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ /* asinh(x) = sign(x)*log(|x|+sqrt(x*x+1)) ~= x - x^3/6 + o(x^5) */
+ double asinh(double x)
+@@ -22,7 +22,7 @@
+ 		x = log1p(x + x*x/(sqrt(x*x+1)+1));
+ 	} else {
+ 		/* |x| < 0x1p-26, raise inexact if x != 0 */
+-		FORCE_EVAL(x + 0x1p120f);
++		FORCE_EVAL(x + (double)0x1p120f);
+ 	}
+ 	return s ? -x : x;
+ }
+diff -Naur micropython-1.15/lib/libm_dbl/__cos.c micropython-phoenix/lib/libm_dbl/__cos.c
+--- micropython-1.15/lib/libm_dbl/__cos.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__cos.c	2021-04-14 13:27:45.000000000 +0200
+@@ -48,7 +48,7 @@
+  *         any extra precision in w.
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ static const double
+ C1  =  4.16666666666666019037e-02, /* 0x3FA55555, 0x5555554C */
+diff -Naur micropython-1.15/lib/libm_dbl/cos.c micropython-phoenix/lib/libm_dbl/cos.c
+--- micropython-1.15/lib/libm_dbl/cos.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/cos.c	2021-04-14 13:27:45.000000000 +0200
+@@ -40,38 +40,38 @@
+  *      TRIG(x) returns trig(x) nearly rounded
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+-double cos(double x)
+-{
+-	double y[2];
+-	uint32_t ix;
+-	unsigned n;
+-
+-	GET_HIGH_WORD(ix, x);
+-	ix &= 0x7fffffff;
+-
+-	/* |x| ~< pi/4 */
+-	if (ix <= 0x3fe921fb) {
+-		if (ix < 0x3e46a09e) {  /* |x| < 2**-27 * sqrt(2) */
+-			/* raise inexact if x!=0 */
+-			FORCE_EVAL(x + 0x1p120f);
+-			return 1.0;
+-		}
+-		return __cos(x, 0);
+-	}
+-
+-	/* cos(Inf or NaN) is NaN */
+-	if (ix >= 0x7ff00000)
+-		return x-x;
+-
+-	/* argument reduction */
+-	n = __rem_pio2(x, y);
+-	switch (n&3) {
+-	case 0: return  __cos(y[0], y[1]);
+-	case 1: return -__sin(y[0], y[1], 1);
+-	case 2: return -__cos(y[0], y[1]);
+-	default:
+-		return  __sin(y[0], y[1], 1);
+-	}
+-}
++// double cos(double x)
++// {
++// 	double y[2];
++// 	uint32_t ix;
++// 	unsigned n;
++
++// 	GET_HIGH_WORD(ix, x);
++// 	ix &= 0x7fffffff;
++
++// 	/* |x| ~< pi/4 */
++// 	if (ix <= 0x3fe921fb) {
++// 		if (ix < 0x3e46a09e) {  /* |x| < 2**-27 * sqrt(2) */
++// 			/* raise inexact if x!=0 */
++// 			FORCE_EVAL(x + (double)0x1p120f);
++// 			return 1.0;
++// 		}
++// 		return __cos(x, 0);
++// 	}
++
++// 	/* cos(Inf or NaN) is NaN */
++// 	if (ix >= 0x7ff00000)
++// 		return x-x;
++
++// 	/* argument reduction */
++// 	n = __rem_pio2(x, y);
++// 	switch (n&3) {
++// 	case 0: return  __cos(y[0], y[1]);
++// 	case 1: return -__sin(y[0], y[1], 1);
++// 	case 2: return -__cos(y[0], y[1]);
++// 	default:
++// 		return  __sin(y[0], y[1], 1);
++// 	}
++// }
+\ No newline at end of file
+diff -Naur micropython-1.15/lib/libm_dbl/expm1.c micropython-phoenix/lib/libm_dbl/expm1.c
+--- micropython-1.15/lib/libm_dbl/expm1.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/expm1.c	2021-04-14 13:27:45.000000000 +0200
+@@ -104,7 +104,12 @@
+  * to produce the hexadecimal values shown.
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
++#ifndef isnan
++#define isnan(x) __builtin_isnan(x)
++#endif
++typedef float float_t;
++typedef double double_t;
+ 
+ static const double
+ o_threshold = 7.09782712893383973096e+02, /* 0x40862E42, 0xFEFA39EF */
+@@ -150,7 +155,7 @@
+ 				k = -1;
+ 			}
+ 		} else {
+-			k  = invln2*x + (sign ? -0.5 : 0.5);
++			k  = (int)(invln2*x + (sign ? -0.5 : 0.5));
+ 			t  = k;
+ 			hi = x - t*ln2_hi;  /* t*ln2_hi is exact here */
+ 			lo = t*ln2_lo;
+diff -Naur micropython-1.15/lib/libm_dbl/__expo2.c micropython-phoenix/lib/libm_dbl/__expo2.c
+--- micropython-1.15/lib/libm_dbl/__expo2.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__expo2.c	2021-04-14 13:27:45.000000000 +0200
+@@ -1,4 +1,4 @@
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ /* k is such that k*ln2 has minimal relative error and x - kln2 > log(DBL_MIN) */
+ static const int k = 2043;
+diff -Naur micropython-1.15/lib/libm_dbl/libm.h micropython-phoenix/lib/libm_dbl/libm.h
+--- micropython-1.15/lib/libm_dbl/libm.h	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/libm.h	2021-04-14 13:27:45.000000000 +0200
+@@ -17,10 +17,11 @@
+ 
+ #define FLT_EVAL_METHOD 0
+ 
++#ifndef FORCE_EVAL
+ #define FORCE_EVAL(x) do {                        \
+ 	if (sizeof(x) == sizeof(float)) {         \
+ 		volatile float __x;               \
+-		__x = (x);                        \
++		__x = (float)(x);                        \
+                 (void)__x;                        \
+ 	} else if (sizeof(x) == sizeof(double)) { \
+ 		volatile double __x;              \
+@@ -32,6 +33,7 @@
+                 (void)__x;                        \
+ 	}                                         \
+ } while(0)
++#endif
+ 
+ /* Get two 32 bit ints from a double.  */
+ #define EXTRACT_WORDS(hi,lo,d)                    \
+@@ -90,7 +92,8 @@
+ 
+ int __rem_pio2(double, double*);
+ int __rem_pio2_large(double*, double*, int, int, int);
+-double __sin(double, double, int);
+-double __cos(double, double);
+-double __tan(double, double, int);
++// double __sin(double, double, int);
++// double __cos(double, double);
++// double __tan(double, double, int);
+ double __expo2(double);
++int __signbitd(double x);
+diff -Naur micropython-1.15/lib/libm_dbl/log1p.c micropython-phoenix/lib/libm_dbl/log1p.c
+--- micropython-1.15/lib/libm_dbl/log1p.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/log1p.c	2021-04-14 13:27:45.000000000 +0200
+@@ -56,8 +56,8 @@
+ #include "libm.h"
+ 
+ static const double
+-ln2_hi = 6.93147180369123816490e-01,  /* 3fe62e42 fee00000 */
+-ln2_lo = 1.90821492927058770002e-10,  /* 3dea39ef 35793c76 */
++// ln2_hi = 6.93147180369123816490e-01,  /* 3fe62e42 fee00000 */
++// ln2_lo = 1.90821492927058770002e-10,  /* 3dea39ef 35793c76 */
+ Lg1 = 6.666666666666735130e-01,  /* 3FE55555 55555593 */
+ Lg2 = 3.999999999940941908e-01,  /* 3FD99999 9997FA04 */
+ Lg3 = 2.857142874366239149e-01,  /* 3FD24924 94229359 */
+diff -Naur micropython-1.15/lib/libm_dbl/__rem_pio2.c micropython-phoenix/lib/libm_dbl/__rem_pio2.c
+--- micropython-1.15/lib/libm_dbl/__rem_pio2.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__rem_pio2.c	2021-04-14 13:27:45.000000000 +0200
+@@ -17,7 +17,7 @@
+  * use __rem_pio2_large() for large x
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ #if FLT_EVAL_METHOD==0 || FLT_EVAL_METHOD==1
+ #define EPS DBL_EPSILON
+diff -Naur micropython-1.15/lib/libm_dbl/__rem_pio2_large.c micropython-phoenix/lib/libm_dbl/__rem_pio2_large.c
+--- micropython-1.15/lib/libm_dbl/__rem_pio2_large.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__rem_pio2_large.c	2021-04-14 13:27:45.000000000 +0200
+@@ -122,7 +122,7 @@
+  * to produce the hexadecimal values shown.
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ static const int init_jk[] = {3,4,4,6}; /* initial value for jk */
+ 
+diff -Naur micropython-1.15/lib/libm_dbl/__signbit.c micropython-phoenix/lib/libm_dbl/__signbit.c
+--- micropython-1.15/lib/libm_dbl/__signbit.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__signbit.c	2021-04-14 13:27:45.000000000 +0200
+@@ -1,4 +1,4 @@
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ int __signbitd(double x)
+ {
+diff -Naur micropython-1.15/lib/libm_dbl/__sin.c micropython-phoenix/lib/libm_dbl/__sin.c
+--- micropython-1.15/lib/libm_dbl/__sin.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__sin.c	2021-04-14 13:27:45.000000000 +0200
+@@ -39,7 +39,7 @@
+  *              sin(x) = x + (S1*x + (x *(r-y/2)+y))
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ static const double
+ S1  = -1.66666666666666324348e-01, /* 0xBFC55555, 0x55555549 */
+diff -Naur micropython-1.15/lib/libm_dbl/__tan.c micropython-phoenix/lib/libm_dbl/__tan.c
+--- micropython-1.15/lib/libm_dbl/__tan.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/__tan.c	2021-04-14 13:27:45.000000000 +0200
+@@ -43,7 +43,7 @@
+  *                     = 1 - 2*(tan(y) - (tan(y)^2)/(1+tan(y)))
+  */
+ 
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
+ 
+ static const double T[] = {
+              3.33333333333334091986e-01, /* 3FD55555, 55555563 */
+diff -Naur micropython-1.15/lib/libm_dbl/tgamma.c micropython-phoenix/lib/libm_dbl/tgamma.c
+--- micropython-1.15/lib/libm_dbl/tgamma.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/tgamma.c	2021-04-14 13:27:45.000000000 +0200
+@@ -22,7 +22,19 @@
+ 
+ most ideas and constants are from boost and python
+ */
+-#include "libm.h"
++#include "lib/libm_dbl/libm.h"
++#include "lib/libm_dbl/cos.c"
++#include "lib/libm_dbl/__sin.c"
++#include "lib/libm_dbl/__cos.c"
++#ifndef isinf
++#define isinf(x) __builtin_isinf(x)
++#endif
++#ifndef signbit
++#define signbit(x) ((0 < x) - (x < 0))
++#endif
++#ifndef isfinite
++#define isfinite(x) __builtin_isfinite(x)
++#endif
+ 
+ static const double pi = 3.141592653589793238462643383279502884;
+ 
+@@ -37,7 +49,7 @@
+ 	x = 2 * (x - floor(x));
+ 
+ 	/* reduce x into [-.25,.25] */
+-	n = 4 * x;
++	n = (int)(4 * x);
+ 	n = (n+1)/2;
+ 	x -= n * 0.5;
+ 
+@@ -116,7 +128,7 @@
+ 	/* special cases */
+ 	if (ix >= 0x7ff00000)
+ 		/* tgamma(nan)=nan, tgamma(inf)=inf, tgamma(-inf)=nan with invalid */
+-		return x + INFINITY;
++		return (double)(x + (double)INFINITY);
+ 	if (ix < (0x3ff-54)<<20)
+ 		/* |x| < 2^-54: tgamma(x) ~ 1/x, +-0 raises div-by-zero */
+ 		return 1/x;
+diff -Naur micropython-1.15/lib/utils/printf.c micropython-phoenix/lib/utils/printf.c
+--- micropython-1.15/lib/utils/printf.c	2021-04-14 07:35:31.000000000 +0200
++++ micropython-phoenix/lib/utils/printf.c	2021-04-14 13:27:45.000000000 +0200
+@@ -50,54 +50,54 @@
+ #if MICROPY_USE_INTERNAL_PRINTF
+ 
+ #undef putchar  // Some stdlibs have a #define for putchar
+-int printf(const char *fmt, ...);
+-int vprintf(const char *fmt, va_list ap);
+-int putchar(int c);
+-int puts(const char *s);
+-int vsnprintf(char *str, size_t size, const char *fmt, va_list ap);
+-int snprintf(char *str, size_t size, const char *fmt, ...);
+-
+-int printf(const char *fmt, ...) {
+-    va_list ap;
+-    va_start(ap, fmt);
+-    int ret = mp_vprintf(&mp_plat_print, fmt, ap);
+-    va_end(ap);
+-    return ret;
+-}
+-
+-int vprintf(const char *fmt, va_list ap) {
+-    return mp_vprintf(&mp_plat_print, fmt, ap);
+-}
++// int printf(const char *fmt, ...);
++// int vprintf(const char *fmt, va_list ap);
++// int putchar(int c);
++// int puts(const char *s);
++// int vsnprintf(char *str, size_t size, const char *fmt, va_list ap);
++// int snprintf(char *str, size_t size, const char *fmt, ...);
++
++// int printf(const char *fmt, ...) {
++//     va_list ap;
++//     va_start(ap, fmt);
++//     int ret = mp_vprintf(&mp_plat_print, fmt, ap);
++//     va_end(ap);
++//     return ret;
++// }
++
++// int vprintf(const char *fmt, va_list ap) {
++//     return mp_vprintf(&mp_plat_print, fmt, ap);
++// }
+ 
+ // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
+-int putchar(int c) {
+-    char chr = c;
+-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
+-    return chr;
+-}
++// int putchar(int c) {
++//     char chr = c;
++//     mp_hal_stdout_tx_strn_cooked(&chr, 1);
++//     return chr;
++// }
+ 
+ // need this because gcc optimises printf("string\n") -> puts("string")
+-int puts(const char *s) {
+-    mp_hal_stdout_tx_strn_cooked(s, strlen(s));
+-    char chr = '\n';
+-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
+-    return 1;
+-}
++// int puts(const char *s) {
++//     mp_hal_stdout_tx_strn_cooked(s, strlen(s));
++//     char chr = '\n';
++//     mp_hal_stdout_tx_strn_cooked(&chr, 1);
++//     return 1;
++// }
+ 
+ typedef struct _strn_print_env_t {
+     char *cur;
+     size_t remain;
+ } strn_print_env_t;
+ 
+-STATIC void strn_print_strn(void *data, const char *str, size_t len) {
+-    strn_print_env_t *strn_print_env = data;
+-    if (len > strn_print_env->remain) {
+-        len = strn_print_env->remain;
+-    }
+-    memcpy(strn_print_env->cur, str, len);
+-    strn_print_env->cur += len;
+-    strn_print_env->remain -= len;
+-}
++// STATIC void strn_print_strn(void *data, const char *str, size_t len) {
++//     strn_print_env_t *strn_print_env = data;
++//     if (len > strn_print_env->remain) {
++//         len = strn_print_env->remain;
++//     }
++//     memcpy(strn_print_env->cur, str, len);
++//     strn_print_env->cur += len;
++//     strn_print_env->remain -= len;
++// }
+ 
+ #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 9
+ // uClibc requires this alias to be defined, or there may be link errors
+@@ -107,27 +107,27 @@
+ int __GI_vsnprintf(char *str, size_t size, const char *fmt, va_list ap) __attribute__((weak, alias("vsnprintf")));
+ #endif
+ 
+-int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
+-    strn_print_env_t strn_print_env = {str, size};
+-    mp_print_t print = {&strn_print_env, strn_print_strn};
+-    int len = mp_vprintf(&print, fmt, ap);
+-    // add terminating null byte
+-    if (size > 0) {
+-        if (strn_print_env.remain == 0) {
+-            strn_print_env.cur[-1] = 0;
+-        } else {
+-            strn_print_env.cur[0] = 0;
+-        }
+-    }
+-    return len;
+-}
+-
+-int snprintf(char *str, size_t size, const char *fmt, ...) {
+-    va_list ap;
+-    va_start(ap, fmt);
+-    int ret = vsnprintf(str, size, fmt, ap);
+-    va_end(ap);
+-    return ret;
+-}
++// int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
++//     strn_print_env_t strn_print_env = {str, size};
++//     mp_print_t print = {&strn_print_env, strn_print_strn};
++//     int len = mp_vprintf(&print, fmt, ap);
++//     // add terminating null byte
++//     if (size > 0) {
++//         if (strn_print_env.remain == 0) {
++//             strn_print_env.cur[-1] = 0;
++//         } else {
++//             strn_print_env.cur[0] = 0;
++//         }
++//     }
++//     return len;
++// }
++
++// int snprintf(char *str, size_t size, const char *fmt, ...) {
++//     va_list ap;
++//     va_start(ap, fmt);
++//     int ret = vsnprintf(str, size, fmt, ap);
++//     va_end(ap);
++//     return ret;
++// }
+ 
+ #endif // MICROPY_USE_INTERNAL_PRINTF

@@ -2,8 +2,8 @@
 
 set -e
 
-UPYTH_FULLHASH="7f366a2190825555c16f57f5dfd4d0d57efd7c1f"
-UPYTH="micropython-master"
+UPYTH_VER="1.15"
+UPYTH="micropython-${UPYTH_VER}"
 
 PREFIX_UPYTH="${TOPDIR}/phoenix-rtos-ports/micropython"
 PREFIX_UPYTH_BUILD="${PREFIX_BUILD}/micropython"
@@ -17,43 +17,27 @@ cd $PREFIX_UPYTH
 #
 # Download
 #
-if [[ ! -d ${UPYTH} ]]
-then
-	rm -rf "${UPYTH}" && rm -rf "${PREFIX_UPYTH_PATCHSET}"
-	git clone https://github.com/micropython/micropython.git ${UPYTH}
-	(cd ${UPYTH} && git reset --hard ${UPYTH_FULLHASH})
+[ -f "${UPYTH}.tar.xz" ] || wget https://github.com/micropython/micropython/releases/download/v${UPYTH_VER}/${UPYTH}.tar.xz
+[ -d "${UPYTH}" ] || tar xf "${UPYTH}.tar.xz"
 
-	#Submodules bloat the size of micropython source code (up to several GB!). 
-	#Until submodules config feature is absent this line should not be uncommented!
-	#(cd ${UPYTH} && && git submodule update --init --recursive)
-
-fi
 
 #
 # Patch
 #
-if [[ ! -d "${PREFIX_UPYTH_PATCHSET}" ]]
+if ! patch -R -p0 -s -f --dry-run < ${PREFIX_UPYTH_PATCHSET}/lib.patch
 then
-	rm -rf ${PREFIX_UPYTH_PATCHSET}
-	tar xzf "${UPYTH}-patchset.tar.gz"
-
-	mv ${PREFIX_UPYTH}/${UPYTH}/ports/unix ${PREFIX_UPYTH}/${UPYTH}/_unix
-	rm -rf ${PREFIX_UPYTH}/${UPYTH}/ports/*
-	mv ${PREFIX_UPYTH}/${UPYTH}/_unix ${PREFIX_UPYTH}/${UPYTH}/ports/unix
-
 	patch -s -p0 < ${PREFIX_UPYTH_PATCHSET}/lib.patch
 	patch -s -p0 < ${PREFIX_UPYTH_PATCHSET}/py.patch
 	patch -s -p0 < ${PREFIX_UPYTH_PATCHSET}/mpy-cross.patch
 	patch -s -p0 < ${PREFIX_UPYTH_PATCHSET}/os.patch
-
-	mv ${PREFIX_UPYTH}/${UPYTH}/ports/unix ${PREFIX_UPYTH}/${UPYTH}/ports/phoenix
 fi
+
 
 #
 # Build and move micropython binary to filesystem root/bin/
 #
 cd ${UPYTH}/mpy-cross && make clean && make all BUILD=${PREFIX_UPYTH_BUILD} && cd ../..
-cd ${UPYTH}/ports/phoenix && make clean && make all
+cd ${UPYTH}/ports/unix && make clean && make all
 mkdir -p "${PREFIX_FS}/root/bin/" && cp micropython "${PREFIX_FS}/root/bin/"
 
 popd
