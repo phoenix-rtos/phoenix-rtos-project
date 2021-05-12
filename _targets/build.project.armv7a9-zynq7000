@@ -15,7 +15,7 @@ b_build_target() {
 	printf "\0" >> "$PREFIX_BUILD/plo/script.plo"
 
 	b_log "Building plo"
-	(cd plo; make $MAKEFLAGS all)
+	make -C plo all
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
 	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" _boot/

@@ -69,25 +69,14 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	# TODO: move to psh install target
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
-
-
 	# FIXME: build plo out of tree and without clean
 	b_log "Building plo"
-	(cd plo; make $MAKEFLAGS clean all)
+	make -C plo clean all
 
 	b_mkscript
 
 	b_log "Relink plo to include the new script"
-	(cd plo && make $MAKEFLAGS all)
+	make -C plo all
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
 	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" _boot/

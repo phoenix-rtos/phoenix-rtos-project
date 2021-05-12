@@ -39,27 +39,17 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	# TODO: move to psh install target
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
-
 	b_log "Creating CPIO archive"
 	pushd "$PREFIX_PROG_STRIPPED" > /dev/null || exit 1
 		ls ${SYSPAGE} | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
 	popd > /dev/null
 
 	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+	make -C "phoenix-rtos-kernel" all
 
 	# FIXME: build plo out of tree and without clean
 	b_log "Building plo"
-	(cd plo/ia32; make clean all)
+	make -C "plo/ia32" clean all
 }
 
 b_image_target() {
@@ -91,7 +81,7 @@ b_image_target() {
 
 b_test_target() {
 	b_log "Installing tests in the phoenix-rtos filesystem"
-	(cd phoenix-rtos-tests && make $MAKEFLAGS install)
+	make -C "phoenix-rtos-tests" install
 }
 
 b_update_pkg() { :; }
