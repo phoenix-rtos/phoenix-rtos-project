@@ -41,6 +41,7 @@ b_build_target() {
 	b_log "Building sample project for $TARGET"
 
 	# TODO: move to psh install target
+	ln -f "$PREFIX_ROOTFS/bin/"{psh,pshlogin}
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
 	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
