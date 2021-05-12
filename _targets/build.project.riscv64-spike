@@ -38,23 +38,13 @@ b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	#TODO: move to psh install target
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,mount}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,bind}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,ps}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,mem}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,perf}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,sync}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,reboot}
-	ln -f "$PREFIX_ROOTFS/bin/"{psh,top}
-
 	b_log "Creating CPIO archive"
 	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
 		ls dummyfs spike-tty psh | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
 	popd >/dev/null
 
 	# Relink kernel to include newly created cpio archive
-	(cd phoenix-rtos-kernel && make $MAKEFLAGS all)
+	make -C "phoenix-rtos-kernel" all
 
 	# Convert kernel to flat binary
 	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin"
