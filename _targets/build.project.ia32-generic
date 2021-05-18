@@ -8,11 +8,9 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 CROSS=i386-pc-phoenix-
-CFLAGS="-Os -Wall -Wstrict-prototypes -g -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-builtin"
-LDFLAGS="-z max-page-size=0x1000"
 
 : "${SYSPAGE=pc-tty pc-ata psh}"
-: ${CONSOLE=vga}
+: "${CONSOLE=vga}"
 export CONSOLE
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"

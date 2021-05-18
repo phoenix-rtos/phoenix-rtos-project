@@ -7,13 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-# TODO: remove CFLAGS and LDFLAGS and use ones from phoenix-rtos-build/Makefile.armv7m
 CROSS=arm-phoenix-
-#CFLAGS="-Os -Wall -Wstrict-prototypes -g -mcpu=cortex-m7 -mtune=cortex-m7 -mfloat-abi=hard -mthumb\
-#	-fomit-frame-pointer -mno-unaligned-access -fdata-sections -ffunction-sections -fno-builtin"
-
-
-LDFLAGS="-z max-page-size=0x1000"
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
