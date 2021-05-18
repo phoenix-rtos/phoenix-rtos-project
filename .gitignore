@@ -1,12 +1,4 @@
-busybox/busybox-*
-busybox/markers/
-dropbear/dropbear-*
-dropbear/markers/
-lighttpd/lighttpd-*
-openssl/openssl-*
-openvpn/openvpn-*
-pcre/pcre-*
-lua/lua-*
-lzo/lzo-*
-curl/curl-*
-jansson/jansson-*
+# allow only source tarballs to be ignored
+*.tar.gz
+*.tar.bz2
+*.tar.xz

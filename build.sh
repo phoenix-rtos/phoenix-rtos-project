@@ -8,13 +8,13 @@
 
 set -e
 
-if [ $TARGET_FAMILY == "ia32" ]; then
+if [ "$TARGET_FAMILY" = "ia32" ]; then
 	HOST_TARGET="i386"
 	HOST="i386-pc-phoenix"
-elif [ $TARGET_FAMILY == "armv7a7" ]; then
+elif [ "$TARGET_FAMILY" = "armv7a7" ]; then
 	HOST_TARGET="arm"
 	HOST="arm-phoenix"
-elif [ $TARGET_FAMILY == "riscv64" ]; then
+elif [ "$TARGET_FAMILY" = "riscv64" ]; then
 	HOST_TARGET="riscv64"
 	HOST="riscv64-phoenix"
 else
@@ -24,33 +24,32 @@ fi
 
 export TARGET TARGET_FAMILY HOST_TARGET HOST TOPDIR PREFIX_BUILD PREFIX_FS PREFIX_BOOT PREFIX_PROG PREFIX_PROG_STRIPPED PREFIX_A PREFIX_H CROSS CFLAGS LDFLAGS CC LD AR CLEAN MAKEFLAGS
 
-if [[ -n "$PORTS_INSTALL_STRIPPED" && "$PORTS_INSTALL_STRIPPED" = "n" ]]; then
-	export PREFIX_PORTS_INSTALL=$PREFIX_PROG
+if [ -n "$PORTS_INSTALL_STRIPPED" ] && [ "$PORTS_INSTALL_STRIPPED" = "n" ]; then
+	export PREFIX_PORTS_INSTALL="$PREFIX_PROG"
 else
-	export PREFIX_PORTS_INSTALL=$PREFIX_PROG_STRIPPED
+	export PREFIX_PORTS_INSTALL="$PREFIX_PROG_STRIPPED"
 fi
 
+[ "${PORTS_BUSYBOX}" = "y" ] && ./phoenix-rtos-ports/busybox/build.sh
 
-[ "X${PORTS_BUSYBOX}" == "Xy" ] && ./phoenix-rtos-ports/busybox/build.sh
+[ "${PORTS_PCRE}" = "y" ] && ./phoenix-rtos-ports/pcre/build.sh
 
-[ "X${PORTS_PCRE}" == "Xy" ] && ./phoenix-rtos-ports/pcre/build.sh
+[ "${PORTS_OPENSSL}" = "y" ] && ./phoenix-rtos-ports/openssl/build.sh
 
-[ "X${PORTS_OPENSSL}" == "Xy" ] && ./phoenix-rtos-ports/openssl/build.sh
+[ "${PORTS_LIGHTTPD}" = "y" ] && ./phoenix-rtos-ports/lighttpd/build.sh
 
-[ "X${PORTS_LIGHTTPD}" == "Xy" ] && ./phoenix-rtos-ports/lighttpd/build.sh
+[ "${PORTS_DROPBEAR}" = "y" ] && ./phoenix-rtos-ports/dropbear/build.sh
 
-[ "X${PORTS_DROPBEAR}" == "Xy" ] && ./phoenix-rtos-ports/dropbear/build.sh
+[ "${PORTS_LUA}" = "y" ] && ./phoenix-rtos-ports/lua/build.sh
 
-[ "X${PORTS_LUA}" == "Xy" ] && ./phoenix-rtos-ports/lua/build.sh
+[ "${PORTS_LZO}" = "y" ] && ./phoenix-rtos-ports/lzo/build.sh
 
-[ "X${PORTS_LZO}" == "Xy" ] && ./phoenix-rtos-ports/lzo/build.sh
+[ "${PORTS_OPENVPN}" = "y" ] && ./phoenix-rtos-ports/openvpn/build.sh
 
-[ "X${PORTS_OPENVPN}" == "Xy" ] && ./phoenix-rtos-ports/openvpn/build.sh
+[ "${PORTS_CURL}" = "y" ] && ./phoenix-rtos-ports/curl/build.sh
 
-[ "X${PORTS_CURL}" == "Xy" ] && ./phoenix-rtos-ports/curl/build.sh
+[ "${PORTS_JANSSON}" = "y" ] && ./phoenix-rtos-ports/jansson/build.sh
 
-[ "X${PORTS_JANSSON}" == "Xy" ] && ./phoenix-rtos-ports/jansson/build.sh
-
-[ "X${PORTS_MICROPYTHON}" == "Xy" ] && ./phoenix-rtos-ports/micropython/build.sh
+[ "${PORTS_MICROPYTHON}" = "y" ] && ./phoenix-rtos-ports/micropython/build.sh
 
 exit 0
