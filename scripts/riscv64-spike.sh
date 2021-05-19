@@ -7,7 +7,7 @@
 #
 
 exec qemu-system-riscv64 \
-	-smp 2 \
+	-smp 1 \
 	-machine virt \
 	-bios "$(dirname "${BASH_SOURCE[0]}")/../../_boot/phoenix-riscv64-spike.bbl" \
 	-serial stdio \
