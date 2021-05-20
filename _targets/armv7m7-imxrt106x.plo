@@ -3,8 +3,8 @@ map dtcm 20000000 20028000 R+W
 map ocram2 20200000 2027fe00 R+W+E
 map xip1 70000000 70400000 R+E
 map xip2 60000000 64000000 R+E
-kernel flash0
-app flash0 @dummyfs xip1 dtcm
-app flash0 @psh
-app flash0 @imxrt-multi itcm dtcm
+kernel flash1
+app flash1 @dummyfs xip1 dtcm
+app flash1 @psh
+app flash1 @imxrt-multi itcm dtcm
 go!
