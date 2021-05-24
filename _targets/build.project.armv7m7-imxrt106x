@@ -40,23 +40,75 @@ KERNEL_OFFS=$((0x11000))
 # Project specific build
 #
 
-PROGS=("dummyfs" "imxrt-multi" "psh" "imxrt-flash")
+PROGS=()
+BOOT_DEVICE="flash1"
+NAME_USER_SCRIPT="user.plo"
+OFFS_USER_SCRIPT=$((0x10a00))
+MAGIC_USER_SCRIPT=
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=("map itcm 0x0 0x40000 rwx"
+                "map dtcm 0x20000000 0x20028000 rw"
+                "map ocram2 0x20200000 0x2027fe00 rwx"
+                "map xip1 0x70000000 0x70400000 rx"
+                "map xip2 0x60000000 0x64000000 rx"
+                "phfs usb0 1.2 phoenixd"
+                "phfs flash0 2.0 raw"
+                "phfs flash1 2.1 raw"
+                "console 0.1"
+                "wait 2000")
+
+# Obligatory applications to run Phoenix-RTOS
+USER_SCRIPT=("kernel ${BOOT_DEVICE}"
+             "app ${BOOT_DEVICE} -x dummyfs xip1 ocram2"
+             "app ${BOOT_DEVICE} -x imxrt-multi ocram2 ocram2"
+             "app ${BOOT_DEVICE} -x psh xip1 ocram2"
+             "app ${BOOT_DEVICE} imxrt-flash ocram2 ocram2")
 
 
-b_mkscript() {
+b_mkscript_user() {
 	ksz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
 	poffs=$((KERNEL_OFFS + ksz))
 
-	for prog in "${PROGS[@]}"; do
-		psz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}$prog") + SIZE_PAGE - 1) & PAGE_MASK))
-		printf "@%s(%x:%x)\n" "$prog" "$poffs" "$psz" >> "$PREFIX_BUILD/plo/script.plo"
-		((poffs+=psz))
+	printf "%08x" "$MAGIC_USER_SCRIPT" >> "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+	for cmd in "${USER_SCRIPT[@]}"; do
+		args=($cmd)
+		case "${args[0]}"
+		in
+			app)
+				if [ "${args[2]}" = "-x" ] ; then
+					name=$(cut -d ';' -f 1 <<< "${args[3]}")
+				else
+					name=$(cut -d ';' -f 1 <<< "${args[2]}")
+				fi
+
+				PROGS+=("$name")
+				psz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}$name") + SIZE_PAGE - 1) & PAGE_MASK))
+				printf "alias %s 0x%x 0x%x\n" "$name" "$poffs" "$psz" >> "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+				((poffs+=psz));;
+
+			kernel)
+				printf "alias %s 0x%x 0x%x\n" "phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$KERNEL_OFFS" "$ksz" >> "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT";;
+		esac;
+		printf "%s\n" "$cmd" >> "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
 	done
 
-	cat _targets/armv7m7-imxrt106x.plo >> "$PREFIX_BUILD/plo/script.plo"
-	printf "\0" >> "$PREFIX_BUILD/plo/script.plo"
+	printf "\0" >> "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
 }
 
+
+b_mkscript_preinit() {
+	for cmd in "${PREINIT_SCRIPT[@]}"; do
+		printf "%s\n" "$cmd" >> "$PREFIX_BUILD/plo/script.plo"
+	done
+
+	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	{
+		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$sz"
+		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
+		printf "\0"
+	} >> "$PREFIX_BUILD/plo/script.plo"
+}
 
 
 b_build_target() {
@@ -67,7 +119,9 @@ b_build_target() {
 	b_log "Building plo"
 	make -C plo clean all
 
-	b_mkscript
+	MAGIC_USER_SCRIPT=$((($RANDOM % 0xffff) | (($RANDOM % 0xffff) << 16)))
+	b_mkscript_user
+	b_mkscript_preinit
 
 	b_log "Relink plo to include the new script"
 	make -C plo all
@@ -94,6 +148,10 @@ b_image_target() {
 	# Loader
 	OFFSET=0
 	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$IMG"
+
+	# User script
+	OFFSET="$OFFS_USER_SCRIPT"
+	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$IMG"
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
