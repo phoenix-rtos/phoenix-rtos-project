@@ -9,7 +9,7 @@
 
 
 # Pre-init script is launched before user script
-PREINIT_SCRIPT=("map ddr 100000 900000 rwx"
+PREINIT_SCRIPT=("map ddr 0x100000 0x900000 rwx"
                 "phfs usb0 1.2 phoenixd"
                 "phfs uart0 0.0 phoenixd"
                 "phfs uart1 0.1 raw"
@@ -18,22 +18,20 @@ PREINIT_SCRIPT=("map ddr 100000 900000 rwx"
 
 
 b_mkscript_preinit() {
+	mkdir -p "$PREFIX_BUILD/plo/"
+	rm -f "$PREFIX_BUILD/plo/script.plo"
+
 	for cmd in "${PREINIT_SCRIPT[@]}"; do
-		printf "%s\n" "$cmd" >> "$PREFIX_BUILD/plo/script.plo"
-	done
+		printf "%s\n" "$cmd"
+	done >> "$PREFIX_BUILD/plo/script.plo"
 }
 
 
 b_build_target() {
 	b_log "Building sample project for $TARGET"
 
-	# FIXME: build plo out of tree and without clean
 	b_log "Building plo"
-	make -C plo clean all
-
 	b_mkscript_preinit
-
-	b_log "Relink plo to include the new script"
 	make -C plo all
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
