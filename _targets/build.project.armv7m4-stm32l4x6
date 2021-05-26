@@ -44,7 +44,7 @@ b_image_target() {
 
 	phoenix-rtos-build/scripts/mkimg-stm32.sh \
 		"${PROGS}/phoenix-${TARGET}.elf" "" "${IMG}" \
-		"${PROGS}/stm32-multi;17" "${PROGS}/dummyfs;17" "${PROGS}/psh;17"
+		"${PROGS}/stm32l4-multi;17" "${PROGS}/dummyfs;17" "${PROGS}/psh;17"
 }
 
 b_test_target() {
