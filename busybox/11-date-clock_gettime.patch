@@ -1,0 +1,14 @@
+diff -Nuar busybox-1.27.2.orig/coreutils/date.c busybox-1.27.2/coreutils/date.c
+--- busybox-1.27.2.orig/coreutils/date.c	2017-07-06 17:14:57.000000000 +0200
++++ busybox-1.27.2/coreutils/date.c	2021-05-27 13:52:43.742289982 +0200
+@@ -260,9 +260,7 @@
+ #endif
+ 	} else {
+ #if ENABLE_FEATURE_DATE_NANO
+-		/* libc has incredibly messy way of doing this,
+-		 * typically requiring -lrt. We just skip all this mess */
+-		syscall(__NR_clock_gettime, CLOCK_REALTIME, &ts);
++		clock_gettime(CLOCK_REALTIME, &ts);
+ #else
+ 		time(&ts.tv_sec);
+ #endif
