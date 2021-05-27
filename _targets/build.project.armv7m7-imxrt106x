@@ -96,8 +96,10 @@ b_mkscript_user() {
 			esac;
 			printf "%s\n" "$cmd"
 		done
+
 		printf "\0"
 	} >> "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+
 }
 
 
@@ -116,6 +118,12 @@ b_mkscript_preinit() {
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
 		printf "\0"
 	} >> "$file"
+}
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
 }
 
 

@@ -36,6 +36,11 @@ b_build_target() {
 	:
 }
 
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
 b_image_target() {
 	b_log "Creating image"
 
