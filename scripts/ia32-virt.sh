@@ -7,8 +7,8 @@
 #
 
 exec qemu-system-i386 \
-	-smp 2 \
+	-smp 1 \
 	-serial stdio \
 	-device virtio-gpu-pci \
-	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-ia32-generic.disk",cache=unsafe,if=virtio \
+	-hda "$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-ia32-generic.disk" \
 	-netdev user,id=net0 -device virtio-net-pci,netdev=net0
