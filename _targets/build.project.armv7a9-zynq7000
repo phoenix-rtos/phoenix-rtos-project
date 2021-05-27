@@ -27,6 +27,12 @@ b_mkscript_preinit() {
 }
 
 
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
 b_build_target() {
 	b_log "Building sample project for $TARGET"
 
