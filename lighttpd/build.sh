@@ -36,7 +36,7 @@ done
 #
 if [ ! -f "$PREFIX_LIGHTTPD_BUILD/config.h" ]; then
 	# FIXME: take into account commented-out modules
-	CONFIGFILE=$(find "${TOPDIR}/_fs/root-skel/etc" -name "lighttpd.conf")
+	CONFIGFILE=$(find "${PREFIX_ROOTFS:?PREFIX_ROOTFS not set!}/etc" -name "lighttpd.conf")
 	grep mod_ "$CONFIGFILE" | cut -d'"' -f2 | xargs -L1 -I{} echo "PLUGIN_INIT({})" > "$PREFIX_LIGHTTPD_SRC"/src/plugin-static.h
 
 	LIGHTTPD_CFLAGS="-DLIGHTTPD_STATIC -DPHOENIX"
