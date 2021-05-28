@@ -57,4 +57,6 @@ fi
 
 [ "${PORTS_MICROPYTHON}" = "y" ] && ./phoenix-rtos-ports/micropython/build.sh
 
+[ "${PORTS_SSCEP}" = "y" ] && ./phoenix-rtos-ports/sscep/build.sh
+
 exit 0

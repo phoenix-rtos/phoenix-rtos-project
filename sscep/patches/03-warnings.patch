@@ -1,0 +1,58 @@
+diff -ruN a/src/configuration.c b/src/configuration.c
+--- a/src/configuration.c	2021-05-28 12:38:32.678898542 +0200
++++ b/src/configuration.c	2021-05-28 12:32:07.008567607 +0200
+@@ -545,7 +545,7 @@
+ 				printf("Option: %s, Flag: %i, Value: %s\n", names[i], flags[i], chars[i]);
+ 		}
+ 	} else {
+-		fprintf(stderr, "Length of Arrays does not match! Flags: %li, Chars: %li, Names: %li\n",
++		fprintf(stderr, "Length of Arrays does not match! Flags: %zu, Chars: %zu, Names: %zu\n",
+ 			sizeof(flags)/sizeof(int),
+ 			sizeof(chars)/sizeof(char *),
+ 			sizeof(names)/sizeof(char *)
+diff -ruN a/src/engine.c b/src/engine.c
+--- a/src/engine.c	2021-05-28 12:38:32.678898542 +0200
++++ b/src/engine.c	2021-05-28 12:44:14.689303915 +0200
+@@ -1,6 +1,6 @@
+ #include "engine.h"
+ 
+-ENGINE *scep_engine_init() {
++ENGINE *scep_engine_init(void) {
+ 	ENGINE *e = NULL;
+ 
+ 		ENGINE_load_builtin_engines();
+@@ -113,7 +113,7 @@
+ 		return e;
+ }
+ 
+-ENGINE *scep_engine_load_dynamic() {
++ENGINE *scep_engine_load_dynamic(void) {
+ 	ENGINE *e;
+ 	//it seems OpenSSL did not already have it. In this case we will try to load it dynamically
+ 	e = ENGINE_by_id("dynamic");
+diff -ruN a/src/engine.h b/src/engine.h
+--- a/src/engine.h	2021-05-28 12:38:32.678898542 +0200
++++ b/src/engine.h	2021-05-28 12:24:21.844378784 +0200
+@@ -5,8 +5,8 @@
+ #define CAPI_CMD_STORE_NAME		(ENGINE_CMD_BASE + 12) //this is the basic command to change the storename
+ #define CAPI_CMD_STORE_FLAGS	(ENGINE_CMD_BASE + 13) //this is used to set the storelocation
+ 
+-ENGINE *scep_engine_init();
+-ENGINE *scep_engine_load_dynamic();
++ENGINE *scep_engine_init(void);
++ENGINE *scep_engine_load_dynamic(void);
+ void sscep_engine_read_key(EVP_PKEY **key, char *id, ENGINE *e);
+ void sscep_engine_read_key_old(EVP_PKEY **key, char *id, ENGINE *e);
+ void sscep_engine_read_key_new(EVP_PKEY **key, char *id, ENGINE *e);
+diff -ruN a/src/sscep.c b/src/sscep.c
+--- a/src/sscep.c	2021-05-28 12:38:32.682899702 +0200
++++ b/src/sscep.c	2021-05-28 12:27:23.554614192 +0200
+@@ -1123,7 +1123,7 @@
+ 			/* send http */
+ 			reply.payload = NULL;
+ 			if ((c = send_msg(&reply, SUP_CAP_POST_PKI(ca_caps), "PKIOperation", operation_flag,
+-						M_char, scep_t.request_payload, scep_t.request_len,
++						M_char, (char*) scep_t.request_payload, scep_t.request_len,
+ 						p_flag, host_name, host_port, dir_name)) == 1) {
+ 				fprintf(stderr, "%s: error while sending "
+ 					"message\n", pname);

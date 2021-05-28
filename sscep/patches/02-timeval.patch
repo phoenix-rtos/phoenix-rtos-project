@@ -1,0 +1,11 @@
+diff -ruN a/src/sscep.h b/src/sscep.h
+--- a/src/sscep.h	2021-05-28 12:38:32.682899702 +0200
++++ b/src/sscep.h	2021-05-26 15:55:41.295127666 +0200
+@@ -17,6 +17,7 @@
+ #include <ctype.h>
+ #include <signal.h>
+ #include <setjmp.h>
++#include <sys/time.h>
+ #include <getopt.h>
+ #include "fileutils_capi.h"
+ #include "configuration.h"
