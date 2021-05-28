@@ -13,6 +13,7 @@ export BOARD_CONFIG=" -DUART_CONSOLE=2 -DTTY2=1 "
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
 #
 # Ports configuration
