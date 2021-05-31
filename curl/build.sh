@@ -37,4 +37,4 @@ cp -a "$PREFIX_CURL_INSTALL/include/curl" "$PREFIX_H"
 cp -a "$PREFIX_CURL_INSTALL/lib/"* "$PREFIX_A"
 cp -a "$PREFIX_CURL_INSTALL/bin/curl" "$PREFIX_PROG/curl"
 "${CROSS}strip" -s "$PREFIX_PROG/curl" -o "$PREFIX_PROG_STRIPPED/curl"
-b_install "$PREFIX_PORTS_INSTALL/curl" /bin/
+b_install "$PREFIX_PORTS_INSTALL/curl" /usr/bin/

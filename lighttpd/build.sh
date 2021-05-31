@@ -59,4 +59,4 @@ fi
 make -C "${PREFIX_LIGHTTPD_BUILD}" install
 
 "${CROSS}strip" -s "$PREFIX_PROG/lighttpd" -o "$PREFIX_PROG_STRIPPED/lighttpd"
-b_install "$PREFIX_PORTS_INSTALL/lighttpd" /sbin
+b_install "$PREFIX_PORTS_INSTALL/lighttpd" /usr/sbin
