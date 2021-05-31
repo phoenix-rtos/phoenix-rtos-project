@@ -1,0 +1,13 @@
+diff -Nuar busybox-1.27.2.orig/runit/runsv.c busybox-1.27.2/runit/runsv.c
+--- busybox-1.27.2.orig/runit/runsv.c	2021-05-31 17:18:27.828630914 +0200
++++ busybox-1.27.2/runit/runsv.c	2021-05-31 19:08:16.923457986 +0200
+@@ -624,7 +624,8 @@
+ 		x[2].events = POLLIN;
+ 		sig_unblock(SIGTERM);
+ 		sig_unblock(SIGCHLD);
+-		poll(x, 2 + haslog, 3600*1000);
++		// PHOENIX: poll is uninterruptible, timeout every 1s
++		poll(x, 2 + haslog, 1*1000);
+ 		sig_block(SIGTERM);
+ 		sig_block(SIGCHLD);
+ 
