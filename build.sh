@@ -59,4 +59,6 @@ fi
 
 [ "${PORTS_SSCEP}" = "y" ] && ./phoenix-rtos-ports/sscep/build.sh
 
+[ "${PORTS_WPA_SUPPLICANT}" = "y" ] && ./phoenix-rtos-ports/wpa_supplicant/build.sh
+
 exit 0

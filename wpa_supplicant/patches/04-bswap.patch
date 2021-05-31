@@ -1,0 +1,15 @@
+diff -ruN a/src/utils/common.h b/src/utils/common.h
+--- a/src/utils/common.h	2021-05-31 16:31:59.653375453 +0200
++++ b/src/utils/common.h	2021-05-16 11:47:19.467296144 +0200
+@@ -53,6 +53,11 @@
+ }
+ #endif /* __APPLE__ */
+ 
++#ifdef __phoenix__
++#define bswap_16 __builtin_bswap16
++#define bswap_32 __builtin_bswap32
++#endif /* __phoenix__ */
++
+ #ifdef __rtems__
+ #include <rtems/endian.h>
+ #define __BYTE_ORDER BYTE_ORDER

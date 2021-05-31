@@ -1,0 +1,67 @@
+diff -ruN a/wpa_supplicant/Makefile b/wpa_supplicant/Makefile
+--- a/wpa_supplicant/Makefile	2021-05-31 16:31:59.577381779 +0200
++++ b/wpa_supplicant/Makefile	2021-05-31 16:37:54.629581771 +0200
+@@ -22,9 +22,8 @@
+ export BINDIR ?= /usr/local/sbin/
+ PKG_CONFIG ?= pkg-config
+ 
+-CFLAGS += $(EXTRA_CFLAGS)
+-CFLAGS += -I$(abspath ../src)
+-CFLAGS += -I$(abspath ../src/utils)
++# add our include paths at the beginning to avoid including wrong files (like 'utils/list.h')
++CFLAGS := -I$(abspath ../src) -I$(abspath ../src/utils) $(CFLAGS) $(EXTRA_CFLAGS)
+ 
+ -include .config
+ 
+@@ -155,16 +154,6 @@
+ OBJS += ../src/utils/$(CONFIG_ELOOP).o
+ OBJS_c += ../src/utils/$(CONFIG_ELOOP).o
+ 
+-ifndef CONFIG_OSX
+-ifeq ($(CONFIG_ELOOP), eloop)
+-# Using glibc < 2.17 requires -lrt for clock_gettime()
+-# OS X has an alternate implementation
+-LIBS += -lrt
+-LIBS_c += -lrt
+-LIBS_p += -lrt
+-endif
+-endif
+-
+ ifdef CONFIG_ELOOP_POLL
+ CFLAGS += -DCONFIG_ELOOP_POLL
+ endif
+@@ -1293,16 +1282,6 @@
+ CONFIG_INTERNAL_RC4=y
+ endif
+ 
+-ifdef TLS_FUNCS
+-ifdef CONFIG_SMARTCARD
+-ifndef CONFIG_NATIVE_WINDOWS
+-ifneq ($(CONFIG_L2_PACKET), freebsd)
+-LIBS += -ldl
+-endif
+-endif
+-endif
+-endif
+-
+ ifndef TLS_FUNCS
+ OBJS += ../src/crypto/tls_none.o
+ ifeq ($(CONFIG_TLS), internal)
+@@ -1900,7 +1879,7 @@
+ $(OBJS_c) $(OBJS_t) $(OBJS_t2) $(OBJS) $(BCHECK) $(EXTRA_progs): .config
+ 
+ wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
+-	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS)
++	$(Q)$(LDO) $(CFLAGS) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS)
+ 	@$(E) "  LD " $@
+ 
+ eapol_test: $(OBJS_t)
+@@ -1916,7 +1895,7 @@
+ 	@$(E) "  LD " $@
+ 
+ wpa_cli: $(OBJS_c)
+-	$(Q)$(LDO) $(LDFLAGS) -o wpa_cli $(OBJS_c) $(LIBS_c)
++	$(Q)$(LDO) $(CFLAGS) $(LDFLAGS) -o wpa_cli $(OBJS_c) $(LIBS_c)
+ 	@$(E) "  LD " $@
+ 
+ LIBCTRL += ../src/common/wpa_ctrl.o

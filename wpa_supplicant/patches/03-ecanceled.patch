@@ -1,0 +1,14 @@
+diff -ruN a/wpa_supplicant/rrm.c b/wpa_supplicant/rrm.c
+--- a/wpa_supplicant/rrm.c	2021-05-31 16:31:59.569382444 +0200
++++ b/wpa_supplicant/rrm.c	2021-05-31 16:43:11.880823619 +0200
+@@ -106,6 +106,10 @@
+ #define ECANCELED -1
+ #endif
+ 
++#if defined(__phoenix__)
++#define ECANCELED -1
++#endif
++
+ /* Measurement Request element + Location Subject + Maximum Age subelement */
+ #define MEASURE_REQUEST_LCI_LEN (3 + 1 + 4)
+ /* Measurement Request element + Location Civic Request */
