@@ -39,12 +39,11 @@ jobs:
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
-          param1: 'clean'
-          param2: 'core'
-          param3: 'fs'
-          param4: 'test'
-          param5: 'project'
-          param6: 'image'
+          param1: 'core'
+          param2: 'fs'
+          param3: 'test'
+          param4: 'project'
+          param5: 'image'
 
       # step 3: upload contents of "_boot" as build artifacts
       - name: Upload build artifacts
