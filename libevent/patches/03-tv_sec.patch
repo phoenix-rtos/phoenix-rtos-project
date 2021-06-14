@@ -1,0 +1,30 @@
+diff -ruN a/event.c b/event.c
+--- a/event.c	2021-06-10 16:12:05.856718550 +0200
++++ b/event.c	2021-06-10 16:15:53.593461694 +0200
+@@ -661,7 +661,7 @@
+ 		base->limit_callbacks_after_prio =
+ 		    cfg->limit_callbacks_after_prio;
+ 	} else {
+-		base->max_dispatch_time.tv_sec = -1;
++		base->max_dispatch_time.tv_sec = LONG_LONG_MAX;
+ 		base->limit_callbacks_after_prio = 1;
+ 	}
+ 	if (cfg && cfg->max_dispatch_callbacks >= 0) {
+@@ -670,7 +670,7 @@
+ 		base->max_dispatch_callbacks = INT_MAX;
+ 	}
+ 	if (base->max_dispatch_callbacks == INT_MAX &&
+-	    base->max_dispatch_time.tv_sec == -1)
++	    base->max_dispatch_time.tv_sec == LONG_LONG_MAX)
+ 		base->limit_callbacks_after_prio = INT_MAX;
+ 
+ 	for (i = 0; eventops[i] && !base->evbase; i++) {
+@@ -1766,7 +1766,7 @@
+ 	struct timeval tv;
+ 	const int maxcb = base->max_dispatch_callbacks;
+ 	const int limit_after_prio = base->limit_callbacks_after_prio;
+-	if (base->max_dispatch_time.tv_sec >= 0) {
++	if (base->max_dispatch_time.tv_sec != LONG_LONG_MAX) {
+ 		update_time_cache(base);
+ 		event_gettime(base, &tv);
+ 		evutil_timeradd(&base->max_dispatch_time, &tv, &tv);

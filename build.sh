@@ -61,4 +61,6 @@ fi
 
 [ "${PORTS_WPA_SUPPLICANT}" = "y" ] && ./phoenix-rtos-ports/wpa_supplicant/build.sh
 
+[ "${PORTS_LIBEVENT}" = "y" ] && ./phoenix-rtos-ports/libevent/build.sh
+
 exit 0

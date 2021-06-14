@@ -1,0 +1,11 @@
+diff -ruN a/configure b/configure
+--- a/configure	2021-06-10 16:02:52.892314010 +0200
++++ b/configure	2021-06-10 13:23:18.643876224 +0200
+@@ -14256,7 +14256,6 @@
+   gettimeofday \
+   issetugid \
+   mach_absolute_time \
+-  mmap \
+   nanosleep \
+   pipe \
+   pipe2 \

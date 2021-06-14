@@ -1,0 +1,93 @@
+diff -ruN a/event.c b/event.c
+--- a/event.c	2021-06-10 16:04:34.031181998 +0200
++++ b/event.c	2021-06-10 16:08:23.539024432 +0200
+@@ -410,7 +410,7 @@
+  * Return 0 on success, -1 on failure.
+  */
+ static int
+-gettime(struct event_base *base, struct timeval *tp)
++event_gettime(struct event_base *base, struct timeval *tp)
+ {
+ 	EVENT_BASE_ASSERT_LOCKED(base);
+ 
+@@ -468,7 +468,7 @@
+ {
+ 	base->tv_cache.tv_sec = 0;
+ 	if (!(base->flags & EVENT_BASE_FLAG_NO_CACHE_TIME))
+-	    gettime(base, &base->tv_cache);
++	    event_gettime(base, &base->tv_cache);
+ }
+ 
+ int
+@@ -637,7 +637,7 @@
+ 		flags = precise_time ? EV_MONOT_PRECISE : 0;
+ 		evutil_configure_monotonic_time_(&base->monotonic_timer, flags);
+ 
+-		gettime(base, &tmp);
++		event_gettime(base, &tmp);
+ 	}
+ 
+ 	min_heap_ctor_(&base->timeheap);
+@@ -1466,7 +1466,7 @@
+ 	struct event_base *base = ctl->base;
+ 	struct event *ev = NULL;
+ 	EVBASE_ACQUIRE_LOCK(base, th_base_lock);
+-	gettime(base, &now);
++	event_gettime(base, &now);
+ 	while (1) {
+ 		ev = TAILQ_FIRST(&ctl->events);
+ 		if (!ev || ev->ev_timeout.tv_sec > now.tv_sec ||
+@@ -1578,7 +1578,7 @@
+ 		ev_uint32_t usec_mask = 0;
+ 		EVUTIL_ASSERT(is_same_common_timeout(&ev->ev_timeout,
+ 			&ev->ev_io_timeout));
+-		gettime(base, &now);
++		event_gettime(base, &now);
+ 		if (is_common_timeout(&ev->ev_timeout, base)) {
+ 			delay = ev->ev_io_timeout;
+ 			usec_mask = delay.tv_usec & ~MICROSECONDS_MASK;
+@@ -1740,7 +1740,7 @@
+ 		if (count && endtime) {
+ 			struct timeval now;
+ 			update_time_cache(base);
+-			gettime(base, &now);
++			event_gettime(base, &now);
+ 			if (evutil_timercmp(&now, endtime, >=))
+ 				return count;
+ 		}
+@@ -1768,7 +1768,7 @@
+ 	const int limit_after_prio = base->limit_callbacks_after_prio;
+ 	if (base->max_dispatch_time.tv_sec >= 0) {
+ 		update_time_cache(base);
+-		gettime(base, &tv);
++		event_gettime(base, &tv);
+ 		evutil_timeradd(&base->max_dispatch_time, &tv, &tv);
+ 		endtime = &tv;
+ 	} else {
+@@ -2704,7 +2704,7 @@
+ 			event_queue_remove_active(base, event_to_event_callback(ev));
+ 		}
+ 
+-		gettime(base, &now);
++		event_gettime(base, &now);
+ 
+ 		common_timeout = is_common_timeout(tv, base);
+ #ifdef USE_REINSERT_TIMEOUT
+@@ -3156,7 +3156,7 @@
+ 		goto out;
+ 	}
+ 
+-	if (gettime(base, &now) == -1) {
++	if (event_gettime(base, &now) == -1) {
+ 		res = -1;
+ 		goto out;
+ 	}
+@@ -3188,7 +3188,7 @@
+ 		return;
+ 	}
+ 
+-	gettime(base, &now);
++	event_gettime(base, &now);
+ 
+ 	while ((ev = min_heap_top_(&base->timeheap))) {
+ 		if (evutil_timercmp(&ev->ev_timeout, &now, >))
