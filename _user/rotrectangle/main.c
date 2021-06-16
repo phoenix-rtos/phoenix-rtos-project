@@ -131,7 +131,7 @@ static int rotrectangle_print(rectangle_t *self, graph_t *graphp, unsigned int a
 	a = (double)self->a;
 	b = (double)self->b;
 
-	alfa = ((double)(angle) * M_PI) / 180.0;
+	alfa = ((double)angle * M_PI) / 180.0;
 	x0 = (unsigned int)(xc - ((sin(M_PI / 2 - alfa - atan(b / a))) * sqrt(pow(a, 2.0) + pow(b, 2.0))) / 2.0);
 	y0 = (unsigned int)(yc - ((cos(M_PI / 2 - alfa - atan(b / a))) * sqrt(pow(a, 2.0) + pow(b, 2.0))) / 2.0);
 
