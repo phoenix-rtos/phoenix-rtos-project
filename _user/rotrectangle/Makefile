@@ -8,5 +8,6 @@ NAME := rotrectangle
 LOCAL_SRCS := main.c
 LIBS := libgraph libvga libvirtio
 
-include $(binary.mk)
-
+ifneq ($(TARGET_FAMILY), host-pc)
+	include $(binary.mk)
+endif
