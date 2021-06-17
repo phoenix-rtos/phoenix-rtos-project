@@ -34,8 +34,8 @@
 
 
 typedef struct {
-	unsigned int xc;
-	unsigned int yc;
+	volatile unsigned int xc;
+	volatile unsigned int yc;
 	unsigned int a;
 	unsigned int b;
 	unsigned int color;
@@ -43,9 +43,10 @@ typedef struct {
 
 
 typedef struct {
+	handle_t lock;
 	rectangle_t rec;
 	rectangle_t prev;
-	unsigned int speed;
+	volatile unsigned int speed;
 	unsigned int maxxc;
 	unsigned int maxyc;
 	unsigned int minxc;
@@ -55,7 +56,7 @@ typedef struct {
 
 
 /* Enables/disables canon mode and echo */
-static int rotrectangle_switchmode(int canon)
+static void rotrectangle_switchmode(int canon)
 {
 	struct termios state;
 
@@ -70,8 +71,6 @@ static int rotrectangle_switchmode(int canon)
 		state.c_cc[VMIN] = 1;
 	}
 	tcsetattr(STDIN_FILENO, TCSANOW, &state);
-
-	return 0;
 }
 
 
@@ -84,6 +83,7 @@ static void rotrectangle_getkey(void *arg)
 			getchar();
 			ch = getchar();
 		}
+		mutexLock(self->lock);
 		switch (ch) {
 			case 67:
 				if (self->rec.xc < (self->maxxc - 4))
@@ -115,13 +115,14 @@ static void rotrectangle_getkey(void *arg)
 			default:
 				break;
 		}
+		mutexUnlock(self->lock);
 	}
 
 	endthread();
 }
 
 
-static int rotrectangle_print(rectangle_t *self, graph_t *graphp, unsigned int angle)
+static void rotrectangle_print(const rectangle_t *self, graph_t *graphp, unsigned int angle)
 {
 	double dx, dy, alfa, xc, yc, a, b;
 	unsigned int x0, y0, x, y; /* (x,y) is start point for next rectangle lines */
@@ -137,67 +138,62 @@ static int rotrectangle_print(rectangle_t *self, graph_t *graphp, unsigned int a
 
 	x = x0;
 	y = y0;
-	dx = (self->a) * cos(alfa);
-	dy = (self->a) * sin(alfa);
+	dx = a * cos(alfa);
+	dy = a * sin(alfa);
 	graph_line(graphp, x, y, (int)dx, (int)dy, 1, self->color, GRAPH_QUEUE_HIGH);
 
 	x = x0 + dx;
 	y = y0 + dy;
-	dx = (self->b) * cos(alfa + (0.5 * M_PI));
-	dy = (self->b) * sin(alfa + (0.5 * M_PI));
+	dx = b * cos(alfa + (0.5 * M_PI));
+	dy = b * sin(alfa + (0.5 * M_PI));
 	graph_line(graphp, x, y, (int)dx, (int)dy, 1, self->color, GRAPH_QUEUE_HIGH);
 
 	x = x0;
 	y = y0;
-	dx = (self->b) * cos(alfa + (0.5 * M_PI));
-	dy = (self->b) * sin(alfa + (0.5 * M_PI));
+	dx = b * cos(alfa + (0.5 * M_PI));
+	dy = b * sin(alfa + (0.5 * M_PI));
 	graph_line(graphp, x, y, (int)dx, (int)dy, 1, self->color, GRAPH_QUEUE_HIGH);
 
 	x = x0 + dx;
 	y = y0 + dy;
-	dx = (self->a) * cos(alfa);
-	dy = (self->a) * sin(alfa);
+	dx = a * cos(alfa);
+	dy = a * sin(alfa);
 	graph_line(graphp, x, y, (int)dx, (int)dy, 1, self->color, GRAPH_QUEUE_HIGH);
-
-	return 0;
 }
 
 
-static int rotrectangle_save(rotrectangle_t *self)
+static void rotrectangle_save(rotrectangle_t *self)
 {
 	self->prev.xc = self->rec.xc;
 	self->prev.yc = self->rec.yc;
 	self->prev.a = self->rec.a;
 	self->prev.b = self->rec.b;
 	self->prev.color = 0;
-
-	return 0;
 }
 
 
-static int rotrectangle_rotating(rotrectangle_t *self, graph_t *graphp)
+static void rotrectangle_rotating(rotrectangle_t *self, graph_t *graphp)
 {
-	unsigned int alfa, ret;
-	ret = 0;
+	unsigned int alfa;
 	while (self->stop == 0) {
 		for (alfa = 0; alfa < 360; alfa += self->speed) {
 			if (self->stop != 0)
 				break;
-			ret = rotrectangle_print(&(self->rec), graphp, alfa);
+			mutexLock(self->lock);
+			rotrectangle_print(&(self->rec), graphp, alfa);
 			/* filling rectangle functions are commented out, because of problem with screen refreshing, it's demo without it */
 			/* graph_fill(graphp, self->rec.xc, self->rec.yc, self->rec.color, GRAPH_FILL_FLOOD, GRAPH_QUEUE_HIGH); */
-			ret = rotrectangle_save(self);
+			rotrectangle_save(self);
+			mutexUnlock(self->lock);
 			usleep(10000); /* min value */
-			ret = rotrectangle_print(&(self->prev), graphp, alfa);
+			rotrectangle_print(&(self->prev), graphp, alfa);
 			/* graph_fill(graphp, self->rec.xc, self->rec.yc, 0, GRAPH_FILL_FLOOD, GRAPH_QUEUE_HIGH); */
 		}
 	}
-
-	return ret;
 }
 
 
-static int rotrectangle_startpanel(rotrectangle_t *self)
+static void rotrectangle_startpanel(void)
 {
 	printf("*** Rotating rectangle program ***\n");
 	printf("  User interface:\n");
@@ -210,8 +206,6 @@ static int rotrectangle_startpanel(rotrectangle_t *self)
 	printf("    )'q' - exit\n");
 	printf("  Press enter to start: \n");
 	getchar();
-
-	return 0;
 }
 
 
@@ -220,8 +214,6 @@ int main(void)
 	int ret;
 	char *stack;
 
-	stack = (char *)malloc(1024 * sizeof(char));
-
 	graph_adapter_t adapter = GRAPH_ANY;
 	graph_mode_t mode = GRAPH_DEFMODE;
 	graph_freq_t freq = GRAPH_DEFFREQ;
@@ -229,15 +221,15 @@ int main(void)
 
 	rotrectangle_t rotrectangle;
 
+	static const unsigned int stacksz = 1024;
+
 	rotrectangle.speed = 3;
 	rotrectangle.stop = 0;
 	rotrectangle.rec.a = 180;
 	rotrectangle.rec.b = 90;
 	rotrectangle.rec.color = 60000;
 
-	ret = rotrectangle_startpanel(&rotrectangle);
-
-	rotrectangle_switchmode(0);
+	rotrectangle_startpanel();
 
 	if ((ret = graph_init()) < 0) {
 		fprintf(stderr, "test_graph: failed to initialize library\n");
@@ -264,14 +256,23 @@ int main(void)
 	rotrectangle.maxyc = graph.height - rotrectangle.minyc;
 	rotrectangle.maxxc = graph.width - rotrectangle.minxc;
 
-	ret = beginthread(rotrectangle_getkey, 4, stack, sizeof(stack), &rotrectangle);
+	rotrectangle_switchmode(0);
 
-	ret = rotrectangle_rotating(&rotrectangle, &graph);
+	if ((stack = (char *)malloc(stacksz)) == NULL)
+		return 1;
+
+	mutexCreate(&rotrectangle.lock);
+
+	beginthread(rotrectangle_getkey, 4, stack, stacksz, (void *)&rotrectangle);
+
+	rotrectangle_rotating(&rotrectangle, &graph);
+
+	rotrectangle_switchmode(1);
 
 	graph_close(&graph);
 	graph_done();
 
 	free(stack);
 
-	return ret;
+	return 0;
 }
