@@ -84,8 +84,8 @@ b_image_target() {
 }
 
 b_test_target() {
-	b_log "Installing tests in the phoenix-rtos filesystem"
-	make -C "phoenix-rtos-tests" install
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
 }
 
 b_update_pkg() { :; }
