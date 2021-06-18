@@ -1,0 +1,166 @@
+#!/bin/bash
+#
+# Common shell script's functions for imxrt
+#
+# Copyright 2021 Phoenix Systems
+# Author: Hubert Buczynski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+
+# Function gets the following argument:
+# - $1 - array contains user's commands
+#
+# Function needs external variables to be defined in a project file:
+# - MAGIC_USER_SCRIPT - number which is assigned to user script
+# - NAME_USER_SCRIPT - name of the user script
+# - KERNEL_OFFS - offset on flash memory where kernel is located
+# - SIZE_PAGE
+# - PAGE_MASK
+#
+# Output variables:
+# - PROGS - names of the applications defined in the script
+b_mkscript_user() {
+	PROGS=()
+	declare -n cmds=$1
+	mkdir -p "$PREFIX_BUILD/plo/"
+
+	ksz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
+	poffs=$((KERNEL_OFFS + ksz))
+
+	{
+		printf "%08x\n" "$MAGIC_USER_SCRIPT"
+		for cmd in "${cmds[@]}"; do
+			args=($cmd)
+			case "${args[0]}"
+			in
+				app)
+					if [ "${args[2]}" = "-x" ]; then
+						name=${args[3]%%;*}
+					else
+						name=${args[2]%%;*}
+					fi
+
+					PROGS+=("$name")
+					psz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}$name") + SIZE_PAGE - 1) & PAGE_MASK))
+					printf "alias %s 0x%x 0x%x\n" "$name" "$poffs" "$psz"
+					((poffs+=psz));;
+
+				kernel)
+					printf "alias %s 0x%x 0x%x\n" "phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$KERNEL_OFFS" "$ksz";;
+			esac;
+			printf "%s\n" "$cmd"
+		done
+
+		printf "\0"
+	} > "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+}
+
+
+# Function needs external variables to be defined in a project file:
+# - PREINIT_SCRIPT - array of basic commands which configure the platform
+# - NAME_USER_SCRIPT - name of the user script
+# - MAGIC_USER_SCRIPT - number which is assigned to user script
+# - BOOT_DEVICE - name of the device from which script is called
+# - OFFS_USER_SCRIPT - offset on flash memory where user script is located
+b_mkscript_preinit() {
+	file="$PREFIX_BUILD/plo/script.plo"
+	mkdir -p "$PREFIX_BUILD/plo/"
+
+	{
+		printf "%s\n" "${PREINIT_SCRIPT[@]}"
+
+		sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$sz"
+		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
+		printf "\0"
+	} > "$file"
+}
+
+
+# Function gets the following arguments:
+# - $1 - path to file which should be added to image
+# - $2 - path to image file
+#
+# Function needs external variables to be defined in a project file:
+# - OFFSET - starting file's position in the image
+# - SIZE_PAGE
+# - PAGE_MASK
+b_add2img() {
+	printf "Copying %s (offs=%dB)\n" "$1" "$OFFSET"
+	dd if="$1" of="$2" bs=1 seek="$OFFSET" conv=notrunc 2>/dev/null
+	sz=$((($(wc -c < "$1") + SIZE_PAGE - 1) & PAGE_MASK))
+	OFFSET=$((OFFSET + sz))
+}
+
+
+# Function needs external variables to be defined in a project file:
+# - OFFS_USER_SCRIPT - offset on flash memory where user script is located
+# - KERNEL_OFFS - offset on flash memory where kernel is located
+b_prod_image() {
+	b_log "Creating production image"
+
+	IMG=_boot/phoenix-${TARGET}.disk
+	rm -f "$IMG"
+
+	# Loader
+	OFFSET=0
+	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$IMG"
+
+	# User script
+	OFFSET="$OFFS_USER_SCRIPT"
+	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$IMG"
+
+	# Kernel
+	OFFSET="$KERNEL_OFFS"
+	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$IMG"
+
+	# Programs
+	for prog in "${PROGS[@]}"; do
+		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
+	done
+}
+
+
+# Function needs external variables to be defined in a project file:
+# - DEV_USER_SCRIPT - set of development commands
+# - REMOTE_USER_SCRIPT - set of develpoment commands which are called by dev user script
+# - OFFS_USER_SCRIPT - offset on flash memory where user script is located
+# - KERNEL_OFFS - offset on flash memory where kernel is located
+b_dev_image() {
+	b_log "Creating development images"
+
+	REMOTE_SCRIPT_PATH=_boot/script-${TARGET}-dev.plo
+	PLO_DEV_IMG=_boot/plo-script-${TARGET}-dev.img
+	SYS_DEV_IMG=_boot/script-kernel-app-${TARGET}.disk
+
+	rm -f "$PLO_DEV_IMG" "$SYS_DEV_IMG"
+
+	b_mkscript_user DEV_USER_SCRIPT
+	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
+
+	# Loader
+	OFFSET=0
+	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PLO_DEV_IMG"
+
+	# Dev user script
+	OFFSET="$OFFS_USER_SCRIPT"
+	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
+
+	dd if=/dev/zero of="$PLO_DEV_IMG" bs=1 seek="$OFFSET" count=$((KERNEL_OFFS - OFFS_USER_SCRIPT)) 2>/dev/null
+
+
+	# Dev user script
+	OFFSET=0
+	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$SYS_DEV_IMG"
+
+	# Kernel
+	KERNEL_OFFS=$((KERNEL_OFFS - OFFS_USER_SCRIPT))
+	OFFSET="$KERNEL_OFFS"
+	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$SYS_DEV_IMG"
+
+	# Programs
+	for prog in "${PROGS[@]}"; do
+		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$SYS_DEV_IMG"
+	done
+}
