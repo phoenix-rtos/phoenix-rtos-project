@@ -13,12 +13,17 @@
  * %LICENSE%
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <signal.h>
 #include <math.h>
 #include <graph.h>
+
+
+volatile unsigned int flagQuit;
 
 
 typedef struct _camera_t {
@@ -61,18 +66,20 @@ static int interpolate(uint32_t *tab, uint32_t a, uint32_t b, int n)
 }
 
 
-void voxel_free(voxel_t *v)
+static void voxel_free(voxel_t *v)
 {
+	free(v->palette);
+	free(v->pixels);
 	free(v->bufBack);
 	free(v->mapColor);
 	free(v->mapHeight);
 }
 
 
-int voxel_init(voxel_t *v)
+static int voxel_init(voxel_t *v, graph_t *g)
 {
 	do {
-		if (v->width == 0 || v->height == 0)
+		if (g->width < 800 || g->height < 600)
 			return -1;
 
 		if ((v->mapHeight = malloc(1024 * 1024)) == NULL)
@@ -81,14 +88,19 @@ int voxel_init(voxel_t *v)
 		if ((v->mapColor = malloc(1024 * 1024)) == NULL)
 			break;
 
-		if ((v->bufBack = malloc(v->width * sizeof(int))) == NULL)
+		if ((v->bufBack = malloc(g->width * sizeof(int))) == NULL)
 			break;
 
-		if ((v->palette = malloc(256 * sizeof(uint32_t))) == NULL)
+		if ((v->pixels = malloc(g->width * g->height * g->depth)) == NULL)
 			break;
 
+		if ((v->palette = malloc(256 * g->depth)) == NULL)
+			break;
 
-		return 0;
+		v->width = g->width;
+		v->height = g->height;
+
+		return EOK;
 	} while (0);
 
 	voxel_free(v);
@@ -97,7 +109,7 @@ int voxel_init(voxel_t *v)
 }
 
 
-void voxel_drawLine(uint32_t *pixel, uint32_t *pal, int width, int x, int ht, int hb, uint8_t col)
+static void voxel_drawLine(uint32_t *pixel, int width, int x, int ht, int hb, uint32_t rgb)
 {
 	if (ht < 0)
 		ht = 0;
@@ -107,14 +119,14 @@ void voxel_drawLine(uint32_t *pixel, uint32_t *pal, int width, int x, int ht, in
 
 	pixel += ht * width + x;
 	while (ht < hb) {
-		*pixel = pal[col];
+		*pixel = rgb;
 		pixel += width;
 		ht++;
 	}
 }
 
 
-void voxel_drawView(voxel_t *v)
+static void voxel_drawView(voxel_t *v)
 {
 	int hs = 0, x = 0, y = 0, i;
 	int scale_height = 120;
@@ -146,7 +158,7 @@ void voxel_drawView(voxel_t *v)
 
 			hs = (v->cam.h - v->mapHeight[x + y * 1024]) * invz + v->cam.horiz;
 
-			voxel_drawLine(v->pixels, v->palette, v->width, i, hs, v->bufBack[i], v->mapColor[x + y * 1024]);
+			voxel_drawLine(v->pixels, v->width, i, hs, v->bufBack[i], v->palette[v->mapColor[x + y * 1024]]);
 
 			if (hs < v->bufBack[i])
 				v->bufBack[i] = hs;
@@ -161,7 +173,7 @@ void voxel_drawView(voxel_t *v)
 }
 
 
-void voxel_drawSky(voxel_t *v, int post)
+static void voxel_drawSky(voxel_t *v, int post)
 {
 	int i, j, alpha;
 	uint32_t col, *pixels = v->pixels;
@@ -198,7 +210,7 @@ void voxel_drawSky(voxel_t *v, int post)
 }
 
 
-void voxel_genLand(voxel_t *v)
+static void voxel_genLand(voxel_t *v)
 {
 	unsigned int tmp;
 	int p, i, j, k, k2, p2;
@@ -277,7 +289,7 @@ void voxel_genLand(voxel_t *v)
 }
 
 
-void voxel_genPalette(voxel_t *v)
+static void voxel_genPalette(voxel_t *v)
 {
 	unsigned int i, idx = 0;
 	uint8_t step[] = { 50, 50, 50, 50, 10, 10, 10, 15 };
@@ -294,35 +306,47 @@ void voxel_genPalette(voxel_t *v)
 }
 
 
-int voxel_demo(graph_t *g)
+static void signalHandler(int signo)
 {
-	unsigned int t = 0;
+	flagQuit = 1;
+}
+
+
+static int voxel_demo(graph_t *g)
+{
 	voxel_t v = {
-		.width = g->width,
-		.height = g->height,
-		.pixels = g->data,
 		.cam = { .h = 300, .horiz = 200, .dist = 300 },
 	};
 
-	if (voxel_init(&v) < 0)
+	if (voxel_init(&v, g) < 0)
 		return -1;
+
+	signal(SIGINT, signalHandler);
+	signal(SIGQUIT, signalHandler);
+	signal(SIGTERM, signalHandler);
 
 	voxel_genLand(&v);
 	voxel_genPalette(&v);
 
-	for (; t < 1000000; t++) {
-		memset(g->data, 0xff, g->width * g->height * sizeof(uint32_t));
+	for (flagQuit = 0; flagQuit == 0;) {
+		memset(v.pixels, 0xff, g->width * g->height * g->depth);
 
-		/* voxel_drawSky(&v, 0); */
 		voxel_drawView(&v);
 		voxel_drawSky(&v, 1);
 
-		v.cam.x += 0.1f;
-		v.cam.y += 0.001f;
-		v.cam.angle += 0.001f;
+		v.cam.x += 0.8f;
+		v.cam.y += 0.008f;
+		v.cam.angle += 0.008f;
+
+		/* FIXME: flip double buffer to screen, this shall be done in graph_commit() */
+		memcpy(g->data, v.pixels, g->width * g->height * g->depth);
 
 		graph_commit(g);
 	}
+
+	signal(SIGTERM, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
 
 	voxel_free(&v);
 
@@ -333,38 +357,37 @@ int voxel_demo(graph_t *g)
 int main(void)
 {
 	int ret;
-	graph_t graph;
-	unsigned int mode = GRAPH_1280x720x32, freq = GRAPH_60Hz;
+	graph_t g;
 
 	if ((ret = graph_init()) < 0) {
 		fprintf(stderr, "failed to initialize library\n");
 		return ret;
 	}
 
-	if ((ret = graph_open(&graph, GRAPH_VIRTIOGPU, 0x2000)) < 0) {
+	if ((ret = graph_open(&g, GRAPH_ANY, 0x2000)) < 0) {
 		fprintf(stderr, "failed to initialize graphics adapter\n");
 		graph_done();
 		return ret;
 	}
 
 	do {
-		if ((ret = graph_mode(&graph, mode, freq)) < 0) {
+		if ((ret = graph_mode(&g, GRAPH_DEFMODE, GRAPH_DEFFREQ)) < 0) {
 			fprintf(stderr, "failed to set graphics mode\n");
 			break;
 		}
 
-		if (graph.depth != 4) {
+		if (g.depth != 4) {
 			fprintf(stderr, "Demo requires 32-bit video resolution\n");
 			break;
 		}
 
-		if ((ret = voxel_demo(&graph)) < 0) {
+		if ((ret = voxel_demo(&g)) < 0) {
 			fprintf(stderr, "Something's gone teribly wrong\n");
 			break;
 		}
 	} while (0);
 
-	graph_close(&graph);
+	graph_close(&g);
 	graph_done();
 
 	return ret;
