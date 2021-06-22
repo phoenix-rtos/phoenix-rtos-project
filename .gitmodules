@@ -27,7 +27,7 @@
 	url = https://github.com/phoenix-rtos/phoenix-rtos-posixsrv
 [submodule "phoenix-rtos-tests"]
 	path = phoenix-rtos-tests
-	url = https://github.com/phoenix-rtos/phoenix-rtos-tests
+	url = https://github.com/agkaminski/phoenix-rtos-tests
 [submodule "phoenix-rtos-corelibs"]
 	path = phoenix-rtos-corelibs
 	url = https://github.com/phoenix-rtos/phoenix-rtos-corelibs/
