@@ -63,12 +63,12 @@ PREINIT_SCRIPT=(
 
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
-	"wait 2000"
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs xip1 ocram2"
 	"app ${BOOT_DEVICE} -x imxrt-multi ocram2 ocram2"
 	"app ${BOOT_DEVICE} -x psh xip1 ocram2"
-	"app ${BOOT_DEVICE} imxrt-flash ocram2 ocram2")
+	"app ${BOOT_DEVICE} imxrt-flash ocram2 ocram2"
+	"wait 2000")
 
 
 # Example of user dev script which call remotely script
@@ -85,7 +85,7 @@ REMOTE_USER_SCRIPT=(
 	"app usb0 -x imxrt-multi itcm dtcm"
 	"app usb0 -x psh ocram2 ocram2"
 	"copy usb0 imxrt-flash flash1 0x15000 0"
-	"app flash1 imxrt-flash xip1 dtcm"
+	"app flash1 imxrt-flash ocram2 dtcm"
 	"go!")
 
 
