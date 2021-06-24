@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.27.2
-# Fri Nov 29 13:43:45 2019
+# Wed Jun 23 12:32:24 2021
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -16,8 +16,8 @@ CONFIG_HAVE_DOT_CONFIG=y
 CONFIG_SHOW_USAGE=y
 CONFIG_FEATURE_VERBOSE_USAGE=y
 CONFIG_FEATURE_COMPRESS_USAGE=y
-# CONFIG_BUSYBOX is not set
-# CONFIG_FEATURE_INSTALLER is not set
+CONFIG_BUSYBOX=y
+CONFIG_FEATURE_INSTALLER=y
 # CONFIG_INSTALL_NO_USR is not set
 # CONFIG_PAM is not set
 # CONFIG_LONG_OPTS is not set
