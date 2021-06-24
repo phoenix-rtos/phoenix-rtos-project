@@ -64,8 +64,8 @@ b_mkscript_user() {
 # - BOOT_DEVICE - name of the device from which script is called
 # - OFFS_USER_SCRIPT - offset on flash memory where user script is located
 b_mkscript_preinit() {
-	file="$PREFIX_BUILD/plo/script.plo"
 	mkdir -p "$PREFIX_BUILD/plo/"
+	printf "%s\n" "${PREINIT_SCRIPT[@]}" > "$PREFIX_BUILD/plo/ramscript.plo"
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
@@ -74,7 +74,7 @@ b_mkscript_preinit() {
 		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$sz"
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
 		printf "\0"
-	} > "$file"
+	} > "$PREFIX_BUILD/plo/script.plo"
 }
 
 
