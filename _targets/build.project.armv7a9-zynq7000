@@ -19,11 +19,13 @@ PREINIT_SCRIPT=("map ddr 0x100000 0x900000 rwx"
 
 b_mkscript_preinit() {
 	mkdir -p "$PREFIX_BUILD/plo/"
-	rm -f "$PREFIX_BUILD/plo/script.plo"
 
 	for cmd in "${PREINIT_SCRIPT[@]}"; do
 		printf "%s\n" "$cmd"
-	done >> "$PREFIX_BUILD/plo/script.plo"
+	done > "$PREFIX_BUILD/plo/script.plo"
+
+	# Temporary solution
+	cat "$PREFIX_BUILD/plo/script.plo" > "$PREFIX_BUILD/plo/ramscript.plo"
 }
 
 
