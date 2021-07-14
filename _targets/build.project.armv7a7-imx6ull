@@ -9,6 +9,8 @@
 
 CROSS=arm-phoenix-
 
+: "${SYSPAGE=psh dummyfs imx6ull-flash imx6ull-uart psd}"
+
 export BUSYBOX_CONFIG="$(realpath "busybox_config")"
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
@@ -38,19 +40,19 @@ b_build_project() {
 
 
 b_build_target() {
-
 	b_log "Building sample project for $TARGET"
 
 	b_log "Creating CPIO archive"
 	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
-		ls psh dummyfs imx6ull-flash imx6ull-uart psd | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
-	popd >/dev/null
+		echo "${SYSPAGE}" | tr " " "\n" | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
+	popd >/dev/null || exit 1
 
 	# Relink kernel to include newly created cpio archive
 	make -C phoenix-rtos-kernel all
 
 	BIN="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}"
-	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/${BIN}.elf" "$PREFIX_BOOT/${BIN}.img"
+	: "${KERNEL_TARGET_BIN="$BIN"}"
+	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/${BIN}.elf" "$PREFIX_BOOT/${KERNEL_TARGET_BIN}.img"
 }
 
 
