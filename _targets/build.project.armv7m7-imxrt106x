@@ -50,8 +50,8 @@ MAGIC_USER_SCRIPT=$((0xdabaabad))
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
-	"map itcm 0x0 0x58000 rwx"
-	"map dtcm 0x20000000 0x20028000 rwx"
+	"map itcm 0x0 0x28000 rwx"
+	"map dtcm 0x20000000 0x20058000 rwx"
 	"map ocram2 0x20200000 0x20280000 rwxc"
 	"map aips14 0x40000000 0x40400000 rws"
 	"map aips5 0x42000000 0x42100000 rws"
