@@ -60,7 +60,7 @@ fi
 # Project specific build
 #
 b_build() {
-	declare -F b_build_project && b_build_project
+	declare -F b_build_project >/dev/null && b_build_project
 	b_build_target
 }
 
@@ -69,7 +69,7 @@ b_build() {
 #
 b_image() {
 	b_image_target
-	declare -F b_image_project && b_image_project
+	declare -F b_image_project >/dev/null && b_image_project
 
 	# Always return 0 to prevent CI from failing
 	return 0
