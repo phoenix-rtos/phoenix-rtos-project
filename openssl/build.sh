@@ -35,6 +35,8 @@ make -C "$PREFIX_OPENSSL_BUILD" install_sw
 cp -a "$PREFIX_OPENSSL_INSTALL/include/openssl" "$PREFIX_H"
 cp -a "$PREFIX_OPENSSL_INSTALL/lib/libcrypto.a" "$PREFIX_A"
 cp -a "$PREFIX_OPENSSL_INSTALL/lib/libssl.a"  "$PREFIX_A"
+cp -a "$PREFIX_OPENSSL_INSTALL/lib/pkgconfig" "$PREFIX_A"
+sed -i "s/openssl\/install$/lib\/pkgconfg/" "$PREFIX_A/pkgconfig/"*
 
 cp -a "$PREFIX_OPENSSL_INSTALL/bin/openssl"  "$PREFIX_PROG"
 "${CROSS}strip" -s "$PREFIX_PROG/openssl" -o "$PREFIX_PROG_STRIPPED/openssl"

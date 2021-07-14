@@ -39,7 +39,7 @@ mkdir -p "$PREFIX_SSCEP_INSTALL"
 
 pushd "$PREFIX_SSCEP_SRC"
 [ -f "${PREFIX_SSCEP_SRC}/configure" ] || ./bootstrap.sh
-[ -f "${PREFIX_SSCEP_SRC}/Makefile" ] || ./configure --disable-shared --prefix="" --host="$HOST" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+[ -f "${PREFIX_SSCEP_SRC}/Makefile" ] || ./configure --disable-shared --prefix="" --host="$HOST" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" PKG_CONFIG_LIBDIR="${PREFIX_BUILD}/lib/pkgconfig"
 make install DESTDIR="$PREFIX_SSCEP_INSTALL"
 popd
 
