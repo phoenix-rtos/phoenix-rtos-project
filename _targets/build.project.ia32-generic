@@ -7,6 +7,8 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+. "_targets/build.common"
+
 CROSS=i386-pc-phoenix-
 
 : "${SYSPAGE=pc-tty pc-ata psh}"
@@ -15,6 +17,7 @@ export CONSOLE
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
 
 #
 # Ports configuration
@@ -32,10 +35,51 @@ export PORTS_CURL=y
 
 
 #
+# Platform dependent parameters
+#
+SIZE_PAGE=$((0x1000))
+PAGE_MASK=$((~(SIZE_PAGE - 1)))
+
+
+#
 # Project specific build
 #
-b_build_target() {
+BOOT_DEVICE="hd0"             # Default boot device
+NAME_USER_SCRIPT="user.plo"   # User script name
+MAGIC_USER_SCRIPT=            # User script magic value
+OFFS_USER_SCRIPT=$((0x12000)) # Disk image user script offset (in bytes)
+KERNEL_OFFS=$((0x13000))      # Disk image kernel offset (in bytes)
+OFFS_ROOTFS=$((0x1000))       # Disk image rootfs offset (in 512 byte sectors)
 
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=(
+	"map ram 0x0 0xffffffff rwx"
+	"phfs com1 0.0 phoenixd"
+	"phfs com2 0.1 phoenixd"
+	"phfs floppy 2.0 raw"
+	"phfs hd0 2.1 raw"
+	"phfs hd1 2.2 raw"
+	"phfs hd2 2.3 raw"
+	"phfs hd3 2.4 raw"
+)
+
+
+# Obligatory applications to run Phoenix-RTOS
+USER_SCRIPT=(
+	"wait 2000"
+	"kernel $BOOT_DEVICE"
+	"go!"
+)
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
 	b_log "Building sample project for $TARGET"
 
 	b_log "Creating CPIO archive"
@@ -46,48 +90,69 @@ b_build_target() {
 	# Relink kernel to include newly created cpio archive
 	make -C "phoenix-rtos-kernel" all
 
-	# FIXME: build plo out of tree and without clean
-	b_log "Building plo"
-	make -C "plo/ia32" clean all
+	# Define default console device
+	if [ "$CONSOLE" = "serial" ]; then
+		PREINIT_SCRIPT+=("console 0.0")
+	else
+		PREINIT_SCRIPT+=("console 3.0")
+	fi
+
+	b_log "Building phoenix-rtos-loader"
+	b_mkscript_user USER_SCRIPT
+	b_mkscript_preinit
+	make -C plo base
 }
 
-b_build_project() {
-	b_log "Building user applications"
-	make -C "_user" all install
+
+b_le32hex() {
+	local n=$1
+	for ((i=0; i<4; i++)); do
+		printf "%s%02x" "\x" $((n & 0xff))
+		n=$((n >> 8))
+	done
 }
+
 
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
-	PLO="plo/ia32/plo"
-	KERNEL="$PREFIX_PROG/phoenix-ia32-generic.elf"
+	# Generate rootfs partition (ext2)
 	ROOTFS="$PREFIX_BUILD/disk.ext2"
-	IMG="$PREFIX_BUILD/phoenix-ia32-generic.disk"
-	IMG_DST="$PREFIX_BOOT/phoenix-ia32-generic.disk"
+	rm -f "$ROOTFS"
+	SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
+	SIZE_ROOTFS=$((3 * SIZE_ROOTFS / 2))
+	echo "Root filesystem size: ${SIZE_ROOTFS}KB"
+	genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
 
-	# partitions layout: (0kB)[MBR+plo] (32kB)[kernel] (2MB)[rootfs]
-	#FIXME: MBR should be constructed on per-project basic (here) instead of being embedded in plo
+	# Generate MBR partition table
+	PTABLE="$PREFIX_BUILD/disk.ptable"
+	{
+		printf $(b_le32hex $((0x80)))
+		printf $(b_le32hex $((0x83)))
+		printf $(b_le32hex $((OFFS_ROOTFS)))
+		printf $(b_le32hex $((2 * SIZE_ROOTFS)))
+	} > "$PTABLE"
 
-	# first 2MBs: plo + kernel
-	dd of="$IMG" if=/dev/zero bs=2097152 count=1 >/dev/null 2>&1
-	dd of="$IMG" if="$PLO" bs=10486576 conv=notrunc >/dev/null 2>&1
-	dd of="$IMG" if="$KERNEL" seek=1 bs=32768 conv=notrunc >/dev/null 2>&1
+	# Build production image (sets $IMG variable)
+	b_prod_image
 
-	# Adding ext2 rootfs
-	ext2_size=$((128 * 1024))
-	echo "Root filesystem size: ${ext2_size}KB"
-	genext2fs -b $ext2_size -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
-	dd of="$IMG" if="$ROOTFS" bs=2097152 seek=1 >/dev/null 2>&1
+	# Update MBR partition table
+	OFFSET=$((0x1be))
+	b_add2img "$PTABLE" "$IMG"
 
-	# produce image only if it's complete (no errors in the lines above)
-	mv "$IMG" "$IMG_DST"
+	# Add rootfs partition
+	printf "Copying "$ROOTFS" (offs="$OFFS_ROOTFS" sectors)\n"
+	dd if="$ROOTFS" of="$IMG" bs=512 seek="$OFFS_ROOTFS" status=none
 }
+
 
 b_test_target() {
 	b_log "Build and install tests in the phoenix-rtos filesystem"
 	make -C "phoenix-rtos-tests" all install
 }
 
+
 b_update_pkg() { :; }
+
 
 export -f b_build_target
