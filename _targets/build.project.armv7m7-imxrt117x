@@ -7,7 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-. "_targets/build.common.imxrt"
+. "_targets/build.common"
 
 CROSS=arm-phoenix-
 
