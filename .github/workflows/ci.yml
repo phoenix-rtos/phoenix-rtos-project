@@ -59,9 +59,9 @@ jobs:
             _boot
             rootfs-${{ matrix.target }}.tar
 
-  test:
+  test-emu:
     needs: build
-    name: run tests
+    name: run tests on emulators
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -86,3 +86,30 @@ jobs:
         uses: ./.github/actions/phoenix-runner
         with:
           target: ${{ matrix.target }}
+
+  test-hw:
+    needs: build
+    name: run tests on hardware
+    runs-on: ${{ matrix.target }}
+    strategy:
+      matrix:
+        target: ['armv7m7-imxrt106x']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
