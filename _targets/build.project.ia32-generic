@@ -142,7 +142,7 @@ b_image_target() {
 
 	# Add rootfs partition
 	printf "Copying "$ROOTFS" (offs="$OFFS_ROOTFS" sectors)\n"
-	dd if="$ROOTFS" of="$IMG" bs=512 seek="$OFFS_ROOTFS" status=none
+	dd if="$ROOTFS" of="$IMG" bs=512 seek="$OFFS_ROOTFS" 2>/dev/null
 }
 
 
