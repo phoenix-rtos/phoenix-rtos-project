@@ -98,7 +98,7 @@ b_build_target() {
 	fi
 
 	b_log "Building phoenix-rtos-loader"
-	b_mkscript_user USER_SCRIPT
+	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_mkscript_preinit
 	make -C plo base
 }
