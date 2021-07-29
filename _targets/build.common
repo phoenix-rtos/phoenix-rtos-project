@@ -22,7 +22,7 @@
 # - PROGS - names of the applications defined in the script
 b_mkscript_user() {
 	PROGS=()
-	declare -n cmds=$1
+	local cmds=("$@")
 	mkdir -p "$PREFIX_BUILD/plo/"
 
 	ksz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
@@ -136,7 +136,7 @@ b_dev_image() {
 
 	rm -f "$PLO_DEV_IMG" "$SYS_DEV_IMG"
 
-	b_mkscript_user DEV_USER_SCRIPT
+	b_mkscript_user "${DEV_USER_SCRIPT[@]}"
 	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
 
 	# Loader
