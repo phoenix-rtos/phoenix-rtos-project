@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.27.2
-# Wed Jun 23 12:32:24 2021
+# Mon Aug  9 12:52:02 2021
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -394,7 +394,7 @@ CONFIG_DEFAULT_SETFONT_DIR=""
 # CONFIG_AWK is not set
 # CONFIG_FEATURE_AWK_LIBM is not set
 # CONFIG_FEATURE_AWK_GNU_EXTENSIONS is not set
-# CONFIG_CMP is not set
+CONFIG_CMP=y
 CONFIG_DIFF=y
 # CONFIG_FEATURE_DIFF_LONG_OPTIONS is not set
 CONFIG_FEATURE_DIFF_DIR=y
