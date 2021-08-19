@@ -1,0 +1,54 @@
+From d1f222c3b00839b289f5d04a69b3c704101d17b2 Mon Sep 17 00:00:00 2001
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Tue, 4 Jul 2017 16:01:12 +0200
+Subject: [PATCH] Change BB_EXTRA_VERSION: now it needs to contain any
+ spaces/parenthesis
+
+Before this change, BB_EXTRA_VERSION of "" resulted in:
+
+	"BusyBox v1.28.0.git () multi-call binary"
+
+message, after the fix it is:
+
+	"BusyBox v1.28.0.git multi-call binary"
+
+While at it, eliminate BB_BT and BANNER single-use macros.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ Makefile.flags   | 2 +-
+ libbb/messages.c | 6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile.flags b/Makefile.flags
+index 65021de25f..f3c897b068 100644
+--- a/Makefile.flags
++++ b/Makefile.flags
+@@ -15,7 +15,7 @@ CPPFLAGS += \
+ 	-include include/autoconf.h \
+ 	-D_GNU_SOURCE -DNDEBUG \
+ 	$(if $(CONFIG_LFS),-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64) \
+-	-D"BB_VER=KBUILD_STR($(BB_VER))" -DBB_BT=AUTOCONF_TIMESTAMP
++	-D"BB_VER=KBUILD_STR($(BB_VER))"
+ 
+ CFLAGS += $(call cc-option,-Wall,)
+ CFLAGS += $(call cc-option,-Wshadow,)
+diff --git a/libbb/messages.c b/libbb/messages.c
+index cb0836de88..27fd14eccc 100644
+--- a/libbb/messages.c
++++ b/libbb/messages.c
+@@ -14,12 +14,10 @@
+ 
+ /* allow version to be extended, via CFLAGS */
+ #ifndef BB_EXTRA_VERSION
+-#define BB_EXTRA_VERSION BB_BT
++#define BB_EXTRA_VERSION " ("AUTOCONF_TIMESTAMP")"
+ #endif
+ 
+-#define BANNER "BusyBox v" BB_VER " (" BB_EXTRA_VERSION ")"
+-
+-const char bb_banner[] ALIGN1 = BANNER;
++const char bb_banner[] ALIGN1 = "BusyBox v" BB_VER BB_EXTRA_VERSION;
+ 
+ 
+ const char bb_msg_memory_exhausted[] ALIGN1 = "out of memory";

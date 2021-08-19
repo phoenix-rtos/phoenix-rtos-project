@@ -1,0 +1,130 @@
+From ed8af51b600fd16d22c6663a241547c3a9d7f2b4 Mon Sep 17 00:00:00 2001
+From: Jean-Philippe Brucker <jean-philippe@linaro.org>
+Date: Thu, 12 Mar 2020 17:19:45 +0100
+Subject: [PATCH] build system: remove KBUILD_STR()
+
+When using GNU Make >=4.3, the KBUILD_STR() definition interferes badly
+with dependency checks during build, and forces a complete rebuild every
+time Make runs.
+
+In if_changed_rule, Kconfig checks if the command used to build a file
+has changed since last execution. The previous command is stored in the
+generated .<file>.o.cmd file. For example applets/.applets.o.cmd defines
+a "cmd_applets/applets.o" variable:
+
+	cmd_applets/applets.o := gcc ... -D"KBUILD_STR(s)=#s" ...
+
+Here the '#' should be escaped with a backslash, otherwise GNU Make
+interprets it as starting a comment, and ignore the rest of the
+variable. As a result of this truncation, the previous command doesn't
+equal the new command and Make rebuilds each target.
+
+The problem started to appear when GNU Make 4.3 (released January 2020),
+introduced a backward-incompatible fix to macros containing a '#'. While
+the above use of '#', a simple Make variable, still needs to be escaped,
+a '#' within a function invocation doesn't need to be escaped anymore.
+As Martin Dorey explained on the GNU Make discussion [1], the above
+declaration is generated from make-cmd, defined as:
+
+	make-cmd = $(subst \#,\\\#,$(subst $$,$$$$,$(call escsq,$(cmd_$(1))))
+
+Since GNU Make 4.3, the first argument of subst should not have a
+backslash. make-cmd now looks for literally \# and doesn't find it, and
+as a result doesn't add the backslash when generating .o.cmd files.
+
+[1] http://savannah.gnu.org/bugs/?20513
+
+We could fix it by changing make-cmd to "$(subst #,\#,...)", but to
+avoid compatibility headaches, simply get rid of the KBUILD_STR
+definition, as done in Linux by b42841b7bb62 ("kbuild: Get rid of
+KBUILD_STR"). Quote the string arguments directly rather than asking the
+preprocessor to quote them.
+
+Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ Makefile.flags         | 2 +-
+ scripts/Kbuild.include | 1 +
+ scripts/Makefile.IMA   | 1 -
+ scripts/Makefile.lib   | 8 ++++----
+ scripts/trylink        | 3 ---
+ 5 files changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/Makefile.flags b/Makefile.flags
+index e378fbad97..bed766b8a3 100644
+--- a/Makefile.flags
++++ b/Makefile.flags
+@@ -15,7 +15,7 @@ CPPFLAGS += \
+ 	-include include/autoconf.h \
+ 	-D_GNU_SOURCE -DNDEBUG \
+ 	$(if $(CONFIG_LFS),-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64) \
+-	-D"BB_VER=KBUILD_STR($(BB_VER))"
++	-DBB_VER=$(squote)$(quote)$(BB_VER)$(quote)$(squote)
+ 
+ CFLAGS += $(call cc-option,-Wall,)
+ CFLAGS += $(call cc-option,-Wshadow,)
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index 6ec1809a2b..5b4db5c2c7 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -4,6 +4,7 @@
+ # Convinient variables
+ comma   := ,
+ squote  := '
++quote   := "
+ empty   :=
+ space   := $(empty) $(empty)
+ 
+diff --git a/scripts/Makefile.IMA b/scripts/Makefile.IMA
+index f155108d7c..1e3005864a 100644
+--- a/scripts/Makefile.IMA
++++ b/scripts/Makefile.IMA
+@@ -49,7 +49,6 @@ OBJCOPY         = $(CROSS_COMPILE)objcopy
+ OBJDUMP         = $(CROSS_COMPILE)objdump
+ 
+ CFLAGS   := $(CFLAGS)
+-CPPFLAGS += -D"KBUILD_STR(s)=\#s" #-Q
+ 
+ # We need some generic definitions
+ include $(srctree)/scripts/Kbuild.include
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 3e54ea712f..d8d768a28c 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -81,10 +81,10 @@ obj-dirs	:= $(addprefix $(obj)/,$(obj-dirs))
+ # Note: It's possible that one object gets potentially linked into more
+ #       than one module. In that case KBUILD_MODNAME will be set to foo_bar,
+ #       where foo and bar are the name of the modules.
+-name-fix = $(subst $(comma),_,$(subst -,_,$1))
+-basename_flags = -D"KBUILD_BASENAME=KBUILD_STR($(call name-fix,$(*F)))"
++name-fix = $(squote)$(quote)$(subst $(comma),_,$(subst -,_,$1))$(quote)$(squote)
++basename_flags = -DKBUILD_BASENAME=$(call name-fix,$(*F))
+ modname_flags  = $(if $(filter 1,$(words $(modname))),\
+-                 -D"KBUILD_MODNAME=KBUILD_STR($(call name-fix,$(modname)))")
++                 -DKBUILD_MODNAME=$(call name-fix,$(modname)))
+ 
+ _c_flags       = $(CFLAGS) $(EXTRA_CFLAGS) $(CFLAGS_$(*F).o)
+ _a_flags       = $(AFLAGS) $(EXTRA_AFLAGS) $(AFLAGS_$(*F).o)
+@@ -110,7 +110,7 @@ endif
+ 
+ c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(CPPFLAGS) \
+ 		 $(__c_flags) $(modkern_cflags) \
+-		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags)
++		 $(basename_flags) $(modname_flags)
+ 
+ a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(CPPFLAGS) \
+ 		 $(__a_flags) $(modkern_aflags)
+diff --git a/scripts/trylink b/scripts/trylink
+index bb6b2de2f6..6b74f092d1 100755
+--- a/scripts/trylink
++++ b/scripts/trylink
+@@ -50,9 +50,6 @@ check_cc() {
+     echo "int main(int argc,char**argv){return argv?argc:0;}" >"$tempname".c
+     # Can use "-o /dev/null", but older gcc tend to *unlink it* on failure! :(
+     # Was using "-xc /dev/null", but we need a valid C program.
+-    # "eval" may be needed if CFLAGS can contain
+-    # '... -D"BB_VER=KBUILD_STR(1.N.M)" ...'
+-    # and we need shell to process quotes!
+     $CC $CFLAGS $LDFLAGS $1 "$tempname".c -o "$tempname" >/dev/null 2>&1
+     exitcode=$?
+     rm -f "$tempname" "$tempname".c "$tempname".o
