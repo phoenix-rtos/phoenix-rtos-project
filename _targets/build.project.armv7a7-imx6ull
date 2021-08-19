@@ -67,7 +67,11 @@ b_image_target() {
 	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
 	IMG="$PREFIX_BOOT/phoenix-armv7a7-imx6ull.jffs2"
 
-	mkfs.jffs2 -n -U -m none -e $((64*4096)) -s 4096 -r "$PREFIX_ROOTFS"/ -o "$IMG"
+	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -r "$PREFIX_ROOTFS"/ -o "$IMG"
+	if sumtool -e $((64*4096)) -i "$IMG" -o "$IMG.tmp" 2> /dev/null; then
+		echo "JFFS2 Summary nodes created"
+		mv "$IMG.tmp" "$IMG"
+	fi
 
 	sz=$(du -k "$IMG" | awk '{ print $1 }')
 	echo "Filesystem size: ${sz}KB"
