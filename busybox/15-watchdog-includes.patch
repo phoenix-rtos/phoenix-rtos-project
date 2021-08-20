@@ -1,0 +1,13 @@
+diff -Nuar busybox-1.27.2.orig/miscutils/watchdog.c busybox-1.27.2/miscutils/watchdog.c
+--- busybox-1.27.2.orig/miscutils/watchdog.c	2017-07-18 19:14:50.000000000 +0200
++++ busybox-1.27.2/miscutils/watchdog.c	2021-08-20 17:33:55.038969001 +0200
+@@ -35,8 +35,7 @@
+ //usage:     "\nUse 500ms to specify period in milliseconds"
+ 
+ #include "libbb.h"
+-#include "linux/types.h" /* for __u32 */
+-#include "linux/watchdog.h"
++#include "watchdog.h"
+ 
+ #define OPT_FOREGROUND  (1 << 0)
+ #define OPT_STIMER      (1 << 1)
