@@ -1,0 +1,51 @@
+diff -ruN a/src/net.c b/src/net.c
+--- a/src/net.c	2021-02-08 11:01:24.000000000 +0100
++++ b/src/net.c	2021-07-11 08:23:56.913169000 +0200
+@@ -202,7 +202,7 @@
+ 
+ 	if (v_flag)
+ 		fprintf(stdout, "%s: server response status code: %d, MIME header: %s\n",
+-			pname, http->status, mime_type);
++			pname, http->status, mime_type ? mime_type : "missing");
+ 
+ 	http->payload = buf+header_size;
+ 	body_size = used-header_size;
+@@ -223,16 +223,16 @@
+ 	/* Set SCEP reply type */
+ 	switch (operation) {
+ 		case SCEP_OPERATION_GETCA:
+-			if (!strcmp(mime_type, MIME_GETCA)) {
++			if (mime_type && !strcmp(mime_type, MIME_GETCA)) {
+ 				http->type = SCEP_MIME_GETCA;
+-			} else if (!strcmp(mime_type, MIME_GETCA_RA) || !strcmp(mime_type, MIME_GETCA_RA_ENTRUST)) {
++			} else if (mime_type && (!strcmp(mime_type, MIME_GETCA_RA) || !strcmp(mime_type, MIME_GETCA_RA_ENTRUST))) {
+ 				http->type = SCEP_MIME_GETCA_RA;
+ 			} else {
+ 				goto mime_err;
+ 			}
+ 			break;
+ 		case SCEP_OPERATION_GETNEXTCA:
+-			if (!strcmp(mime_type, MIME_GETNEXTCA)) {
++			if (mime_type && !strcmp(mime_type, MIME_GETNEXTCA)) {
+ 				http->type = SCEP_MIME_GETNEXTCA;
+ 			} else {
+ 				goto mime_err;
+@@ -243,11 +243,16 @@
+                            implementations of SCEP may send various Content-types. */
+ 			http->type = SCEP_MIME_GETCAPS;
+ 			break;
++		case SCEP_OPERATION_ENROLL:
++			/* enroll failure response from ENERGA server is missing Content-Type header */
++			http->type = SCEP_MIME_PKI;
++			break;
+ 		default:
+-			if (strcmp(mime_type, MIME_PKI) != 0) {
++			if (mime_type && !strcmp(mime_type, MIME_PKI)) {
++				http->type = SCEP_MIME_PKI;
++			} else {
+ 				goto mime_err;
+ 			}
+-			http->type = SCEP_MIME_PKI;
+ 			break;
+ 	}
+ 
