@@ -1,4 +1,5 @@
 :{}:
 X /bin/posixsrv
-X /sbin/lwip rtl:0x18:11
-X /linuxrc
+X /bin/psh
+#X /sbin/lwip rtl:0x18:11
+#X /linuxrc
