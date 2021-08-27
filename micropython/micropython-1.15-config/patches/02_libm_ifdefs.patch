@@ -1,0 +1,52 @@
+diff -Naur micropython-1.15/lib/libm/libm.h micropython-phoenix/lib/libm/libm.h
+--- micropython-1.15/lib/libm/libm.h	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/lib/libm/libm.h	2021-06-30 11:48:28.972943094 +0200
+@@ -21,6 +21,7 @@
+ 
+ #define FLT_EVAL_METHOD 0
+ 
++#ifndef FORCE_EVAL //PHOENIX CHANGE
+ #define FORCE_EVAL(x) do {                        \
+ 	if (sizeof(x) == sizeof(float)) {         \
+ 		volatile float __x;               \
+@@ -36,6 +37,7 @@
+                 (void)__x;                        \
+ 	}                                         \
+ } while(0)
++#endif
+ 
+ /* Get a 32 bit int from a float.  */
+ #define GET_FLOAT_WORD(w,d)                       \
+diff -Naur micropython-1.15/lib/libm_dbl/expm1.c micropython-phoenix/lib/libm_dbl/expm1.c
+--- micropython-1.15/lib/libm_dbl/expm1.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/expm1.c	2021-06-30 11:48:28.972943094 +0200
+@@ -106,6 +106,10 @@
+ 
+ #include "libm.h"
+ 
++#ifndef isnan //PHOENIX CHANGE: missing in libphoenix
++#define isnan(n) ((n != n) ? 1 : 0)
++#endif
++
+ static const double
+ o_threshold = 7.09782712893383973096e+02, /* 0x40862E42, 0xFEFA39EF */
+ ln2_hi      = 6.93147180369123816490e-01, /* 0x3fe62e42, 0xfee00000 */
+diff -Naur micropython-1.15/lib/libm_dbl/tgamma.c micropython-phoenix/lib/libm_dbl/tgamma.c
+--- micropython-1.15/lib/libm_dbl/tgamma.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/tgamma.c	2021-06-30 11:48:28.972943094 +0200
+@@ -23,6 +23,15 @@
+ most ideas and constants are from boost and python
+ */
+ #include "libm.h"
++#ifndef isinf //PHOENIX CHANGE: missing in libphoenix
++#define isinf(x) __builtin_isinf(x)
++#endif
++#ifndef signbit
++#define signbit(x) ((0 < x) - (x < 0))
++#endif
++#ifndef isfinite
++#define isfinite(x) __builtin_isfinite(x)
++#endif
+ 
+ static const double pi = 3.141592653589793238462643383279502884;
+ 

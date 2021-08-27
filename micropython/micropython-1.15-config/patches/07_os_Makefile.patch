@@ -1,0 +1,65 @@
+diff -Naur micropython-1.15/ports/unix/Makefile micropython-phoenix/ports/unix/Makefile
+--- micropython-1.15/ports/unix/Makefile	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/ports/unix/Makefile	2021-06-30 11:48:28.980936563 +0200
+@@ -4,6 +4,11 @@
+ # If the build directory is not given, make it reflect the variant name.
+ BUILD ?= build-$(VARIANT)
+ 
++# Phoenix libraries
++PHOENIXGCCLIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
++PHOENIXLIB := $(shell $(CC) $(CFLAGS) -print-file-name=libphoenix.a)
++LDLIBS := $(PHOENIXLIB) $(PHOENIXGCCLIB)
++
+ VARIANT_DIR ?= variants/$(VARIANT)
+ ifeq ($(wildcard $(VARIANT_DIR)/.),)
+ $(error Invalid VARIANT specified: $(VARIANT_DIR))
+@@ -38,7 +43,7 @@
+ INC += -I$(BUILD)
+ 
+ # compiler settings
+-CWARN = -Wall -Werror
++CWARN = -Wall
+ CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
+ CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
+ 
+@@ -101,19 +101,11 @@
+ # Use gcc syntax for map file
+ LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+ endif
+-LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+-
+-# Flags to link with pthread library
+-LIBPTHREAD = -lpthread
++LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+ 
+ ifeq ($(MICROPY_FORCE_32BIT),1)
+ # Note: you may need to install i386 versions of dependency packages,
+ # starting with linux-libc-dev:i386
+-ifeq ($(MICROPY_PY_FFI),1)
+-ifeq ($(UNAME_S),Linux)
+-CFLAGS_MOD += -I/usr/include/i686-linux-gnu
+-endif
+-endif
+ endif
+ 
+ ifeq ($(MICROPY_USE_READLINE),1)
+@@ -238,9 +243,10 @@
+ 	mpbtstackport_usb.c \
+ 	mpnimbleport.c \
+ 	$(SRC_MOD) \
++	$(addprefix ../../lib/libm_dbl/, $(addsuffix .c, $(PHOENIX_MATH_ABSENT))) \
+ 	$(wildcard $(VARIANT_DIR)/*.c)
+ 
+-LIB_SRC_C += $(addprefix lib/,\
++LIB_SRC_C += $(addprefix ../../lib/,\
+ 	$(LIB_SRC_C_EXTRA) \
+ 	timeutils/timeutils.c \
+ 	utils/gchelper_generic.c \
+@@ -299,7 +305,6 @@
+ test_full: $(PROG) $(TOP)/tests/run-tests.py
+ 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+ 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py
+-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py -d thread
+ 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --emit native
+ 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
+ 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython

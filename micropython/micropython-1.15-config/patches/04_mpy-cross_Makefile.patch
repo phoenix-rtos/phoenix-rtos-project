@@ -1,0 +1,27 @@
+diff -Naur micropython-1.15/mpy-cross/main.c micropython-phoenix/mpy-cross/main.c
+--- micropython-1.15/mpy-cross/main.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/mpy-cross/main.c	2021-06-30 11:48:28.980936563 +0200
+@@ -339,7 +339,7 @@
+     return main_(argc, argv);
+ }
+ 
+-uint mp_import_stat(const char *path) {
++mp_import_stat_t mp_import_stat(const char *path) { //PHOENIX CHANGE: cross compiling does not recognize uint
+     (void)path;
+     return MP_IMPORT_STAT_NO_EXIST;
+ }
+diff -Naur micropython-1.15/mpy-cross/Makefile micropython-phoenix/mpy-cross/Makefile
+--- micropython-1.15/mpy-cross/Makefile	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/mpy-cross/Makefile	2021-06-30 11:48:28.980936563 +0200
+@@ -17,9 +17,9 @@
+ INC += -I$(TOP)
+ 
+ # compiler settings
+-CWARN = -Wall -Werror
++CWARN = -Wall
+ CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
+-CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
++CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+ CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
+ 
+ # Debugging/Optimization

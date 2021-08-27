@@ -1,0 +1,33 @@
+diff -Naur micropython-1.15/lib/libm_dbl/libm.h micropython-phoenix/lib/libm_dbl/libm.h
+--- micropython-1.15/lib/libm_dbl/libm.h	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/lib/libm_dbl/libm.h	2021-06-30 11:48:28.972943094 +0200
+@@ -17,6 +17,7 @@
+ 
+ #define FLT_EVAL_METHOD 0
+ 
++#ifndef FORCE_EVAL 
+ #define FORCE_EVAL(x) do {                        \
+ 	if (sizeof(x) == sizeof(float)) {         \
+ 		volatile float __x;               \
+@@ -32,6 +33,21 @@
+                 (void)__x;                        \
+ 	}                                         \
+ } while(0)
++#endif 
++ 
++typedef double double_t;
++
++/* Phoenix-RTOS libphoenix absent functions TO BE SUBSTITUTED */
++double expm1(double x);
++double log1p(double x);
++double asinh(double x);
++double acosh(double x);
++double atanh(double x);
++double erf(double x);
++double erfc(double x);
++double tgamma(double x);
++double lgamma(double x);
++double copysign(double x, double y);
+ 
+ /* Get two 32 bit ints from a double.  */
+ #define EXTRACT_WORDS(hi,lo,d)                    \

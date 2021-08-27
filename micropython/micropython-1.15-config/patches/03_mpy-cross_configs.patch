@@ -1,0 +1,14 @@
+diff -Naur micropython-1.15/mpy-cross/mpconfigport.h micropython-phoenix/mpy-cross/mpconfigport.h
+--- micropython-1.15/mpy-cross/mpconfigport.h	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/mpy-cross/mpconfigport.h	2021-06-30 11:48:28.980936563 +0200
+@@ -25,8 +25,8 @@
+  */
+ 
+ // options to control how MicroPython is built
+-
+-#define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
++#include <stddef.h>
++#define MICROPY_ALLOC_PATH_MAX      (260)
+ #define MICROPY_PERSISTENT_CODE_LOAD (0)
+ #define MICROPY_PERSISTENT_CODE_SAVE (1)
+ 

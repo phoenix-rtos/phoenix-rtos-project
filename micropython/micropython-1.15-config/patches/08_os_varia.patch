@@ -1,0 +1,37 @@
+diff -Naur micropython-1.15/ports/unix/modos.c micropython-phoenix/ports/unix/modos.c
+--- micropython-1.15/ports/unix/modos.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/ports/unix/modos.c	2021-06-30 11:48:28.980936563 +0200
+@@ -259,9 +259,9 @@
+     #ifdef DTTOIF
+     t->items[1] = MP_OBJ_NEW_SMALL_INT(DTTOIF(dirent->d_type));
+     #else
+-    if (dirent->d_type == DT_DIR) {
++    if (dirent->d_type == 4) {
+         t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
+-    } else if (dirent->d_type == DT_REG) {
++    } else if (dirent->d_type == 8) {
+         t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG);
+     } else {
+         t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+diff -Naur micropython-1.15/ports/unix/modusocket.c micropython-phoenix/ports/unix/modusocket.c
+--- micropython-1.15/ports/unix/modusocket.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/ports/unix/modusocket.c	2021-06-30 11:48:28.980936563 +0200
+@@ -33,6 +33,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
++#include <sys/time.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <netdb.h>
+@@ -47,6 +48,10 @@
+ #include "py/mphal.h"
+ #include "py/mpthread.h"
+ 
++#ifndef MSG_DONTROUTE
++#define MSG_DONTROUTE   0x04 //PHOENIX CHANGE: missing in phoenix
++#endif
++
+ /*
+   The idea of this module is to implement reasonable minimum of
+   socket-related functions to write typical clients and servers.

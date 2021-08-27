@@ -1,0 +1,135 @@
+diff -Naur micropython-1.15/py/formatfloat.c micropython-phoenix/py/formatfloat.c
+--- micropython-1.15/py/formatfloat.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/formatfloat.c	2021-06-30 11:48:28.976939829 +0200
+@@ -90,9 +90,9 @@
+ #define FPROUND_TO_ONE 0.999999999995
+ #define FPDECEXP 256
+ #define FPMIN_BUF_SIZE 7 // +9e+199
+-#define fp_signbit(x) signbit(x)
+-#define fp_isnan(x) isnan(x)
+-#define fp_isinf(x) isinf(x)
++#define fp_signbit(x) (x < 0) //PHOENIX CHANGE: missing in libphoenix
++#define fp_isnan(x) __builtin_isnan(x)
++#define fp_isinf(x) __builtin_isinf(x)
+ #define fp_iszero(x) (x == 0)
+ #define fp_isless1(x) (x < 1.0)
+ 
+diff -Naur micropython-1.15/py/modbuiltins.c micropython-phoenix/py/modbuiltins.c
+--- micropython-1.15/py/modbuiltins.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/modbuiltins.c	2021-06-30 11:48:28.976939829 +0200
+@@ -38,6 +38,7 @@
+ #if MICROPY_PY_BUILTINS_FLOAT
+ #include <math.h>
+ #endif
++#define nearbyint(x) round(x) //PHOENIX CHANGE: missing in libphoenix
+ 
+ #if MICROPY_PY_IO
+ extern struct _mp_dummy_t mp_sys_stdout_obj; // type is irrelevant, just need pointer
+diff -Naur micropython-1.15/py/modmath.c micropython-phoenix/py/modmath.c
+--- micropython-1.15/py/modmath.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/modmath.c	2021-06-30 11:49:12.866495537 +0200
+@@ -26,6 +26,22 @@
+ 
+ #include "py/builtin.h"
+ #include "py/runtime.h"
++#include "lib/libm/libm.h"
++#include "lib/libm_dbl/libm.h"
++
++
++#ifndef isnan //PHOENIX CHANGE: missing in libphoenix
++#define isnan(x) __builtin_isnan(x)
++#endif
++#ifndef isinf
++#define isinf(x) __builtin_isinf(x)
++#endif
++#ifndef isfinite
++#define isfinite(x) __builtin_isfinite(x)
++#endif
++#ifndef copysign
++#define copysign(x, y) y == 0.0 ? fabs(x) : fabs(x)*y/fabs(y)
++#endif
+ 
+ #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
+ 
+@@ -161,7 +177,7 @@
+ MATH_FUN_1_TO_INT(ceil, ceil)
+ // copysign(x, y)
+ STATIC mp_float_t MICROPY_FLOAT_C_FUN(copysign_func)(mp_float_t x, mp_float_t y) {
+-    return MICROPY_FLOAT_C_FUN(copysign)(x, y);
++    return copysign(x, y); //PHOENIX CHANGE: compiler cannot resolve macro only here
+ }
+ MATH_FUN_2(copysign, copysign_func)
+ // fabs(x)
+diff -Naur micropython-1.15/py/mpconfig.h micropython-phoenix/py/mpconfig.h
+--- micropython-1.15/py/mpconfig.h	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/mpconfig.h	2021-06-30 11:48:28.976939829 +0200
+@@ -805,7 +805,7 @@
+ 
+ // Whether to use internally defined *printf() functions (otherwise external ones)
+ #ifndef MICROPY_USE_INTERNAL_PRINTF
+-#define MICROPY_USE_INTERNAL_PRINTF (1)
++#define MICROPY_USE_INTERNAL_PRINTF (0) //PHOENIX CHANGE: phoenix do support printf
+ #endif
+ 
+ // Support for internal scheduler
+@@ -1600,7 +1600,7 @@
+ #endif
+ 
+ #ifndef MP_SSIZE_MAX
+-#define MP_SSIZE_MAX SSIZE_MAX
++#define MP_SSIZE_MAX SSIZE_MAX //PHOENIX CHANGE: missing in libphoenix
+ #endif
+ 
+ // printf format spec to use for mp_int_t and friends
+diff -Naur micropython-1.15/py/mpstate.h micropython-phoenix/py/mpstate.h
+--- micropython-1.15/py/mpstate.h	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/mpstate.h	2021-06-30 11:48:28.976939829 +0200
+@@ -36,6 +36,8 @@
+ #include "py/objlist.h"
+ #include "py/objexcept.h"
+ 
++#define nan(x) NAN
++
+ // This file contains structures defining the state of the MicroPython
+ // memory system, runtime and virtual machine.  The state is a global
+ // variable, but in the future it is hoped that the state can become local.
+diff -Naur micropython-1.15/py/objcomplex.c micropython-phoenix/py/objcomplex.c
+--- micropython-1.15/py/objcomplex.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/objcomplex.c	2021-06-30 11:48:28.976939829 +0200
+@@ -36,6 +36,10 @@
+ #include <math.h>
+ #include "py/formatfloat.h"
+ 
++#ifndef isnan //PHOENIX CHANGE: missing in libphoenix
++#define isnan(x) __builtin_isnan(x)
++#endif
++
+ typedef struct _mp_obj_complex_t {
+     mp_obj_base_t base;
+     mp_float_t real;
+diff -Naur micropython-1.15/py/objfloat.c micropython-phoenix/py/objfloat.c
+--- micropython-1.15/py/objfloat.c	2021-04-18 16:27:07.000000000 +0200
++++ micropython-phoenix/py/objfloat.c	2021-06-30 11:48:28.976939829 +0200
+@@ -31,10 +31,21 @@
+ 
+ #include "py/parsenum.h"
+ #include "py/runtime.h"
++#ifndef isinf //PHOENIX CHANGE: missing in libphoenix
++#define isinf(x) __builtin_isinf(x)
++#endif
++#ifndef isnan
++#define isnan(x) __builtin_isnan(x)
++#endif
++#ifndef copysign
++#define copysign(x, y) y == 0.0 ? fabs(x) : fabs(x)*y/fabs(y)
++#endif
++#ifndef signbit
++#define signbit(x) ((0 < x) - (x < 0))
++#endif
+ 
+ #if MICROPY_PY_BUILTINS_FLOAT
+ 
+-#include <math.h>
+ #include "py/formatfloat.h"
+ 
+ #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
