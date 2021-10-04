@@ -54,7 +54,7 @@ PREINIT_SCRIPT=(
 	"map dtcm 0x20000000 0x20028000 rwx"
 	"map ocram2 0x202c0000 0x20340000 rwxc"
 	"map xip1 0x30000000 0x30400000 rx"
-	"phfs com1 0.11 phoenixd"
+	"phfs usb0 1.2 phoenixd"
 	"phfs flash0 2.0 raw"
 	"console 0.10")
 
@@ -77,10 +77,10 @@ DEV_USER_SCRIPT=(
 
 REMOTE_USER_SCRIPT=(
 	"5a5aa5a5"
-	"kernel com1"
-	"app com1 -x dummyfs ocram2 ocram2"
-	"app com1 -x imxrt-multi itcm dtcm"
-	"app com1 -x psh ocram2 ocram2"
+	"kernel usb0"
+	"app usb0 -x dummyfs ocram2 ocram2"
+	"app usb0 -x imxrt-multi itcm dtcm"
+	"app usb0 -x psh ocram2 ocram2"
 	"go!")
 
 
