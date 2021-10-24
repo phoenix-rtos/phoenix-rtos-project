@@ -65,7 +65,11 @@ b_mkscript_user() {
 # - OFFS_USER_SCRIPT - offset on flash memory where user script is located
 b_mkscript_preinit() {
 	mkdir -p "$PREFIX_BUILD/plo/"
-	printf "%s\n" "${PREINIT_SCRIPT[@]}" > "$PREFIX_BUILD/plo/ramscript.plo"
+
+	{
+		printf "%s\n" "${PREINIT_SCRIPT[@]}"
+		printf "\0"
+	} > "$PREFIX_BUILD/plo/ramscript.plo"
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
