@@ -9,8 +9,8 @@
 
 CROSS=riscv64-phoenix-
 
-export RISCV_LOADER="bbl"
-#export RISCV_LOADER="opensbi"
+: "${RISCV_LOADER="bbl"}"
+
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
