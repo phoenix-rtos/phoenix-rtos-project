@@ -1,20 +1,30 @@
 #!/bin/bash
 #
-# Shell script for running phoenix-rtos loader on QEMU (zynq-7000)
+# Shell script for running phoenix-rtos loader on Qemu fork from Xilinx (zynq-7000)
 #
 # Copyright 2021 Phoenix Systems
 # Author: Hubert Buczynski
 #
 
-IMG_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/plo-ram-armv7a9-zynq7000.img"
+IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/plo-armv7a9-zynq7000-qemu.img"
+IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_build/armv7a9-zynq7000/prog/flash-armv7a9-zynq7000.bin"
+IMG_PHOENIX_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-armv7a9-zynq7000.disk"
+DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000-zc702.dtb"
 
-if [ ! -f "$IMG_ZYNQ7000" ]; then
-	echo "File $IMG_ZYNQ7000 does not exist"
+if [[ ! -f "$IMG_PLO_ZYNQ7000" && ! -f "$IMG_PHOENIX_ZYNQ7000" && ! -f "$DTB_ZYNQ7000" ]]; then
+	echo "Missing required files, check $IMG_PLO_ZYNQ7000, $IMG_PHOENIX_ZYNQ7000 and $DTB_ZYNQ7000"
 	exit 1
 fi
 
-exec qemu-system-arm \
-	-M xilinx-zynq-a9 \
+# Create file as counterpart of NOR flash memory
+rm -f "$IMG_FLASH_QEMU"
+dd if="$IMG_PHOENIX_ZYNQ7000" of="$IMG_FLASH_QEMU" bs=4M
+truncate -s 16M "$IMG_FLASH_QEMU"
+
+exec qemu-system-aarch64 \
+	-M arm-generic-fdt-7series \
+	-dtb "$DTB_ZYNQ7000" \
 	-serial null \
 	-serial mon:stdio \
-	-device loader,file="$IMG_ZYNQ7000"
+	-device loader,file="$IMG_PLO_ZYNQ7000" \
+	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0
