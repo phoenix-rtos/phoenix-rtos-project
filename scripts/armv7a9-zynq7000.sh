@@ -11,10 +11,12 @@ IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_build/armv7a9-zynq7000/prog/f
 IMG_PHOENIX_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-armv7a9-zynq7000.disk"
 DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000-zc702.dtb"
 
-if [[ ! -f "$IMG_PLO_ZYNQ7000" && ! -f "$IMG_PHOENIX_ZYNQ7000" && ! -f "$DTB_ZYNQ7000" ]]; then
-	echo "Missing required files, check $IMG_PLO_ZYNQ7000, $IMG_PHOENIX_ZYNQ7000 and $DTB_ZYNQ7000"
-	exit 1
-fi
+for FILE in "$IMG_PLO_ZYNQ7000" "$IMG_PHOENIX_ZYNQ7000" "$DTB_ZYNQ7000"; do
+    if [ ! -f "$FILE" ]; then
+        echo "Missing required file: $FILE"
+        exit 1
+    fi
+done
 
 # Create file as counterpart of NOR flash memory
 rm -f "$IMG_FLASH_QEMU"
