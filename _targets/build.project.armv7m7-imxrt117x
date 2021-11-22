@@ -11,6 +11,8 @@
 
 CROSS=arm-phoenix-
 
+export BOARD_CONFIG=" -DUART1=1 -DUART_CONSOLE=1 "
+
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
@@ -56,7 +58,7 @@ PREINIT_SCRIPT=(
 	"map xip1 0x30000000 0x30400000 rx"
 	"phfs usb0 1.2 phoenixd"
 	"phfs flash0 2.0 raw"
-	"console 0.10")
+	"console 0.0")
 
 
 # Production user script contains applications to run Phoenix-RTOS
