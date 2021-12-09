@@ -1,6 +1,7 @@
 [submodule "phoenix-rtos-kernel"]
 	path = phoenix-rtos-kernel
 	url = https://github.com/phoenix-rtos/phoenix-rtos-kernel.git
+	branch = feature/syspage
 [submodule "libphoenix"]
 	path = libphoenix
 	url = https://github.com/phoenix-rtos/libphoenix
@@ -40,6 +41,7 @@
 [submodule "plo"]
 	path = plo
 	url = https://github.com/phoenix-rtos/plo.git
+	branch = feature/syspage
 [submodule "riscv/riscv-pk"]
 	path = riscv/riscv-pk
 	url = https://github.com/riscv/riscv-pk.git
