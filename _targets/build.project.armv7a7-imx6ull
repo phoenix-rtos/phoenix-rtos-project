@@ -59,9 +59,6 @@ b_build_target() {
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
-	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-"$(git describe --always --dirty)")"
-	echo "$IMG_VERSION" > "$PREFIX_ROOTFS/etc/version"
-
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
 	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
