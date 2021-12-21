@@ -62,6 +62,12 @@ PREINIT_SCRIPT=(
 	"phfs hd3 2.4 raw"
 )
 
+if [ "$CONSOLE" = "serial" ]; then
+	CONSOLE_APP="uart16550"
+else
+	CONSOLE_APP="pc-tty"
+fi
+
 
 # Obligatory applications to run Phoenix-RTOS
 USER_SCRIPT=(
@@ -69,7 +75,7 @@ USER_SCRIPT=(
 	"kernel $BOOT_DEVICE"
 	"app ${BOOT_DEVICE} -x pc-ata ram ram"
 	"app ${BOOT_DEVICE} -x psh ram ram"
-	"app ${BOOT_DEVICE} -x pc-tty ram ram"
+	"app ${BOOT_DEVICE} -x ${CONSOLE_APP} ram ram"
 	"go!"
 )
 
