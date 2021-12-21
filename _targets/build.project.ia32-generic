@@ -51,11 +51,9 @@ OFFS_USER_SCRIPT=$((0x12000)) # Disk image user script offset (in bytes)
 KERNEL_OFFS=$((0x13000))      # Disk image kernel offset (in bytes)
 OFFS_ROOTFS=$((0x1000))       # Disk image rootfs offset (in 512 byte sectors)
 
-
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
 	"map ram 0x0 0xffffffff rwx"
-	"phfs com1 0.0 phoenixd"
 	"phfs com2 0.1 phoenixd"
 	"phfs floppy 2.0 raw"
 	"phfs hd0 2.1 raw"
@@ -67,8 +65,11 @@ PREINIT_SCRIPT=(
 
 # Obligatory applications to run Phoenix-RTOS
 USER_SCRIPT=(
-	"wait 2000"
+	"wait 1000"
 	"kernel $BOOT_DEVICE"
+	"app ${BOOT_DEVICE} -x pc-ata ram ram"
+	"app ${BOOT_DEVICE} -x psh ram ram"
+	"app ${BOOT_DEVICE} -x pc-tty ram ram"
 	"go!"
 )
 
@@ -81,14 +82,6 @@ b_build_project() {
 
 b_build_target() {
 	b_log "Building sample project for $TARGET"
-
-	b_log "Creating CPIO archive"
-	pushd "$PREFIX_PROG_STRIPPED" > /dev/null || exit 1
-		ls ${SYSPAGE} | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
-	popd > /dev/null
-
-	# Relink kernel to include newly created cpio archive
-	make -C "phoenix-rtos-kernel" all
 
 	# Define default console device
 	if [ "$CONSOLE" = "serial" ]; then

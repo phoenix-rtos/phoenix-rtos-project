@@ -8,6 +8,7 @@
 [submodule "phoenix-rtos-build"]
 	path = phoenix-rtos-build
 	url = https://github.com/phoenix-rtos/phoenix-rtos-build
+	branch = feature/syspage
 [submodule "phoenix-rtos-ports"]
 	path = phoenix-rtos-ports
 	url = https://github.com/phoenix-rtos/phoenix-rtos-ports
