@@ -7,6 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+KERNEL_FILE="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 
 # Function gets the following argument:
 # - $1 - array contains user's commands
@@ -24,8 +25,24 @@ b_mkscript_user() {
 	PROGS=()
 	local cmds=("$@")
 	mkdir -p "$PREFIX_BUILD/plo/"
+	KERNEL_ELF=$KERNEL_FILE
+	KERNEL_BIN="$(basename ${KERNEL_FILE} .elf).bin"
 
-	ksz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf") + SIZE_PAGE - 1) & PAGE_MASK))
+	# Find out if we need a .elf or a .bin kernel.
+	# We need to know the kernel size in the image before first app cmd (which might be before kernel cmd)
+	for cmd in "${cmds[@]}"; do
+		args=($cmd)
+
+		if [ "${args[0]}" = "kernel" ]; then
+			break
+		elif [ "${args[0]}" = "kernelimg" ]; then
+			$OBJCPY "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -Obinary "${PREFIX_PROG_STRIPPED}${KERNEL_BIN}"
+			KERNEL_FILE=$KERNEL_BIN
+			break
+		fi
+	done
+
+	ksz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}${KERNEL_FILE}") + SIZE_PAGE - 1) & PAGE_MASK))
 	poffs=$((KERNEL_OFFS + ksz))
 
 	{
@@ -44,12 +61,27 @@ b_mkscript_user() {
 					PROGS+=("$name")
 					psz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}$name") + SIZE_PAGE - 1) & PAGE_MASK))
 					printf "alias %s 0x%x 0x%x\n" "$name" "$poffs" "$psz"
-					((poffs+=psz));;
+					((poffs+=psz))
+					printf "%s\n" "$cmd";;
 
 				kernel)
-					printf "alias %s 0x%x 0x%x\n" "phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$KERNEL_OFFS" "$ksz";;
+					printf "alias %s 0x%x 0x%x\n" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
+					printf "%s\n" "$cmd";;
+
+				kernelimg)
+					printf "alias %s 0x%x 0x%x\n" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
+					tbeg=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $3 }')
+					tsz=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $6 }')
+					dbeg=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $3 }')
+					dsz=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $6 }')
+					tsz=$(((tsz + SIZE_PAGE - 1) & PAGE_MASK))
+					dsz=$(((dsz + SIZE_PAGE - 1) & PAGE_MASK))
+					printf "%s %s %x %x %x %x\n" "$cmd" "${KERNEL_FILE}" $((tbeg)) $((tsz)) $((dbeg)) $((dsz));;
+
+				*)
+					printf "%s\n" "$cmd";;
+
 			esac;
-			printf "%s\n" "$cmd"
 		done
 
 		printf "\0"
@@ -117,7 +149,7 @@ b_prod_image() {
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
-	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$IMG"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
@@ -161,7 +193,7 @@ b_dev_image() {
 	# Kernel
 	KERNEL_OFFS=$((KERNEL_OFFS - OFFS_USER_SCRIPT))
 	OFFSET="$KERNEL_OFFS"
-	b_add2img "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$SYS_DEV_IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$SYS_DEV_IMG"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do

@@ -94,7 +94,7 @@ b_build_target() {
 
 	b_mkscript_user USER_SCRIPT
 	b_mkscript_preinit
-	make -C plo ram
+	make -C plo all
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
 	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" _boot/
