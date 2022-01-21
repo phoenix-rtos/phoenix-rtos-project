@@ -1,0 +1,23 @@
+# vim:sw=2:ts=2
+# similar workflow to ci_regular
+name: ci-night
+
+# on events
+on:
+  schedule:
+    # triggered every day at 5:00 UTC
+    - cron: '0 5 * * *'
+    # temporarily to check if building with all test works well
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  call-ci:
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@damianloew/auto_bb_testsuite_running
+    with:
+      build_params: 'core fs test image project ports'
+      long_test: true
+    secrets:
+      CI_BOT_EMAIL_USERNAME: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
+      CI_BOT_EMAIL_PASSWORD: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}

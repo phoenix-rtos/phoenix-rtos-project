@@ -3,14 +3,23 @@ name: ci
 
 # on events
 on:
-  push:
-    branches:
-      - master
-      - 'feature/*'
-  pull_request:
-    branches:
-      - master
-      - 'feature/*'
+  workflow_call:
+    secrets:
+      CI_BOT_EMAIL_USERNAME:
+        required: false
+      CI_BOT_EMAIL_PASSWORD:
+        required: false
+    inputs:
+      build_params:
+        type: string
+        description: "parameters to build.sh script"
+        default: 'core fs test project image'  # by default don't build ports
+        required: false
+      long_test:
+        type: boolean
+        description: "specifies whether long tets are about to run"
+        default: false
+        required: false
 
 # jobs
 jobs:
@@ -39,12 +48,23 @@ jobs:
 
       # step 2: use our custom action to build the project
       - name: Build
+        if: ${{ inputs.long_test == false }}
         id: build
         uses: ./.github/actions/phoenix-build
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
-          params: core fs test project image ${{ matrix.additional_params }}
+          params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
+
+      - name: Build long
+        if: ${{ inputs.long_test == true }}
+        id: build-long
+        uses: ./.github/actions/phoenix-build
+        with:
+          target: ${{ matrix.target }}
+          syspage: ${{ matrix.syspage }}
+          long_test: 'y'
+          params: ${{ inputs.build_params }}
 
       # step 3: tar rootfs
       - name: Tar rootfs
@@ -68,7 +88,7 @@ jobs:
       runner_result: ${{ steps.runner.outcome }}
     strategy:
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
+        target: ['ia32-generic-qemu', 'host-generic-pc', 'ia32-generic-qemu']
 
     steps:
       - name: Checkout the repository
@@ -84,10 +104,17 @@ jobs:
       - name: Untar rootfs
         working-directory: _fs
         run: tar -xvf ../rootfs-${{ matrix.target }}.tar
-
       - name: Test runner
+        if: ${{ inputs.long_test == false }}
         id: runner
         uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Test runner long
+        if: ${{ inputs.long_test == true }}
+        id: runner-long
+        uses: ./.github/actions/phoenix-runner-long
         with:
           target: ${{ matrix.target }}
 

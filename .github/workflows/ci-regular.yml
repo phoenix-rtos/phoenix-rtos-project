@@ -1,0 +1,24 @@
+# vim:sw=2:ts=2
+name: ci-regular
+
+# on events
+on:
+  push:
+    branches:
+      - master
+      - 'feature/*'
+  pull_request:
+    branches:
+      - master
+      - 'feature/*'
+
+# jobs
+jobs:
+  call-ci:
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@damianloew/auto_bb_testsuite_running
+    with:
+      build_params: 'core fs test image project'
+      long_test: false
+    secrets:
+      CI_BOT_EMAIL_USERNAME: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
+      CI_BOT_EMAIL_PASSWORD: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}

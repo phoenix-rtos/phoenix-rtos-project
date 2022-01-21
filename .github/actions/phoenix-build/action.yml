@@ -18,6 +18,10 @@ inputs:
     description: 'Syspage env variable'
     default: ''
     required: false
+  long_test:
+    description: 'Long test env variable - build long tests if set to y'
+    default: ''
+    required: false
   params:
     description: 'All parameters to the main build script - as string'
     required: true
@@ -35,6 +39,7 @@ runs:
     TARGET: ${{ inputs.target }}
     SYSPAGE: ${{ inputs.syspage }}
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
+    LONG_TEST: ${{ inputs.long_test }}
   args:
     - ${{ inputs.params }}  # note: params will be split by build.sh internally
 
