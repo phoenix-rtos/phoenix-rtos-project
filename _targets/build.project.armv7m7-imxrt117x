@@ -65,7 +65,7 @@ PREINIT_SCRIPT=(
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs xip1 ocram2"
-	"app ${BOOT_DEVICE} -x imxrt-multi ocram2 ocram2"
+	"app ${BOOT_DEVICE} -x imxrt-multi xip1 ocram2"
 	"app ${BOOT_DEVICE} -x psh xip1 ocram2"
 	"wait 2000"
 	"go!")
