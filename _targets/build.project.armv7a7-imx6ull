@@ -104,18 +104,12 @@ b_build_target() {
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
-	# Build production image
-	b_prod_image
-
-	IMG_VERSION="$(git describe --dirty 2> /dev/null || echo unknown-"$(git describe --always --dirty)")"
-	echo "$IMG_VERSION" > "$PREFIX_ROOTFS/etc/version"
-
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
 	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
 	IMG="$PREFIX_BOOT/phoenix-armv7a7-imx6ull.jffs2"
 
-	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -r "$PREFIX_ROOTFS"/ -o "$IMG"
+	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -n -r "$PREFIX_ROOTFS"/ -o "$IMG"
 	if sumtool -e $((64*4096)) -i "$IMG" -o "$IMG.tmp" 2> /dev/null; then
 		echo "JFFS2 Summary nodes created"
 		mv "$IMG.tmp" "$IMG"
