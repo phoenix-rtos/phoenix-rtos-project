@@ -7,7 +7,7 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-KERNEL_FILE="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 
 # Function gets the following argument:
 # - $1 - array contains user's commands
@@ -25,8 +25,6 @@ b_mkscript_user() {
 	PROGS=()
 	local cmds=("$@")
 	mkdir -p "$PREFIX_BUILD/plo/"
-	KERNEL_ELF=$KERNEL_FILE
-	KERNEL_BIN="$(basename ${KERNEL_FILE} .elf).bin"
 
 	# Find out if we need a .elf or a .bin kernel.
 	# We need to know the kernel size in the image before first app cmd (which might be before kernel cmd)
@@ -34,9 +32,11 @@ b_mkscript_user() {
 		args=($cmd)
 
 		if [ "${args[0]}" = "kernel" ]; then
+			KERNEL_FILE=$KERNEL_ELF
 			break
 		elif [ "${args[0]}" = "kernelimg" ]; then
-			$OBJCPY "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -Obinary "${PREFIX_PROG_STRIPPED}${KERNEL_BIN}"
+			KERNEL_BIN="$(basename "${KERNEL_ELF}" .elf).bin"
+			${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_BIN}"
 			KERNEL_FILE=$KERNEL_BIN
 			break
 		fi
@@ -156,6 +156,23 @@ b_prod_image() {
 		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
 	done
 }
+
+# Function gets the following arguments:
+# - $1 - path to target image file
+# - KERNEL_OFFS - offset on memory where kernel is located
+b_kernel_image() {
+	IMG="$1"
+	rm -f "$IMG"
+
+	OFFSET="$KERNEL_OFFS"
+	b_add2img "${PREFIX_PROG_STRIPPED}/$KERNEL_FILE" "$IMG"
+
+	# Programs
+	for prog in "${PROGS[@]}"; do
+		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
+	done
+}
+
 
 
 # Function needs external variables to be defined in a project file:

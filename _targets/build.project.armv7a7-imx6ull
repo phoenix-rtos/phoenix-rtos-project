@@ -11,8 +11,6 @@
 
 CROSS=arm-phoenix-
 
-: "${SYSPAGE=psh dummyfs imx6ull-flash imx6ull-uart psd}"
-
 export BUSYBOX_CONFIG="$(realpath "busybox_config")"
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
@@ -36,39 +34,45 @@ export PORTS_CURL=y
 #
 SIZE_PAGE=$((0x1000))
 PAGE_MASK=$((~(SIZE_PAGE - 1)))
-
-
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map kddr 0x80000000 0x8002ffff rwx"
-	"map ddr 0x80030000 0x90000000 rwx"
-	"phfs usb0 1.2 phoenixd"
-	"console 0.0"
-	"wait 2000"
-	"kernel usb0"
-	"app usb0 -x dummyfs ddr ddr"
-	"app usb0 -x imx6ull-uart ddr ddr"
-	"app usb0 -x psh ddr ddr"
-)
-
-
-# Obligatory applications to run Phoenix-RTOS
-USER_SCRIPT=(
-	"wait 2000"
-)
+KERNEL_OFFS=$((0x0))          # Disk image kernel offset (in bytes)
+ADDR_DDR=$((0x80000000))
 
 
 #
 # Project specific build
 #
 
-BOOT_DEVICE="flash0"          # Default boot device
-NAME_USER_SCRIPT="user.plo"   # User script name
-MAGIC_USER_SCRIPT=            # User script magic value
-OFFS_USER_SCRIPT=$((0x12000)) # Disk image user script offset (in bytes)
-KERNEL_OFFS=$((0x13000))      # Disk image kernel offset (in bytes)
-OFFS_ROOTFS=$((0x1000))       # Disk image rootfs offset (in 512 byte sectors)
+BOOT_DEVICE="flash0"              # Default boot device
+NAME_USER_SCRIPT="user.plo"       # User script name
+MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+OFFS_USER_SCRIPT=$((0x0))         # Disk image user script offset (in bytes)
+OFFS_ROOTFS=$((0x1000))           # Disk image rootfs offset (in 512 byte sectors)
+
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=(
+	"map ddr 0x80000000 0x87ffffff rwx"
+	"phfs usb0 1.2 phoenixd"
+	"console 0.0"
+	"wait 2000"
+)
+
+
+#TODO: if plo is introduced, BOOT_DEVICE should be changed
+UPLOAD_SCRIPT=(
+	"kernelimg ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x imx6ull-flash;-p;0:8;-p;8:16;-p;24:16;-p;64:128;-p;192:128;-p;2048:1952;-p;4032:16 ddr ddr"
+	"app ${BOOT_DEVICE} -x psd;/dev/flash0;/dev/flash0p1;/dev/flash0p2;/dev/flash0p3;/dev/flash0p4;/dev/flash0p5;/dev/flash0p6;/dev/flash0p7 ddr ddr"
+)
+
+PRIMARY_SCRIPT=(
+	"kernelimg ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x psh ddr ddr"
+)
 
 
 b_build_project() {
@@ -79,36 +83,51 @@ b_build_project() {
 
 b_build_target() {
 	b_log "Building sample project for $TARGET"
+}
 
-	b_log "Creating CPIO archive"
-	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
-		echo "${SYSPAGE}" | tr " " "\n" | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
-	popd >/dev/null || exit 1
 
-	# Relink kernel to include newly created cpio archive
-	make -C phoenix-rtos-kernel all
+# Temporary solution to omit phoenix-rtos-loader
+b_syspage_gen() {
+	img="$1"
+	uscript="$2"
 
-	BIN="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}"
-	: "${KERNEL_TARGET_BIN="$BIN"}"
-	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/${BIN}.elf" "$PREFIX_BOOT/${KERNEL_TARGET_BIN}.img"
+	vectors=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "init_vectors" | awk '{ printf("0x%s", $2) }')
+	syspage=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "syspage_data" | awk '{ printf("0x%s", $2) }')
+	plugin=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "plugin_ivt" | awk '{ printf("0x%s", $2) }')
 
-	b_mkscript_user USER_SCRIPT
-	b_mkscript_preinit
-	make -C plo all
+	addr=$((syspage-vectors))
+	sz=$((plugin-syspage))
 
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
-	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" _boot/
+	"$PREFIX_BOOT/syspagen" \
+		-s "$ADDR_DDR:$addr:$sz" \
+		-p "$PREFIX_BUILD/plo/script.plo" \
+		-u "$uscript" \
+		-i "$img"
 }
 
 
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
+	b_mkscript_user  "${UPLOAD_SCRIPT[@]}"
+	b_mkscript_preinit
+
+	# Build production image
+	b_log "RAM Image"
+	b_kernel_image "$PREFIX_BOOT/phoenix-${TARGET}.img"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-${TARGET}.img" "$PREFIX_BUILD/plo/user.plo"
+
+	b_log "FLASH Image"
+	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
+	b_kernel_image "$PREFIX_BOOT/kernel.img"
+	b_syspage_gen "$PREFIX_BOOT/kernel.img" "$PREFIX_BUILD/plo/user.plo"
+
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
 	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
 	IMG="$PREFIX_BOOT/phoenix-armv7a7-imx6ull.jffs2"
 
+	b_log "Filesystem"
 	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -n -r "$PREFIX_ROOTFS"/ -o "$IMG"
 	if sumtool -e $((64*4096)) -i "$IMG" -o "$IMG.tmp" 2> /dev/null; then
 		echo "JFFS2 Summary nodes created"
