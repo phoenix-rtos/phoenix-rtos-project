@@ -71,7 +71,8 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x imxrt-multi xip1 ocram2"
 	"app ${BOOT_DEVICE} -x psh xip1 ocram2"
 	"app ${BOOT_DEVICE} imxrt-flash ocram2 ocram2"
-	"wait 2000")
+	"wait 2000"
+	"go!")
 
 
 # Example of user dev script which call remotely script
