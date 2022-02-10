@@ -7,6 +7,8 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+. "_targets/build.common"
+
 CROSS=riscv64-phoenix-
 
 : "${RISCV_LOADER="opensbi"}"
@@ -31,28 +33,80 @@ export PORTS_CURL=y
 
 
 #
+# Platform dependent parameters
+#
+SIZE_PAGE=$((0x1000))
+PAGE_MASK=$((~(SIZE_PAGE - 1)))
+KERNEL_OFFS=$((0x0))          # Disk image kernel offset (in bytes)
+
+
+#
 # Project specific build
 #
+
+BOOT_DEVICE="hd0"              # Default boot device
+NAME_USER_SCRIPT="user.plo"       # User script name
+MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+OFFS_USER_SCRIPT=$((0x0))         # Disk image user script offset (in bytes)
+OFFS_ROOTFS=$((0x1000))           # Disk image rootfs offset (in 512 byte sectors)
+
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=(
+	"map ddr 0x80200000 0x87ffffff rwx"
+	"console 0.0"
+	"wait 2000"
+)
+
+
+PRIMARY_SCRIPT=(
+	"kernelimg ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x uart16550 ddr ddr"
+	"app ${BOOT_DEVICE} -x psh ddr ddr"
+)
+
 
 b_build_project() {
 	b_log "Building user applications"
 	make -C "_user" all install
 }
 
+
+# Temporary solution to omit phoenix-rtos-loader
+b_syspage_gen() {
+	img="$1"
+	uscript="$2"
+
+	start=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_start\b" | awk '{ printf("0x%s", $2) }')
+	syspage=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_syspage_data\b" | awk '{ printf("0x%s", $2) }')
+	syspage_end=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_syspage_data_end\b" | awk '{ printf("0x%s", $2) }')
+
+	addr=$((syspage-start))
+	sz=$((syspage_end-syspage))
+
+	"$PREFIX_BOOT/syspagen" \
+		-a "64" \
+		-s "0x80200000:$addr:$sz" \
+		-p "$PREFIX_BUILD/plo/script.plo" \
+		-u "$uscript" \
+		-i "$img"
+}
+
+
 b_build_target() {
 
 	b_log "Building sample project for $TARGET"
 
-	b_log "Creating CPIO archive"
-	pushd "$PREFIX_PROG_STRIPPED" >/dev/null || exit 1
-		ls dummyfs uart16550 psh | cpio -H newc -ov > "$PREFIX_BUILD/phoenix-rtos-kernel/programs.cpio" 2>/dev/null
-	popd >/dev/null
+	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
+	b_mkscript_preinit
 
-	# Relink kernel to include newly created cpio archive
-	make -C "phoenix-rtos-kernel" all
+	# Build production image
+	b_log "Image"
+	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
+	b_kernel_image "$PREFIX_BOOT/phoenix-$TARGET.img"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-$TARGET.img" "$PREFIX_BUILD/plo/user.plo"
 
-	# Convert kernel to flat binary
-	"${CROSS}objcopy" -O binary "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin"
 
 	# Add kernel to boot loader
 	b_log "Adding kernel to boot loader"
@@ -63,7 +117,7 @@ b_build_target() {
 		mkdir -p "$BBL_BUILD_DIR"
 		pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
 			if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
-				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_PROG_STRIPPED/phoenix-$TARGET.elf" --disable-fp-emulation
+				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_BOOT/phoenix-$TARGET.img" --disable-fp-emulation
 				touch "$BBL_BUILD_DIR/stamp.configured"
 			fi
 
@@ -72,7 +126,7 @@ b_build_target() {
 
 		cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix-$TARGET.bbl"
 	elif [ "$RISCV_LOADER" = "opensbi" ]; then
-		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin")
+		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix-$TARGET.img")
 
 		cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix-$TARGET.osbi"
 	else
