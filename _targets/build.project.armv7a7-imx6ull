@@ -99,6 +99,7 @@ b_syspage_gen() {
 	sz=$((plugin-syspage))
 
 	"$PREFIX_BOOT/syspagen" \
+		-a 32\
 		-s "$ADDR_DDR:$addr:$sz" \
 		-p "$PREFIX_BUILD/plo/script.plo" \
 		-u "$uscript" \
@@ -114,8 +115,8 @@ b_image_target() {
 
 	# Build production image
 	b_log "RAM Image"
-	b_kernel_image "$PREFIX_BOOT/phoenix-${TARGET}.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix-${TARGET}.img" "$PREFIX_BUILD/plo/user.plo"
+	b_kernel_image "$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BUILD/plo/user.plo"
 
 	b_log "FLASH Image"
 	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
