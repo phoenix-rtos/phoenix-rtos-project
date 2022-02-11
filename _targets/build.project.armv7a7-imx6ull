@@ -59,13 +59,15 @@ PREINIT_SCRIPT=(
 
 
 #TODO: if plo is introduced, BOOT_DEVICE should be changed
+#TODO: if flash driver for imx6ull-evk implementation is introduced, psh should be replaced by imx6ul-flash and psd
+# This is temporary solution for running a system image in RAM  
 UPLOAD_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
 	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x imx6ull-flash;-p;0:8;-p;8:16;-p;24:16;-p;64:128;-p;192:128;-p;2048:1952;-p;4032:16 ddr ddr"
-	"app ${BOOT_DEVICE} -x psd;/dev/flash0;/dev/flash0p1;/dev/flash0p2;/dev/flash0p3;/dev/flash0p4;/dev/flash0p5;/dev/flash0p6;/dev/flash0p7 ddr ddr"
+	"app ${BOOT_DEVICE} -x psh ddr ddr"
 )
+
 
 PRIMARY_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
