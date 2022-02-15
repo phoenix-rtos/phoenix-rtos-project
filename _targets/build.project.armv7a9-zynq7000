@@ -39,9 +39,7 @@ PREINIT_SCRIPT=(
 	"phfs uart0 0.0 phoenixd"
 	"phfs uart1 0.1 raw"
 	"phfs flash0 2.0 raw"
-	"console 0.1"
-	"echo on"
-	"wait 1000")
+	"console 0.1")
 
 
 # Production user script contains applications to run Phoenix-RTOS
@@ -50,6 +48,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"wait 1000"
 	"go!")
 
 
