@@ -106,8 +106,7 @@ b_mkscript_preinit() {
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
 
-		sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
-		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$sz"
+		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
 		printf "\0"
 	} > "$PREFIX_BUILD/plo/script.plo"
@@ -138,6 +137,11 @@ b_prod_image() {
 
 	IMG=_boot/phoenix-${TARGET}.disk
 	rm -f "$IMG"
+
+	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
+		b_die "User script size too large. Please, change kernel offset or user script offset."
+	fi
 
 	# Loader
 	OFFSET=0
@@ -191,6 +195,11 @@ b_dev_image() {
 
 	b_mkscript_user "${DEV_USER_SCRIPT[@]}"
 	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
+
+	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
+		b_die "User script size too large. Please, change kernel offset or user script offset."
+	fi
 
 	# Loader
 	OFFSET=0
