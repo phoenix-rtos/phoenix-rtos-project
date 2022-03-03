@@ -11,6 +11,7 @@
 
 CROSS=arm-phoenix-
 
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
 #
 # Platform dependent parameters
