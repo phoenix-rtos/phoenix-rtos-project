@@ -88,7 +88,6 @@ b_build_target() {
 	b_log "Building sample project for $TARGET"
 	b_log "Building phoenix-rtos-loader"
 
-	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_mkscript_preinit
 
 	make -C plo all
@@ -96,6 +95,7 @@ b_build_target() {
 
 
 b_image_target() {
+	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
 	b_dev_image
 }

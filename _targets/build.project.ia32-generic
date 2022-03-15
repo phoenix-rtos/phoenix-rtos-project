@@ -97,7 +97,6 @@ b_build_target() {
 	fi
 
 	b_log "Building phoenix-rtos-loader"
-	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_mkscript_preinit
 	make -C plo base
 }
@@ -133,6 +132,7 @@ b_image_target() {
 	} > "$PTABLE"
 
 	# Build production image (sets $IMG variable)
+	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
 
 	# Update MBR partition table
