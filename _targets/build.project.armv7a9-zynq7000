@@ -64,7 +64,6 @@ b_build_target() {
 
 	b_log "Building plo"
 
-	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_mkscript_preinit
 
 	make -C plo base
@@ -93,6 +92,7 @@ b_flash_image() {
 
 
 b_image_target() {
+	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
 	b_dev_image
 	b_flash_image
