@@ -74,7 +74,7 @@ USER_SCRIPT=(
 	"wait 1000"
 	"kernel $BOOT_DEVICE"
 	"app ${BOOT_DEVICE} -x pc-ata ram ram"
-	"app ${BOOT_DEVICE} -x psh ram ram"
+	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ram ram"
 	"app ${BOOT_DEVICE} -x ${CONSOLE_APP} ram ram"
 	"go!"
 )
