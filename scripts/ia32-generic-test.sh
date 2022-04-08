@@ -7,6 +7,7 @@
 #
 
 exec qemu-system-i386 \
+	-cpu pentium3 \
 	-hda "$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-ia32-generic.disk" \
 	-nographic \
 	-monitor none \
