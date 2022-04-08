@@ -7,6 +7,7 @@
 #
 
 exec qemu-system-i386 \
+	-cpu pentium3 \
 	-smp 1 \
 	-serial stdio \
 	-device virtio-gpu-pci \
