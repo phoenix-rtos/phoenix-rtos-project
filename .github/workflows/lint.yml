@@ -71,6 +71,7 @@ jobs:
   codespell-pr:
     if: github.event_name == 'pull_request'
     name: codespell-pr
+    continue-on-error: True
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current repo
