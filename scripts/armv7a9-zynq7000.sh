@@ -6,9 +6,9 @@
 # Author: Hubert Buczynski
 #
 
-IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/plo-armv7a9-zynq7000-qemu.img"
-IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/flash-armv7a9-zynq7000.bin"
-DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000-zc702.dtb"
+IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/plo-armv7a9-zynq7000emu-qemu.img"
+IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/flash-armv7a9-zynq7000emu.bin"
+DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000emu-zc702.dtb"
 
 for FILE in "$IMG_PLO_ZYNQ7000" "$IMG_FLASH_QEMU" "$DTB_ZYNQ7000"; do
 	if [ ! -f "$FILE" ]; then
