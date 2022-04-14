@@ -21,7 +21,7 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull', 'armv7a9-zynq7000', 'armv7m7-imxrt106x', 'armv7m7-imxrt117x', 'armv7m4-stm32l4x6', 'host-pc', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
+        target: ['armv7a7-imx6ull', 'armv7a9-zynq7000emu', 'armv7m7-imxrt106x', 'armv7m7-imxrt117x', 'armv7m4-stm32l4x6', 'host-pc', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
         include:
           - target: 'ia32-generic'
             syspage: 'psh pc-ata uart16550'
@@ -70,7 +70,7 @@ jobs:
       runner_result: ${{ steps.runner.outcome }}
     strategy:
       matrix:
-        target: ['host-pc', 'ia32-generic']
+        target: ['host-pc', 'ia32-generic', 'armv7a9-zynq7000emu']
 
     steps:
       - name: Checkout the repository
