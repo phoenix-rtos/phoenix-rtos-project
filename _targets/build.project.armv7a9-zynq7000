@@ -69,8 +69,10 @@ b_build_target() {
 	make -C plo base
 
 	# plo image is reused only in loading system via qemu
-	cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
-		_boot/plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}-qemu.img
+	if [ "${TARGET_PROJECT}" = "qemu" ]; then
+		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
+			_boot/plo-${TARGET}.img
+	fi
 
 	phoenix-rtos-build/scripts/mkimg-boot-zynq7000.sh \
 		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
@@ -83,10 +85,10 @@ b_build_target() {
 
 
 b_flash_image() {
-	local flash_path="${PREFIX_BOOT}/flash-armv7a9-zynq7000.bin"
+	local flash_path="${PREFIX_BOOT}/flash-${TARGET}.bin"
 
 	rm -f "${flash_path}"
-	dd if="${PREFIX_BOOT}/phoenix-armv7a9-zynq7000.disk" of="${flash_path}" bs=4M 2>/dev/null
+	dd if="${PREFIX_BOOT}/phoenix-${TARGET}.disk" of="${flash_path}" bs=4M 2>/dev/null
 	truncate -s 16M "${flash_path}" 2>/dev/null
 }
 
