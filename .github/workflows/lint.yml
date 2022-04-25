@@ -12,6 +12,7 @@ on:
     branches:
       - master
       - 'feature/*'
+  workflow_call:  # reusable workflow - the same jobs in submodules
 
 jobs:
   clang-format:

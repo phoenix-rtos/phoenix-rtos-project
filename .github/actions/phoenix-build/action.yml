@@ -18,31 +18,9 @@ inputs:
     description: 'Syspage env variable'
     default: ''
     required: false
-  # github doesn't allow array of arguments, we need to pass them one-by-one
-  param1:
-    description: 'Parameters to the main build script - 1st param'
-    default: 'clean'
-    required: false
-  param2:
-    description: 'Parameters to the main build script - 2nd param'
-    default: ''
-    required: false
-  param3:
-    description: 'Parameters to the main build script - 3rd param'
-    default: ''
-    required: false
-  param4:
-    description: 'Parameters to the main build script - 4th param'
-    default: ''
-    required: false
-  param5:
-    description: 'Parameters to the main build script - 5th param'
-    default: ''
-    required: false
-  param6:
-    description: 'Parameters to the main build script - 6th param'
-    default: ''
-    required: false
+  params:
+    description: 'All parameters to the main build script - as string'
+    required: true
 
 # action runner
 runs:
@@ -53,13 +31,7 @@ runs:
     TARGET: ${{ inputs.target }}
     SYSPAGE: ${{ inputs.syspage }}
   args:
-    - ${{ inputs.param1 }}
-    - ${{ inputs.param2 }}
-    - ${{ inputs.param3 }}
-    - ${{ inputs.param4 }}
-    - ${{ inputs.param5 }}
-    - ${{ inputs.param6 }}
-
+    - ${{ inputs.params }}  # note: params will be split by build.sh internally
 
 # branding
 branding:
