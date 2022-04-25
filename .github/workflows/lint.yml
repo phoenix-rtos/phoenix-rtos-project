@@ -80,7 +80,7 @@ jobs:
           fetch-depth: 2  # current PR merge commit + 1 back
 
       - name: codespell
-        uses: plettich/action-codespell@master
+        uses: nalajcie/action-codespell@master
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
