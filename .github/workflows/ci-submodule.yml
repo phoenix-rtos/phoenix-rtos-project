@@ -1,18 +1,17 @@
 # vim:sw=2:ts=2
-name: ci
+# reusable build/test workflow for submodules
+name: ci-submodule
 
-# on events
 on:
-  push:
-    branches:
-      - master
-      - 'feature/*'
-  pull_request:
-    branches:
-      - master
-      - 'feature/*'
+  workflow_call:
+    inputs:
+      build_params:
+        type: string
+        description: "parameters to build.sh script"
+        default: 'core fs test project image'  # by default don't build ports
+        required: false
 
-# jobs
+
 jobs:
   build:
     name: build
@@ -21,35 +20,44 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-qemu', 'armv7m7-imxrt106x', 'armv7m7-imxrt117x', 'armv7m4-stm32l4x6', 'host-pc', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
+        target: ['armv7a7-imx6ull', 'armv7a9-zynq7000', 'armv7m7-imxrt106x', 'armv7m7-imxrt117x', 'armv7m4-stm32l4x6', 'host-pc', 'ia32-generic', 'riscv64-spike', 'riscv64-virt']
         include:
           - target: 'ia32-generic'
             syspage: 'psh pc-ata uart16550'
     steps:
-      # step 1: checkout repository code inside the workspace directory of the runner
-      - name: Checkout the repository
+      # step 1: checkout phoenix-rtos-project repository code inside the workspace directory of the runner
+      - name: Checkout phoenix-rtos-project
         uses: actions/checkout@v2
         with:
+          repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
+
+      # step 2: update the submodule (recurse-sumbodules=no is needed for phoenix-rtos-lwip checkout not to fail, but it fails to update the submodule (TODO)
+      - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
+        run: |
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
       # attach GCC problem matcher... might not work because of submodules... just trying
       - uses: ammaraskar/gcc-problem-matcher@master
 
-      # step 2: use our custom action to build the project
+      # step 3: use our custom action to build the project
       - name: Build
         id: build
         uses: ./.github/actions/phoenix-build
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
-          params: 'core fs test project image'
+          params: ${{ inputs.build_params }}
 
-      # step 3: tar rootfs
+      # step 4: tar rootfs
       - name: Tar rootfs
         working-directory: _fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 4: upload "_boot" directory and tarball of rootfs as build artifacts
+      # step 5: upload "_boot" directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -69,10 +77,18 @@ jobs:
         target: ['host-pc', 'ia32-generic']
 
     steps:
-      - name: Checkout the repository
+      - name: Checkout phoenix-rtos-project
         uses: actions/checkout@v2
         with:
-          submodules: true
+          repository: phoenix-rtos/phoenix-rtos-project
+          submodules: recursive
+
+      - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
+        run: |
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v2
@@ -89,6 +105,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
+  # runs on self-hosted runners with HW targets attached
   test-hw:
     needs: build
     name: run tests on hardware
@@ -100,10 +117,18 @@ jobs:
         target: ['armv7m7-imxrt106x',  'armv7m7-imxrt117x']
 
     steps:
-      - name: Checkout the repository
+      - name: Checkout phoenix-rtos-project
         uses: actions/checkout@v2
         with:
-          submodules: true
+          repository: phoenix-rtos/phoenix-rtos-project
+          submodules: recursive
+
+      - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
+        run: |
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v2
@@ -144,3 +169,4 @@ jobs:
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
