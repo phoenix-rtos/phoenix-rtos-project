@@ -4,6 +4,11 @@ name: ci-submodule
 
 on:
   workflow_call:
+    secrets:
+      CI_BOT_EMAIL_USERNAME:
+        required: false
+      CI_BOT_EMAIL_PASSWORD:
+        required: false
     inputs:
       build_params:
         type: string
