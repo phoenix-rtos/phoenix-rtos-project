@@ -66,7 +66,7 @@ jobs:
       runner_result: ${{ steps.runner.outcome }}
     strategy:
       matrix:
-        target: ['host-pc', 'ia32-generic']
+        target: ['host-pc', 'ia32-generic', 'armv7a9-zynq7000-qemu']
 
     steps:
       - name: Checkout the repository
