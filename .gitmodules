@@ -7,15 +7,18 @@
 [submodule "phoenix-rtos-build"]
 	path = phoenix-rtos-build
 	url = https://github.com/phoenix-rtos/phoenix-rtos-build
+	branch = feature/mtd
 [submodule "phoenix-rtos-ports"]
 	path = phoenix-rtos-ports
 	url = https://github.com/phoenix-rtos/phoenix-rtos-ports
 [submodule "phoenix-rtos-devices"]
 	path = phoenix-rtos-devices
 	url = https://github.com/phoenix-rtos/phoenix-rtos-devices
+	branch = feature/mtd
 [submodule "phoenix-rtos-filesystems"]
 	path = phoenix-rtos-filesystems
 	url = https://github.com/phoenix-rtos/phoenix-rtos-filesystems
+	branch = feature/mtd
 [submodule "phoenix-rtos-usb"]
 	path = phoenix-rtos-usb
 	url = https://github.com/phoenix-rtos/phoenix-rtos-usb
@@ -37,6 +40,7 @@
 [submodule "phoenix-rtos-utils"]
 	path = phoenix-rtos-utils
 	url = https://github.com/phoenix-rtos/phoenix-rtos-utils/
+	branch = feature/mtd
 [submodule "plo"]
 	path = plo
 	url = https://github.com/phoenix-rtos/plo.git
