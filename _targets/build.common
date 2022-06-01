@@ -140,10 +140,12 @@ b_add2img() {
 # - OFFS_USER_SCRIPT - offset on flash memory where user script is located
 # - KERNEL_OFFS - offset on flash memory where kernel is located
 b_prod_image() {
-	b_log "Creating production image"
+	b_log "Creating production images"
 
 	IMG=_boot/phoenix-${TARGET}.disk
+	SCRIPT_IMG=_boot/script-kernel-app-${TARGET}.disk
 	rm -f "$IMG"
+	rm -f "$SCRIPT_IMG"
 
 	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
@@ -166,6 +168,9 @@ b_prod_image() {
 	for prog in "${PROGS[@]}"; do
 		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
 	done
+
+	# Image without plo, beginning with script
+	dd if="$IMG" of="$SCRIPT_IMG" bs=1 skip="$OFFS_USER_SCRIPT" 2>/dev/null
 }
 
 # Function gets the following arguments:
