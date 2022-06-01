@@ -196,7 +196,7 @@ b_dev_image() {
 
 	REMOTE_SCRIPT_PATH=_boot/script-${TARGET}-dev.plo
 	PLO_DEV_IMG=_boot/plo-script-${TARGET}-dev.img
-	SYS_DEV_IMG=_boot/script-kernel-app-${TARGET}.disk
+	SYS_DEV_IMG=_boot/script-kernel-app-${TARGET}-dev.disk
 
 	rm -f "$PLO_DEV_IMG" "$SYS_DEV_IMG"
 
