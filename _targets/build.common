@@ -95,6 +95,9 @@ b_mkscript_user() {
 # - MAGIC_USER_SCRIPT - number which is assigned to user script
 # - BOOT_DEVICE - name of the device from which script is called
 # - OFFS_USER_SCRIPT - offset on flash memory where user script is located
+# Optional variables used for remote firmware upgrade:
+# - NAME_USER2_SCRIPT - name of the secondary user script
+# - OFFS_USER2_SCRIPT - offset of the secondary user script
 b_mkscript_preinit() {
 	mkdir -p "$PREFIX_BUILD/plo/"
 
@@ -108,6 +111,10 @@ b_mkscript_preinit() {
 
 		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
+		if [ ! -z ${NAME_USER2_SCRIPT} ]; then
+			printf "alias %s 0x%x 0x%x\n" "$NAME_USER2_SCRIPT" "$OFFS_USER2_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
+			printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER2_SCRIPT" "$MAGIC_USER_SCRIPT"
+		fi
 		printf "\0"
 	} > "$PREFIX_BUILD/plo/script.plo"
 }
