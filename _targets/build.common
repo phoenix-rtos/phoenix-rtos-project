@@ -171,6 +171,9 @@ b_prod_image() {
 
 	# Image without plo, beginning with script
 	dd if="$IMG" of="$SCRIPT_IMG" bs=1 skip="$OFFS_USER_SCRIPT" 2>/dev/null
+
+	# Export user script to _boot directory
+	cp "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" _boot/$NAME_USER_SCRIPT
 }
 
 # Function gets the following arguments:
