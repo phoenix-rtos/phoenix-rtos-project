@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building armv7a9-zynq7000-zedboard project
+# Shell script for building armv7a9-zynq7000-qemu project
 #
 # Copyright 2022 Phoenix Systems
 # Author: Damian Loewnau
@@ -10,12 +10,6 @@
 
 . "_targets/build.project.armv7a9-zynq7000"
 
-
-# TODO: current implementation of qspi supports only 3-bytes addressing. Cannot access the 32 MB of the flash memory.
-
-# Example of the NOR flash memory layout for Spansion s25fl256s1 (32 MB) placed on Zedboard
-#    region 1 <0:0x1ffff>    #    region 2 <0x20000:1xFDFFFF>    #
-#          /dev/mtd0         #              /dev/mtd1           #
 
 
 # Pre-init script is launched before user script
@@ -36,10 +30,11 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:0xe0000:0x800000:jffs2;-p;/dev/mtd1:0x9e0000:0x500000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0x800000:jffs2; ddr ddr"
 	"wait 500"
 	"go!")
 
+
 b_image_project () {
-	b_log "The images have been built for the armv7a9-zynq7000-zedboard platform"
+	b_log "The images have been built for the ${TARGET} platform"
 }

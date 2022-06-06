@@ -121,14 +121,14 @@ b_image_target() {
 	b_syspage_gen "$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BUILD/plo/user.plo"
 
 	b_log "FLASH Image"
-	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
+	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
 	b_kernel_image "$PREFIX_BOOT/kernel.img"
 	b_syspage_gen "$PREFIX_BOOT/kernel.img" "$PREFIX_BUILD/plo/user.plo"
 
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
-	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
-	IMG="$PREFIX_BOOT/phoenix-armv7a7-imx6ull.jffs2"
+	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
+	IMG="$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.jffs2"
 
 	b_log "Filesystem"
 	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -n -r "$PREFIX_ROOTFS"/ -o "$IMG"
