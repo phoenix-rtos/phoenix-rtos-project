@@ -11,6 +11,7 @@
 
 CROSS=arm-phoenix-
 
+# TODO: move BOARD_CONFIG defines to board_config.h
 export BOARD_CONFIG=" -DUART1=1 -DUART_CONSOLE=1 "
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
@@ -74,7 +75,7 @@ USER_SCRIPT=(
 DEV_USER_SCRIPT=(
 	"echo on"
 	"wait 3000"
-	"call usb0 script-${TARGET}-dev.plo 5a5aa5a5")
+	"call usb0 script-${TARGET_FAMILY}-${TARGET_SUBFAMILY}-dev.plo 5a5aa5a5")
 
 
 REMOTE_USER_SCRIPT=(

@@ -79,8 +79,7 @@ b_build_target() {
 
 	# plo image is reused only in loading system via qemu
 	if [ "${TARGET_PROJECT}" = "qemu" ]; then
-		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
-			_boot/plo-${TARGET}.img
+		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
 	fi
 
 	phoenix-rtos-build/scripts/mkimg-boot-zynq7000.sh \
@@ -94,11 +93,11 @@ b_build_target() {
 
 
 b_flash_image() {
-	local flash_path="${PREFIX_BOOT}/flash-${TARGET}.bin"
+	local flash_path="${PREFIX_BOOT}/flash-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.bin"
 	rm -f "${flash_path}"
 
-	dd if="${PREFIX_BOOT}/phoenix-${TARGET}.disk" of="${flash_path}" bs=4M conv=notrunc 2>/dev/null
-	dd if="${PREFIX_BOOT}/phoenix-${TARGET}.jffs2" of="${flash_path}" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
+	dd if="${PREFIX_BOOT}/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.disk" of="${flash_path}" bs=4M 2>/dev/null
+	dd if="${PREFIX_BOOT}/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.jffs2" of="${flash_path}" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
 
 	truncate -s 16M "${flash_path}" 2>/dev/null
 }
@@ -113,8 +112,8 @@ b_build_jffs2() {
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
 	OLD_PATH="$PATH"
-	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
-	IMG="$PREFIX_BOOT/phoenix-${TARGET}.jffs2"
+	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
+	IMG="$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.jffs2"
 
 	b_log "Filesystem"
 

@@ -8,7 +8,7 @@ description: 'Runs Phoenix-RTOS tests'
 inputs:
   target:
     description: 'Specifies target to run tests'
-    default: 'ia32-generic'
+    default: 'ia32-generic-qemu'
     required: false
 
 

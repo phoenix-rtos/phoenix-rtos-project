@@ -1,0 +1,72 @@
+/*
+ * Phoenix-RTOS
+ *
+ * Board config for armv7a9-zynq7000-zedboard
+ *
+ * Copyright 2022 Phoenix Systems
+ * Author: Lukasz Kosinski
+ *
+ * This file is part of Phoenix-RTOS.
+ *
+ * %LICENSE%
+ */
+
+#ifndef _BOARD_CONFIG_H_
+#define _BOARD_CONFIG_H_
+
+/* DDR configuration */
+#define DDRC_DRAM_PARAM_REG0 0x0004159b
+#define DDRC_DRAM_PARAM_REG1 0x452464d3
+#define DDRC_DRAM_PARAM_REG2 0x7282bce5
+#define DDRC_DRAM_PARAM_REG3 0x270872d0
+#define DDRC_DRAM_PARAM_REG4 0x0
+
+#define DDRC_DRAM_ADDR_MAP_COL 0xfff00000
+#define DDRC_DRAM_ADDR_MAP_ROW 0x0ff66666
+
+#define DDRC_PHY_CONFIG0 0x40000001
+#define DDRC_PHY_CONFIG1 0x40000001
+#define DDRC_PHY_CONFIG2 0x40000001
+#define DDRC_PHY_CONFIG3 0x40000001
+
+#define DDRC_PHY_INIT_RATIO0 0x00033c03
+#define DDRC_PHY_INIT_RATIO1 0x00034003
+#define DDRC_PHY_INIT_RATIO2 0x0002f400
+#define DDRC_PHY_INIT_RATIO3 0x00030400
+
+#define DDRC_PHY_RD_DQS_CFG0 0x00000035
+#define DDRC_PHY_RD_DQS_CFG1 0x00000035
+#define DDRC_PHY_RD_DQS_CFG2 0x00000035
+#define DDRC_PHY_RD_DQS_CFG3 0x00000035
+
+#define DDRC_PHY_WR_DQS_CFG0 0x00000083
+#define DDRC_PHY_WR_DQS_CFG1 0x00000083
+#define DDRC_PHY_WR_DQS_CFG2 0x00000080
+#define DDRC_PHY_WR_DQS_CFG3 0x00000080
+
+#define DDRC_PHY_WE_CFG0 0x00000124
+#define DDRC_PHY_WE_CFG1 0x00000125
+#define DDRC_PHY_WE_CFG2 0x00000112
+#define DDRC_PHY_WE_CFG3 0x00000116
+
+#define DDRC_WR_DATA_SLV0 0x000000c3
+#define DDRC_WR_DATA_SLV1 0x000000c3
+#define DDRC_WR_DATA_SLV2 0x000000c0
+#define DDRC_WR_DATA_SLV3 0x000000c0
+
+/* SPI configuration */
+#define SPI0_SCLK -1
+#define SPI0_MOSI -1
+#define SPI0_MISO -1
+#define SPI0_SS0  -1
+#define SPI0_SS1  -1
+#define SPI0_SS2  -1
+
+#define SPI1_SCLK 12
+#define SPI1_MOSI 10
+#define SPI1_MISO 11
+#define SPI1_SS0  13
+#define SPI1_SS1  14
+#define SPI1_SS2  15
+
+#endif

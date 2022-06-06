@@ -11,6 +11,7 @@
 
 CROSS=arm-phoenix-
 
+# TODO: move BOARD_CONFIG defines to board_config.h
 export BOARD_CONFIG=" -DUART_CONSOLE=2 -DTTY2=1 "
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")

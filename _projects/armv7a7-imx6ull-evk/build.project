@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Shell script for building armv7a7-imx6ull-evk project
+#
+# Copyright 2022 Phoenix Systems
+# Author: Lukasz Kosinski
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.project.armv7a7-imx6ull"
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}

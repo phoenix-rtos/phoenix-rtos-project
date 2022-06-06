@@ -1,10 +1,12 @@
 #!/bin/bash
 #
-# Shell script for running Phoenix-RTOS on QEMU (riscv64-spike)
+# Shell script for running Phoenix-RTOS on QEMU (riscv64-generic-spike)
 #
 # Copyright 2021 Phoenix Systems
 # Author: Lukasz Kosinski
 #
+
+# TODO: this script should run spike simulator
 
 REGEX="version ([0-9]+)\.([0-9]+)"
 OPTIMG=""
@@ -24,9 +26,9 @@ fi
 exec qemu-system-riscv64 \
 	-smp 1 \
 	-machine virt \
-	"$OPTIMG" "$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-riscv64-spike.bbl" \
+	"$OPTIMG" "$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-riscv64-generic-spike.bbl" \
 	-serial stdio \
 	-device virtio-gpu-device \
-	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-riscv64-spike.disk",cache=unsafe,if=none,id=vblk0 \
+	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-riscv64-generic-spike.disk",cache=unsafe,if=none,id=vblk0 \
 	-device virtio-blk-device,drive=vblk0 \
 	-netdev user,id=net0 -device virtio-net-device,netdev=net0

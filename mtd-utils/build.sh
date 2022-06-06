@@ -2,17 +2,17 @@
 
 set -e
 
-if [ $(uname) = "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
 	b_log "Building mtd-utils"
 
-	PREFIX_MTD_UTILS=${TOPDIR}/mtd-utils
-	PREFIX_MTD_UTILS_BUILD=${TOPDIR}/_build/host-pc/mtd-utils
+	PREFIX_MTD_UTILS="${TOPDIR}/mtd-utils"
+	PREFIX_MTD_UTILS_BUILD="${TOPDIR}/_build/host-generic-pc/mtd-utils"
 
-	mkdir -p $PREFIX_MTD_UTILS_BUILD
+	mkdir -p "$PREFIX_MTD_UTILS_BUILD"
 
-	pushd $PREFIX_MTD_UTILS_BUILD
-	if [ ! -z "$CLEAN" ]; then
-		tar xzvf $PREFIX_MTD_UTILS/mtd-utils-patched.tar.gz
+	pushd "$PREFIX_MTD_UTILS_BUILD"
+	if [ -n "$CLEAN" ]; then
+		tar xzvf "$PREFIX_MTD_UTILS/mtd-utils-patched.tar.gz"
 
 		if [ -f Makefile ]; then
 			make distclean
@@ -24,9 +24,9 @@ if [ $(uname) = "Darwin" ]; then
 
 	make mkfs.jffs2
 	
-	mkdir -p ${TOPDIR}/_build/host-pc/prog
-	mkdir -p ${TOPDIR}/_build/host-pc/prog.stripped
-	cp mkfs.jffs2 ${TOPDIR}/_build/host-pc/prog/
-	cp mkfs.jffs2 ${TOPDIR}/_build/host-pc/prog.stripped/
+	mkdir -p "${TOPDIR}/_build/host-generic-pc/prog"
+	mkdir -p "${TOPDIR}/_build/host-generic-pc/prog.stripped"
+	cp mkfs.jffs2 "${TOPDIR}/_build/host-generic-pc/prog/"
+	cp mkfs.jffs2 "${TOPDIR}/_build/host-generic-pc/prog.stripped/"
 	popd
 fi

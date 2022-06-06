@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for running Phoenix-RTOS on QEMU for testing purposes (ia32-generic)
+# Shell script for running Phoenix-RTOS on QEMU for testing purposes (ia32-generic-qemu)
 #
 # Copyright 2022 Phoenix Systems
 # Author: Damian Loewnau

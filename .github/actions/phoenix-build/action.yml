@@ -12,7 +12,7 @@ description: 'Builds Phoenix-RTOS based projects'
 inputs:
   target:
     description: 'Target env variable'
-    default: 'ia32-generic'
+    default: 'ia32-generic-qemu'
     required: false
   syspage:
     description: 'Syspage env variable'
