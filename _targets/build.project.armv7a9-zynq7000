@@ -14,12 +14,12 @@ CROSS=arm-phoenix-
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
 #
-# Platform dependent parameters
+# Default platform dependent parameters
 #
-SIZE_PAGE=$((0x200))
-PAGE_MASK=$((0xfffffe00))
+SIZE_PAGE=$((0x1000))
+PAGE_MASK=$((~(SIZE_PAGE - 1)))
 KERNEL_OFFS=$((0x11000))
-
+FS_OFFS=$((0x100000))
 
 #
 # Project specific build
@@ -43,14 +43,23 @@ PREINIT_SCRIPT=(
 	"console 0.1")
 
 
-# Production user script contains applications to run Phoenix-RTOS
+# Production user script contains applications to run basic version of Phoenix-RTOS
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh ddr ddr"
-	"wait 1000"
+	"app ${BOOT_DEVICE} -x zynq7000-flash ddr ddr"
+	"wait 500"
 	"go!")
+
+
+# definition of rc.psh file
+RC_PSH=(
+	":{}:"
+	"W /bin/bind devfs /dev"
+	"X /bin/psh"
+)
 
 
 b_build_project() {
@@ -86,10 +95,42 @@ b_build_target() {
 
 b_flash_image() {
 	local flash_path="${PREFIX_BOOT}/flash-${TARGET}.bin"
-
 	rm -f "${flash_path}"
-	dd if="${PREFIX_BOOT}/phoenix-${TARGET}.disk" of="${flash_path}" bs=4M 2>/dev/null
+
+	dd if="${PREFIX_BOOT}/phoenix-${TARGET}.disk" of="${flash_path}" bs=4M conv=notrunc 2>/dev/null
+	dd if="${PREFIX_BOOT}/phoenix-${TARGET}.jffs2" of="${flash_path}" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
+
 	truncate -s 16M "${flash_path}" 2>/dev/null
+}
+
+
+b_build_jffs2() {
+	# !!! NOTE:
+	#         For non-standard NOR flash memories, erase_sz & page_sz should be changed..
+	local erase_sz=$((0x10000))
+	local page_sz=$((0x100))
+
+	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
+	mtd-utils/build.sh
+	OLD_PATH="$PATH"
+	PATH="$(pwd)/_build/host-pc/prog/:$PATH"
+	IMG="$PREFIX_BOOT/phoenix-${TARGET}.jffs2"
+
+	b_log "Filesystem"
+
+	# rc.psh specified for zynq-7000 targets
+	printf "%s\n" "${RC_PSH[@]}" > "$PREFIX_FS/root/etc/rc.psh"
+
+	mkfs.jffs2 -U -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$IMG"
+	if sumtool -e $erase_sz -i "$IMG" -o "$IMG.tmp" 2> /dev/null; then
+		echo "JFFS2 Summary nodes created"
+		mv "$IMG.tmp" "$IMG"
+	fi
+
+	sz=$(du -k "$IMG" | awk '{ print $1 }')
+	echo "Filesystem size: ${sz}KB"
+
+	PATH="$OLD_PATH"
 }
 
 
@@ -97,6 +138,8 @@ b_image_target() {
 	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
 	b_dev_image
+
+	b_build_jffs2
 	b_flash_image
 }
 
