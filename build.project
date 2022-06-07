@@ -32,7 +32,8 @@ if [ -z "$TARGET_FAMILY" ] || [ -z "$TARGET_SUBFAMILY" ] || [ -z "$TARGET_PROJEC
 fi
 
 
-PROJECT_PATH=$(realpath "_projects/$TARGET")
+# PROJECT_PATH has to be marked with export to be visible in child processes
+export PROJECT_PATH=$(realpath "_projects/$TARGET")
 PROJECT_FILE="$PROJECT_PATH/build.project"
 
 if [ ! -f "$PROJECT_FILE" ]; then
