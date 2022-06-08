@@ -49,3 +49,6 @@
 [submodule "phoenix-rtos-doc"]
 	path = phoenix-rtos-doc
 	url = https://github.com/phoenix-rtos/phoenix-rtos-doc
+[submodule "phoenix-pilot-core"]
+	path = phoenix-pilot-core
+	url = https://github.com/phoenix-pilot/phoenix-pilot-core/
