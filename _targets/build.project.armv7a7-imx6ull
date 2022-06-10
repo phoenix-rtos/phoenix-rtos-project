@@ -60,7 +60,7 @@ PREINIT_SCRIPT=(
 
 #TODO: if plo is introduced, BOOT_DEVICE should be changed
 #TODO: if flash driver for imx6ull-evk implementation is introduced, psh should be replaced by imx6ul-flash and psd
-# This is temporary solution for running a system image in RAM  
+# This is temporary solution for running a system image in RAM
 UPLOAD_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
@@ -84,7 +84,7 @@ b_build_project() {
 
 
 b_build_target() {
-	b_log "Building sample project for $TARGET"
+	b_log "Building $TARGET project"
 }
 
 
@@ -112,38 +112,40 @@ b_syspage_gen() {
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
-	b_mkscript_user  "${UPLOAD_SCRIPT[@]}"
+	b_mkscript_user "${UPLOAD_SCRIPT[@]}"
 	b_mkscript_preinit
 
 	# Build production image
 	b_log "RAM Image"
-	b_kernel_image "$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BUILD/plo/user.plo"
+	b_kernel_image "$PREFIX_BOOT/phoenix.img"
+	b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
 
 	b_log "FLASH Image"
 	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
-	b_kernel_image "$PREFIX_BOOT/kernel.img"
-	b_syspage_gen "$PREFIX_BOOT/kernel.img" "$PREFIX_BUILD/plo/user.plo"
+	b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
 
+	b_log "Creating rootfs"
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
 	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
-	IMG="$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.jffs2"
+	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
-	b_log "Filesystem"
-	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -n -r "$PREFIX_ROOTFS"/ -o "$IMG"
-	if sumtool -e $((64*4096)) -i "$IMG" -o "$IMG.tmp" 2> /dev/null; then
+	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
+	if sumtool -e $((64*4096)) -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
 		echo "JFFS2 Summary nodes created"
-		mv "$IMG.tmp" "$IMG"
+		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi
 
-	sz=$(du -k "$IMG" | awk '{ print $1 }')
-	echo "Filesystem size: ${sz}KB"
+	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
+	echo "rootfs size: ${sz}KB"
 }
+
 
 b_test_target() {
 	b_log "Build and install tests in the phoenix-rtos filesystem"
 	make -C "phoenix-rtos-tests" all install
 }
+
 
 export -f b_build_target

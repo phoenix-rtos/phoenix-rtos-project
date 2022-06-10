@@ -49,13 +49,13 @@ jobs:
         working-directory: _fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 4: upload "_boot" directory and tarball of rootfs as build artifacts
+      # step 4: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            _boot
+            _boot/${{ matrix.target }}
             rootfs-${{ matrix.target }}.tar
 
   test-emu:

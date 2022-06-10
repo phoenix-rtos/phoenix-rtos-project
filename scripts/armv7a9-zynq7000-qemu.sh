@@ -6,8 +6,8 @@
 # Author: Hubert Buczynski
 #
 
-IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/plo-armv7a9-zynq7000.img"
-IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/flash-armv7a9-zynq7000.bin"
+IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu/plo.img"
+IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu/phoenix.disk"
 DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000-zc702.dtb"
 
 for FILE in "$IMG_PLO_ZYNQ7000" "$IMG_FLASH_QEMU" "$DTB_ZYNQ7000"; do
