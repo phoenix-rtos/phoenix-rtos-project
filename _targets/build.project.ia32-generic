@@ -87,7 +87,7 @@ b_build_project() {
 
 
 b_build_target() {
-	b_log "Building sample project for $TARGET"
+	b_log "Building $TARGET project"
 
 	# Define default console device
 	if [ "$CONSOLE" = "serial" ]; then
@@ -114,16 +114,16 @@ b_le32hex() {
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
-	# Generate rootfs partition (ext2)
-	ROOTFS="$PREFIX_BUILD/disk.ext2"
+	b_log "Creating rootfs"
+	ROOTFS="$PREFIX_BOOT/rootfs.ext2"
 	rm -f "$ROOTFS"
 	SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
 	SIZE_ROOTFS=$((3 * SIZE_ROOTFS / 2))
-	echo "Root filesystem size: ${SIZE_ROOTFS}KB"
+	echo "rootfs size: ${SIZE_ROOTFS}KB"
 	genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
 
 	# Generate MBR partition table
-	PTABLE="$PREFIX_BUILD/disk.ptable"
+	PTABLE="$PREFIX_BOOT/disk.ptable"
 	{
 		printf $(b_le32hex $((0x80)))
 		printf $(b_le32hex $((0x83)))
@@ -131,17 +131,17 @@ b_image_target() {
 		printf $(b_le32hex $((2 * SIZE_ROOTFS)))
 	} > "$PTABLE"
 
-	# Build production image (sets $IMG variable)
+	# Build production image (sets $PHOENIX_DISK variable)
 	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
 
 	# Update MBR partition table
 	OFFSET=$((0x1be))
-	b_add2img "$PTABLE" "$IMG"
+	b_add2img "$PTABLE" "$PHOENIX_DISK"
 
-	# Add rootfs partition
-	printf "Copying "$ROOTFS" (offs="$OFFS_ROOTFS" sectors)\n"
-	dd if="$ROOTFS" of="$IMG" bs=512 seek="$OFFS_ROOTFS" 2>/dev/null
+	# Add rootfs to PHOENIX_DISK
+	printf "Copying "$ROOTFS" (offs="$OFFS_ROOTFS" blocks)\n"
+	dd if="$ROOTFS" of="$PHOENIX_DISK" bs=512 seek="$OFFS_ROOTFS" conv=notrunc 2>/dev/null
 }
 
 

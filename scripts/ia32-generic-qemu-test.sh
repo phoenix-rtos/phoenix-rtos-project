@@ -8,7 +8,7 @@
 
 exec qemu-system-i386 \
 	-cpu pentium3 \
-	-hda "$(dirname "${BASH_SOURCE[0]}")/../_boot/phoenix-ia32-generic.disk" \
+	-hda "$(dirname "${BASH_SOURCE[0]}")/../_boot/ia32-generic-qemu/phoenix.disk" \
 	-nographic \
 	-monitor none \
 	-netdev user,id=net0 -device rtl8139,netdev=net0 "$@"

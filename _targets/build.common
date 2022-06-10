@@ -104,7 +104,7 @@ b_mkscript_preinit() {
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/ramscript.plo"
+	} > "$PREFIX_BUILD/plo/script-ram.plo"
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
@@ -142,10 +142,9 @@ b_add2img() {
 b_prod_image() {
 	b_log "Creating production images"
 
-	IMG=_boot/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.disk
-	SCRIPT_IMG=_boot/script-kernel-app-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.disk
-	rm -f "$IMG"
-	rm -f "$SCRIPT_IMG"
+	PHOENIX_IMG="$PREFIX_BOOT/phoenix.img"   # user script + kernel + programs
+	PHOENIX_DISK="$PREFIX_BOOT/phoenix.disk" # plo + PHOENIX_IMG
+	rm -f "$PHOENIX_IMG" "$PHOENIX_DISK"
 
 	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
@@ -154,27 +153,25 @@ b_prod_image() {
 
 	# Loader
 	OFFSET=0
-	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PHOENIX_DISK"
 
 	# User script
 	OFFSET="$OFFS_USER_SCRIPT"
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$IMG"
+	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PHOENIX_DISK"
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
-	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$PHOENIX_DISK"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
-		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
+		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$PHOENIX_DISK"
 	done
 
-	# Image without plo, beginning with script
-	dd if="$IMG" of="$SCRIPT_IMG" bs=1 skip="$OFFS_USER_SCRIPT" 2>/dev/null
-
-	# Export user script to _boot directory
-	cp "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" _boot/$NAME_USER_SCRIPT
+	# System image (without plo)
+	dd if="$PHOENIX_DISK" of="$PHOENIX_IMG" bs=1 skip="$OFFS_USER_SCRIPT" 2>/dev/null
 }
+
 
 # Function gets the following arguments:
 # - $1 - path to target image file
@@ -193,7 +190,6 @@ b_kernel_image() {
 }
 
 
-
 # Function needs external variables to be defined in a project file:
 # - DEV_USER_SCRIPT - set of development commands
 # - REMOTE_USER_SCRIPT - set of develpoment commands which are called by dev user script
@@ -202,11 +198,10 @@ b_kernel_image() {
 b_dev_image() {
 	b_log "Creating development images"
 
-	REMOTE_SCRIPT_PATH=_boot/script-${TARGET_FAMILY}-${TARGET_SUBFAMILY}-dev.plo
-	PLO_DEV_IMG=_boot/plo-script-${TARGET_FAMILY}-${TARGET_SUBFAMILY}-dev.img
-	SYS_DEV_IMG=_boot/script-kernel-app-${TARGET_FAMILY}-${TARGET_SUBFAMILY}-dev.disk
-
-	rm -f "$PLO_DEV_IMG" "$SYS_DEV_IMG"
+	REMOTE_SCRIPT_PATH="$PREFIX_BOOT/script-dev.plo"
+	PLO_DEV_IMG="$PREFIX_BOOT/plo-dev.img"
+	PHOENIX_DEV_IMG="$PREFIX_BOOT/phoenix-dev.img"
+	rm -f "$PLO_DEV_IMG" "$PHOENIX_DEV_IMG"
 
 	b_mkscript_user "${DEV_USER_SCRIPT[@]}"
 	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
@@ -229,15 +224,15 @@ b_dev_image() {
 
 	# Dev user script
 	OFFSET=0
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$SYS_DEV_IMG"
+	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PHOENIX_DEV_IMG"
 
 	# Kernel
 	KERNEL_OFFS=$((KERNEL_OFFS - OFFS_USER_SCRIPT))
 	OFFSET="$KERNEL_OFFS"
-	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$SYS_DEV_IMG"
+	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$PHOENIX_DEV_IMG"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
-		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$SYS_DEV_IMG"
+		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$PHOENIX_DEV_IMG"
 	done
 }

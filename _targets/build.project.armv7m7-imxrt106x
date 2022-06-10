@@ -101,15 +101,15 @@ b_build_project() {
 
 
 b_build_target() {
-	b_log "Building sample project for $TARGET"
+	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
 	b_mkscript_preinit
 
 	make -C plo all
 
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
-	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" _boot/
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" "$PREFIX_BOOT/plo-ram.sdp"
 }
 
 

@@ -69,17 +69,15 @@ b_build_project() {
 
 
 b_build_target() {
-	b_log "Building sample project for $TARGET"
+	b_log "Building $TARGET project"
 
-	b_log "Building plo"
-
+	b_log "Building phoenix-rtos-loader"
 	b_mkscript_preinit
-
 	make -C plo base
 
 	# plo image is reused only in loading system via qemu
 	if [ "${TARGET_PROJECT}" = "qemu" ]; then
-		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" _boot/
+		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
 	fi
 
 	phoenix-rtos-build/scripts/mkimg-boot-zynq7000.sh \
@@ -87,49 +85,8 @@ b_build_target() {
 		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
 		0
 
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "${PREFIX_BOOT}/"
-	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "${PREFIX_BOOT}/"
-}
-
-
-b_flash_image() {
-	local flash_path="${PREFIX_BOOT}/flash-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.bin"
-	rm -f "${flash_path}"
-
-	dd if="${PREFIX_BOOT}/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.disk" of="${flash_path}" bs=4M 2>/dev/null
-	dd if="${PREFIX_BOOT}/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.jffs2" of="${flash_path}" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
-
-	truncate -s 16M "${flash_path}" 2>/dev/null
-}
-
-
-b_build_jffs2() {
-	# !!! NOTE:
-	#         For non-standard NOR flash memories, erase_sz & page_sz should be changed..
-	local erase_sz=$((0x10000))
-	local page_sz=$((0x100))
-
-	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
-	mtd-utils/build.sh
-	OLD_PATH="$PATH"
-	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
-	IMG="$PREFIX_BOOT/phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.jffs2"
-
-	b_log "Filesystem"
-
-	# rc.psh specified for zynq-7000 targets
-	printf "%s\n" "${RC_PSH[@]}" > "$PREFIX_FS/root/etc/rc.psh"
-
-	mkfs.jffs2 -U -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$IMG"
-	if sumtool -e $erase_sz -i "$IMG" -o "$IMG.tmp" 2> /dev/null; then
-		echo "JFFS2 Summary nodes created"
-		mv "$IMG.tmp" "$IMG"
-	fi
-
-	sz=$(du -k "$IMG" | awk '{ print $1 }')
-	echo "Filesystem size: ${sz}KB"
-
-	PATH="$OLD_PATH"
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/phoenix-kernel.elf"
 }
 
 
@@ -138,8 +95,35 @@ b_image_target() {
 	b_prod_image
 	b_dev_image
 
-	b_build_jffs2
-	b_flash_image
+	b_log "Creating rootfs"
+	# !!! NOTE: For non-standard NOR flash memories, erase_sz & page_sz should be changed..
+	local erase_sz=$((0x10000))
+	local page_sz=$((0x100))
+
+	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
+	mtd-utils/build.sh
+	OLD_PATH="$PATH"
+	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
+	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
+
+	# rc.psh specified for zynq-7000 targets
+	printf "%s\n" "${RC_PSH[@]}" > "$PREFIX_FS/root/etc/rc.psh"
+
+	mkfs.jffs2 -U -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
+	if sumtool -e $erase_sz -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
+		echo "JFFS2 Summary nodes created"
+		mv "$ROOTFS.tmp" "$ROOTFS"
+	fi
+
+	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
+	echo "rootfs size: ${sz}KB"
+
+	PATH="$OLD_PATH"
+
+	# Add rootfs to PHOENIX_DISK
+	printf "Copying "$ROOTFS" (offs="$((FS_OFFS/4096))" blocks)\n"
+	dd if="$ROOTFS" of="$PHOENIX_DISK" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
+	truncate -s 16M "$PHOENIX_DISK" 2>/dev/null
 }
 
 

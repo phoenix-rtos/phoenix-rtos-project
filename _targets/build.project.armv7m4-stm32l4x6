@@ -86,7 +86,7 @@ b_build_project() {
 
 
 b_build_target() {
-	b_log "Building sample project for $TARGET"
+	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
 	b_mkscript_preinit
