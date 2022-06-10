@@ -95,18 +95,16 @@ b_syspage_gen() {
 
 
 b_build_target() {
+	b_log "Building $TARGET project"
 
-	b_log "Building sample project for $TARGET"
-
-	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
+	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
 	b_mkscript_preinit
 
 	# Build production image
 	b_log "Image"
-	b_mkscript_user  "${PRIMARY_SCRIPT[@]}"
-	b_kernel_image "$PREFIX_BOOT/phoenix-$TARGET.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix-$TARGET.img" "$PREFIX_BUILD/plo/user.plo"
-
+	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
+	b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
 
 	# Add kernel to boot loader
 	b_log "Adding kernel to boot loader"
@@ -117,36 +115,40 @@ b_build_target() {
 		mkdir -p "$BBL_BUILD_DIR"
 		pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
 			if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
-				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_BOOT/phoenix-$TARGET.img" --disable-fp-emulation
+				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_BOOT/phoenix-kernel.img" --disable-fp-emulation
 				touch "$BBL_BUILD_DIR/stamp.configured"
 			fi
 
 			env -i PATH="$PATH" make $MAKEFLAGS all
 		popd > /dev/null
 
-		cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix-$TARGET.bbl"
+		cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix.bbl"
 	elif [ "$RISCV_LOADER" = "opensbi" ]; then
-		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix-$TARGET.img")
+		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix-kernel.img")
 
-		cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix-$TARGET.osbi"
+		cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix.osbi"
 	else
-		cp "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin" "$PREFIX_BOOT/."
+		cp "$PREFIX_PROG_STRIPPED/phoenix-$TARGET.bin" "$PREFIX_BOOT"
 	fi
 }
 
 
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
+
+	b_log "Creating rootfs"
+	ROOTFS="$PREFIX_BOOT/rootfs.ext2"
+	rm -f "$ROOTFS"
 	size=$(find "${PREFIX_ROOTFS}" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
 	size=$((size * 150 / 100))
-	echo "Filesystem size: $size"
-
-	genext2fs -b $size -d "$PREFIX_ROOTFS" "$PREFIX_BUILD/disk.ext2"
-	mv "$PREFIX_BUILD/disk.ext2" "$PREFIX_BOOT/phoenix-$TARGET.disk"
+	echo "rootfs size: $size"
+	genext2fs -b $size -d "$PREFIX_ROOTFS" "$ROOTFS"
 }
+
 
 b_test_target() {
 	:
 }
+
 
 export -f b_build_target
