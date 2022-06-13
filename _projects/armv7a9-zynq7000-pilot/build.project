@@ -30,6 +30,10 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0x800000:jffs2; ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-pwm;-r1000000;-b0x43c00000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-xgpio;-b0x41200000 ddr ddr"
+	"alias bitstream.bin $BS_OFFS $BS_SZ"
+	"bitstream ${BOOT_DEVICE} bitstream.bin"
 	"wait 500"
 	"go!")
 
