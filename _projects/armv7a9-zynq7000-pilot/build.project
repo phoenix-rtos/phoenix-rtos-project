@@ -38,6 +38,7 @@ USER_SCRIPT=(
 	"go!")
 
 
-b_image_project () {
-	b_log "The images have been built for the ${TARGET} platform"
+b_build_project () {
+	b_log "Building phoenix-pilot-core"
+	make -C phoenix-pilot-core all
 }
