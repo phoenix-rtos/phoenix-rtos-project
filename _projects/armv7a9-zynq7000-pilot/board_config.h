@@ -65,8 +65,8 @@
 #define SPI1_SCLK 12
 #define SPI1_MOSI 10
 #define SPI1_MISO 11
-#define SPI1_SS0  13
-#define SPI1_SS1  14
-#define SPI1_SS2  15
+#define SPI1_SS0  8  /* Barometer */
+#define SPI1_SS1  9  /* Magnetometer */
+#define SPI1_SS2  13 /* Accelerometer and Gyroscope */
 
 #endif
