@@ -13,6 +13,8 @@ CROSS=arm-phoenix-
 
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
+export PORTS_BUSYBOX=y
+
 #
 # Default platform dependent parameters
 #
@@ -58,14 +60,6 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-flash ddr ddr"
 	"wait 500"
 	"go!")
-
-
-# definition of rc.psh file
-RC_PSH=(
-	":{}:"
-	"W /bin/bind devfs /dev"
-	"X /bin/psh"
-)
 
 
 b_build_project() {

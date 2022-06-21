@@ -41,6 +41,14 @@ USER_SCRIPT=(
 	"go!")
 
 
+# definition of rc.psh file
+RC_PSH=(
+	":{}:"
+	"W /bin/bind devfs /dev"
+	"X /bin/psh"
+)
+
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
