@@ -10,7 +10,8 @@
 
 . "_targets/build.project.armv7a9-zynq7000"
 
-
+# No networking
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
