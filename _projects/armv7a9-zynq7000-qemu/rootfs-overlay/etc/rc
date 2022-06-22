@@ -1,0 +1,25 @@
+#!/bin/busybox sh
+
+. /etc/rc.subr
+
+export PATH=/bin:/usr/bin
+
+# Mount RAM disks
+mkdir -p /var/log /var/run /var/cfg /var/cfg-req /var/tmp /var/login /var/users-req
+
+# Create directories if local is empty
+if [ ! -d /local/etc ]; then
+	mkdir /local/etc
+fi
+if [ ! -d /local/etc/rc.conf.d ]; then
+	mkdir /local/etc/rc.conf.d
+fi
+
+if [ ! -f /local/etc/passwd ]; then
+	cp /etc/passwd /local/etc/passwd
+fi
+
+# Custom (per-project, per-customer initialization)
+if [ -f /etc/rc.local ]; then
+	/etc/rc.local
+fi
