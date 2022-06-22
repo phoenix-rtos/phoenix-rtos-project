@@ -32,14 +32,21 @@ if [ -z "$TARGET_FAMILY" ] || [ -z "$TARGET_SUBFAMILY" ] || [ -z "$TARGET_PROJEC
 fi
 
 
+TARGET_FILE=$(realpath "_targets/build.project.$TARGET_FAMILY-$TARGET_SUBFAMILY")
 PROJECT_PATH=$(realpath "_projects/$TARGET")
 PROJECT_FILE="$PROJECT_PATH/build.project"
+
+if [ ! -f "$TARGET_FILE" ]; then
+	b_list_available_targets "TARGET='$TARGET' target file is unavailable"
+	exit 1
+fi
 
 if [ ! -f "$PROJECT_FILE" ]; then
 	b_list_available_targets "TARGET='$TARGET' project file is missing"
 	exit 1
 fi
 
+. "$TARGET_FILE"
 . "$PROJECT_FILE"
 
 
