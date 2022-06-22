@@ -143,6 +143,18 @@ b_image_target() {
 	size=$((size * 150 / 100))
 	echo "rootfs size: $size"
 	genext2fs -b $size -d "$PREFIX_ROOTFS" "$ROOTFS"
+
+	# Create disk image
+	PHOENIX_DISK="$PREFIX_BOOT/phoenix.disk"
+	rm -f "$PHOENIX_DISK"
+
+	# Add kernel to PHOENIX_DISK
+	printf "Copying "$PREFIX_BOOT/phoenix-kernel.img" (offs=0 blocks)\n"
+	dd if="$PREFIX_BOOT/phoenix-kernel.img" of="$PHOENIX_DISK" bs=512 conv=notrunc 2>/dev/null
+
+	# Add rootfs to PHOENIX_DISK
+	printf "Copying "$ROOTFS" (offs="$OFFS_ROOTFS" blocks)\n"
+	dd if="$ROOTFS" of="$PHOENIX_DISK" bs=512 seek="$OFFS_ROOTFS" conv=notrunc 2>/dev/null
 }
 
 
