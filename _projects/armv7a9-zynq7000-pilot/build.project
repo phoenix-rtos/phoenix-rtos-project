@@ -10,6 +10,8 @@
 
 . "_targets/build.project.armv7a9-zynq7000"
 
+# No networking
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
@@ -37,6 +39,13 @@ USER_SCRIPT=(
 	"wait 500"
 	"go!")
 
+
+RC_PSH=(
+	":{}:"
+	"W /bin/bind devfs /dev"
+	"X /bin/posixsrv"
+	"X /linuxrc"
+)
 
 b_build_project () {
 	b_log "Building phoenix-pilot-core"

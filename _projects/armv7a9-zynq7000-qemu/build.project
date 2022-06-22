@@ -8,9 +8,9 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-. "_targets/build.project.armv7a9-zynq7000"
 
-
+# No networking
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
@@ -33,6 +33,15 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0x800000:jffs2; ddr ddr"
 	"wait 500"
 	"go!")
+
+
+# definition of rc.psh file
+RC_PSH=(
+	":{}:"
+	"W /bin/bind devfs /dev"
+	"X /bin/posixsrv"
+	"X /linuxrc"
+)
 
 
 b_image_project () {
