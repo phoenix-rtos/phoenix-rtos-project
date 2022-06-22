@@ -8,8 +8,6 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-. "_targets/build.project.armv7a9-zynq7000"
-
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(

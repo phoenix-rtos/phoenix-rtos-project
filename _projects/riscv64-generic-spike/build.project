@@ -8,8 +8,6 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-. "_targets/build.project.riscv64-generic"
-
 
 # Use BBL loader
 RISCV_LOADER="bbl"
