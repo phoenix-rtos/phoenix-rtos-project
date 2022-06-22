@@ -109,9 +109,6 @@ b_image_target() {
 	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
 	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
-	# rc.psh specified for zynq-7000 targets
-	printf "%s\n" "${RC_PSH[@]}" > "$PREFIX_FS/root/etc/rc.psh"
-
 	mkfs.jffs2 -U -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
 	if sumtool -e $erase_sz -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
 		echo "JFFS2 Summary nodes created"
