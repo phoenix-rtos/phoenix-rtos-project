@@ -8,8 +8,6 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-. "_targets/build.project.armv7a9-zynq7000"
-
 
 # TODO: current implementation of qspi supports only 3-bytes addressing. Cannot access the 32 MB of the flash memory.
 
@@ -39,6 +37,14 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:0xe0000:0x800000:jffs2;-p;/dev/mtd1:0x9e0000:0x500000 ddr ddr"
 	"wait 500"
 	"go!")
+
+
+# definition of rc.psh file
+RC_PSH=(
+	":{}:"
+	"W /bin/bind devfs /dev"
+	"X /bin/psh"
+)
 
 
 b_image_project () {
