@@ -40,5 +40,5 @@ USER_SCRIPT=(
 
 b_build_project () {
 	b_log "Building phoenix-pilot-core"
-	make -C phoenix-pilot-core all
+	make -C phoenix-pilot-core all install
 }

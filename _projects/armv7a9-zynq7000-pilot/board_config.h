@@ -69,4 +69,10 @@
 #define SPI1_SS1  9  /* Magnetometer */
 #define SPI1_SS2  13 /* Accelerometer and Gyroscope */
 
+/* Motors Configuration */
+#define PWM_MOTOR1 "/dev/pwm4"
+#define PWM_MOTOR2 "/dev/pwm5"
+#define PWM_MOTOR3 "/dev/pwm0"
+#define PWM_MOTOR4 "/dev/pwm1"
+
 #endif
