@@ -34,18 +34,12 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0x800000:jffs2; ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-pwm;-r1000000;-b0x43c00000 ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-xgpio;-b0x41200000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-spi;1 ddr ddr"
 	"alias bitstream.bin $BS_OFFS $BS_SZ"
 	"bitstream ${BOOT_DEVICE} bitstream.bin"
 	"wait 500"
 	"go!")
 
-
-RC_PSH=(
-	":{}:"
-	"W /bin/bind devfs /dev"
-	"X /bin/posixsrv"
-	"X /linuxrc"
-)
 
 b_build_project () {
 	b_log "Building phoenix-pilot-core"
