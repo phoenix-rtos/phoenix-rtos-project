@@ -2,5 +2,5 @@
 W /bin/bind devfs /dev
 X /bin/posixsrv
 X /bin/touch /dummy.txt
-X /sbin/sensors -s lsm9dsxx:/dev/spi1.2 -s lsm9dsxx_mag:/dev/spi1.1 -s lps25xx:/dev/spi1.0 -s pa6h:/dummy.txt
+X /sbin/sensors -s lsm9dsxx:/dev/spi1.2 -s lsm9dsxx_mag:/dev/spi1:/dev/gpio0/pin9 -s lps25xx:/dev/spi1:/dev/gpio0/pin8 -s pa6h:/dummy.txt
 X /linuxrc

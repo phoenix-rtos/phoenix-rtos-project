@@ -65,14 +65,72 @@
 #define SPI1_SCLK 12
 #define SPI1_MOSI 10
 #define SPI1_MISO 11
-#define SPI1_SS0  8  /* Barometer */
-#define SPI1_SS1  9  /* Magnetometer */
+#define SPI1_SS0  -1
+#define SPI1_SS1  -1
 #define SPI1_SS2  13 /* Accelerometer and Gyroscope */
 
+/* GPIO bank 0 configuration */
+#define GPIO0_0  -1
+#define GPIO0_1  -1
+#define GPIO0_2  -1
+#define GPIO0_3  -1
+#define GPIO0_4  -1
+#define GPIO0_5  -1
+#define GPIO0_6  -1
+#define GPIO0_7  -1
+#define GPIO0_8  8 /* Barometer SS */
+#define GPIO0_9  9 /* Magnetometer SS */
+#define GPIO0_10 -1
+#define GPIO0_11 -1
+#define GPIO0_12 -1
+#define GPIO0_13 -1
+#define GPIO0_14 -1
+#define GPIO0_15 -1
+#define GPIO0_16 -1
+#define GPIO0_17 -1
+#define GPIO0_18 -1
+#define GPIO0_19 -1
+#define GPIO0_20 -1
+#define GPIO0_21 -1
+#define GPIO0_22 -1
+#define GPIO0_23 -1
+#define GPIO0_24 -1
+#define GPIO0_25 -1
+#define GPIO0_26 -1
+#define GPIO0_27 -1
+#define GPIO0_28 -1
+#define GPIO0_29 -1
+#define GPIO0_30 -1
+#define GPIO0_31 -1
+
+/* GPIO bank 1 configuration */
+#define GPIO1_0  -1
+#define GPIO1_1  -1
+#define GPIO1_2  -1
+#define GPIO1_3  -1
+#define GPIO1_4  -1
+#define GPIO1_5  -1
+#define GPIO1_6  -1
+#define GPIO1_7  -1
+#define GPIO1_8  -1
+#define GPIO1_9  -1
+#define GPIO1_10 -1
+#define GPIO1_11 -1
+#define GPIO1_12 -1
+#define GPIO1_13 -1
+#define GPIO1_14 -1
+#define GPIO1_15 -1
+#define GPIO1_16 -1
+#define GPIO1_17 -1
+#define GPIO1_18 -1
+#define GPIO1_19 -1
+#define GPIO1_20 -1
+#define GPIO1_21 -1
+
 /* Motors Configuration */
-#define PWM_MOTOR1 "/dev/pwm4"
-#define PWM_MOTOR2 "/dev/pwm5"
-#define PWM_MOTOR3 "/dev/pwm0"
-#define PWM_MOTOR4 "/dev/pwm1"
+#define PWM_MOTOR1 "/dev/pwm5"
+#define PWM_MOTOR2 "/dev/pwm2"
+#define PWM_MOTOR3 "/dev/pwm3"
+#define PWM_MOTOR4 "/dev/pwm4"
 
 #endif
