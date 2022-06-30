@@ -15,6 +15,8 @@
 #    region 1 <0:0x1ffff>    #    region 2 <0x20000:1xFDFFFF>    #
 #          /dev/mtd0         #              /dev/mtd1           #
 
+# No networking
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
