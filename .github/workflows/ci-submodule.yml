@@ -29,6 +29,8 @@ jobs:
         include:
           - target: 'ia32-generic-qemu'
             syspage: 'psh pc-ata uart16550'
+          - target: 'armv7a9-zynq7000-qemu'
+            additional_params: 'ports'
     steps:
       # step 1: checkout phoenix-rtos-project repository code inside the workspace directory of the runner
       - name: Checkout phoenix-rtos-project
@@ -55,7 +57,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
-          params: ${{ inputs.build_params }}
+          params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
 
       # step 4: tar rootfs
       - name: Tar rootfs
