@@ -8,6 +8,7 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+export PORTS_MBEDTLS=y
 
 #
 # Ports configuration - additional to the one from _targets
