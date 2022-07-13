@@ -69,6 +69,15 @@
 #define SPI1_SS1  -1
 #define SPI1_SS2  13 /* Accelerometer and Gyroscope */
 
+/* UART configuration */
+#define UART0_RX 14
+#define UART0_TX 15
+#define UART1_RX 49
+#define UART1_TX 48
+
+#define UART_CONSOLE     1
+#define UART_CONSOLE_PLO 1
+
 /* GPIO bank 0 configuration */
 #define GPIO0_0  -1
 #define GPIO0_1  -1
