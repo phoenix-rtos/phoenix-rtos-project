@@ -18,6 +18,7 @@
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
+
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
 	"map kddr 0x100000 0x12ffff rwx"
@@ -36,7 +37,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:0xe0000:0x800000:jffs2;-p;/dev/mtd1:0x9e0000:0x500000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):0x800000:jffs2 ddr ddr"
 	"wait 500"
 	"go!")
 
