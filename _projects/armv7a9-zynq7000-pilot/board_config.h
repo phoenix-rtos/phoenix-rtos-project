@@ -78,6 +78,15 @@
 #define UART_CONSOLE     1
 #define UART_CONSOLE_PLO 1
 
+/* QSPI configuration */
+#define QSPI_CS   1
+#define QSPI_IO0  2
+#define QSPI_IO1  3
+#define QSPI_IO2  4
+#define QSPI_IO3  5
+#define QSPI_CLK  6
+#define QSPI_FCLK -1
+
 /* GPIO bank 0 configuration */
 #define GPIO0_0  -1
 #define GPIO0_1  -1
