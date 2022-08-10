@@ -26,12 +26,12 @@ PREINIT_SCRIPT=(
 
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
+	"wait 500"
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0x800000:jffs2; ddr ddr"
-	"wait 500"
 	"go!")
 
 
