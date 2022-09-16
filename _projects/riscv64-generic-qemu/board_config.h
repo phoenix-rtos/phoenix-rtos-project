@@ -14,4 +14,8 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
+/* UART16550 configuration */
+#define UART16550_CONSOLE  0
+#define UART16550_BAUDRATE 115200
+
 #endif
