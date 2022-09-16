@@ -1,0 +1,30 @@
+{
+	"files.associations": {
+		"array": "c",
+		"string_view": "c",
+		"initializer_list": "c",
+		"utility": "c",
+		"unistd.h": "c",
+		"threads.h": "c",
+		"types.h": "c",
+		"string.h": "c",
+		"tls.h": "c",
+		"posix.h": "c",
+		"linker.h": "c",
+		"resource.h": "c",
+		"ia32.h": "c",
+		"spinlock.h": "c",
+		"pmap.h": "c",
+		"halsyspage.h": "c",
+		"config.h": "c",
+		"syspage-ia32.h": "c",
+		"syspage.h": "c",
+		"cpu.h": "c",
+		"*.lds": "c",
+		"string": "c",
+		"*.inc": "c",
+		"amap.h": "c",
+		"*[M,m]akefile.*": "makefile",
+		"immintrin.h": "c"
+	}
+}

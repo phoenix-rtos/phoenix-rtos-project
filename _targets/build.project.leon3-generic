@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# Shell script for building leon3-generic project
+#
+# Copyright 2022 Phoenix Systems
+# Author: Lukasz Leczkowski
+#
+. "_targets/build.common"
+
+CROSS=leon3-phoenix-
+
+PREINIT_SCRIPT=(
+	"console 0.1")
+
+b_build_target() {
+	b_log "Building $TARGET project"
+
+	b_log "Building phoenix-rtos-loader"
+	b_mkscript_preinit
+	make -C plo base
+
+	# plo image is reused only in loading system via qemu
+	if [ "${TARGET_PROJECT}" = "qemu" ]; then
+		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
+	fi
+
+	phoenix-rtos-build/scripts/mkimg-leon3.sh \
+		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
+		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
+		0
+
+	# Copy plo.elf with symbols to provide loading plo using gdb
+	cp "${PREFIX_PROG}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
+
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+
+}
+
+export -f b_build_target
