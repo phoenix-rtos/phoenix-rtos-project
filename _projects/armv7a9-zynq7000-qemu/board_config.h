@@ -78,6 +78,10 @@
 #define UART_CONSOLE     1
 #define UART_CONSOLE_PLO 1
 
+/* UART16550 configuration */
+#define UART16550_CONSOLE  1
+#define UART16550_BAUDRATE 115200
+
 /* QSPI configuration */
 #define QSPI_CS   1
 #define QSPI_IO0  2
