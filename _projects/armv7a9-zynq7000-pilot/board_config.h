@@ -54,6 +54,10 @@
 #define DDRC_WR_DATA_SLV2 0x000000d0
 #define DDRC_WR_DATA_SLV3 0x000000d3
 
+/* UART16550 configuration */
+#define UART16550_CONSOLE  1
+#define UART16550_BAUDRATE 115200
+
 /* SPI configuration */
 #define SPI0_SCLK -1
 #define SPI0_MOSI -1
@@ -146,9 +150,9 @@
 #define GPIO1_21 -1
 
 /* Motors Configuration */
-#define PWM_MOTOR1 "/dev/pwm4"
-#define PWM_MOTOR2 "/dev/pwm2"
-#define PWM_MOTOR3 "/dev/pwm3"
-#define PWM_MOTOR4 "/dev/pwm5"
+#define PWM_MOTOR1 "/dev/pwm5"
+#define PWM_MOTOR2 "/dev/pwm4"
+#define PWM_MOTOR3 "/dev/pwm2"
+#define PWM_MOTOR4 "/dev/pwm3"
 
 #endif
