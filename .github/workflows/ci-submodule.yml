@@ -38,18 +38,18 @@ jobs:
         with:
           submodules: recursive
 
-      # step 2: checkout phoenix-rtos-project repository code in __buildroot and symlink submodule name to `workspace`
+      # step 2: checkout phoenix-rtos-project repository code in .buildroot and symlink submodule name to `workspace`
       # that way workspace file paths will match submodule paths - making problem matchers work
       # BUILD_DIRECTORY - absolute path to phoenix-rtos-project
       # CI_CUSTOM_BUILDROOT - relative path to phoenix-rtos-project (from GH Actions workspace)
       - name: Checkout phoenix-rtos-project
         # we need to use relative paths here so they would work in docker env
         run: |
-          mkdir __buildroot && cd __buildroot
+          mkdir .buildroot && cd .buildroot
           git clone https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
           cd phoenix-rtos-project
           echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
-          echo "CI_CUSTOM_BUILDROOT=__buildroot/phoenix-rtos-project" >> $GITHUB_ENV
+          echo "CI_CUSTOM_BUILDROOT=.buildroot/phoenix-rtos-project" >> $GITHUB_ENV
           git log -1 --pretty=oneline
           git submodule
           rm -rf ${{ github.event.repository.name }}
@@ -61,7 +61,7 @@ jobs:
       # step 3: use our custom action to build the project
       - name: Build
         id: build
-        uses: ./__buildroot/phoenix-rtos-project/.github/actions/phoenix-build    # BUILD_DIRECTORY value, but we can't use templates here
+        uses: ./.buildroot/phoenix-rtos-project/.github/actions/phoenix-build    # BUILD_DIRECTORY value, but we can't use templates here
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
