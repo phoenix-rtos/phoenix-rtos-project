@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Shell script for building host-generic-pc project
+#
+# Copyright 2022 Phoenix Systems
+# Author: Lukasz Kosinski, Piotr Nieciecki
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+
+b_build_project () {
+
+	# FIXME: Remove this when there is a possibility to add test form different submodules than `phoenix-rtos-tests`
+	b_log "Building unity"
+	make -C "phoenix-rtos-tests" unity
+
+	b_log "Building phoenix-pilot-core"
+	make -C phoenix-pilot-core all install
+}
+
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}
+
+
+b_test_target() {
+	# FIXME: delete this function then PR, which fixes meterfs tests goes to `phoenix-rtos-tests` in `phoenix-pilot-project`
+	# https://github.com/phoenix-rtos/phoenix-rtos-tests/pull/134
+
+	b_log "This project is do not support tests yet"
+}
