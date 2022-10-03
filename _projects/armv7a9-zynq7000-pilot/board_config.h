@@ -71,7 +71,7 @@
 #define SPI1_MISO 11
 #define SPI1_SS0  -1
 #define SPI1_SS1  -1
-#define SPI1_SS2  13 /* Accelerometer and Gyroscope */
+#define SPI1_SS2  -1
 
 /* UART configuration */
 #define UART0_RX 14
@@ -100,8 +100,8 @@
 #define GPIO0_5  -1
 #define GPIO0_6  -1
 #define GPIO0_7  -1
-#define GPIO0_8  8 /* Barometer SS */
-#define GPIO0_9  9 /* Magnetometer SS */
+#define GPIO0_8  8 /* PWM_EN - all pwm channels enabling pin */
+#define GPIO0_9  -1
 #define GPIO0_10 -1
 #define GPIO0_11 -1
 #define GPIO0_12 -1
