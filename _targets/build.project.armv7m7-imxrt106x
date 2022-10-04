@@ -118,7 +118,7 @@ b_image_target() {
 	b_prod_image
 
 	# TODO: Fix b_dev_image overwriting user.plo created by b_prod_image
-	cp "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
+	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
 
 	b_dev_image
 }

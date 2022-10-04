@@ -17,7 +17,7 @@ KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 b_mkscript_user() {
 	PROGS=()
 	local cmds=("$@")
-	mkdir -p "$PREFIX_BUILD/plo/"
+	mkdir -p "$PLO_SCRIPT_DIR"
 
 	# Function needs external variables to be defined in a project file:
 	: "${MAGIC_USER_SCRIPT:?variable unset}" # number which is assigned to user script
@@ -85,7 +85,7 @@ b_mkscript_user() {
 		done
 
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+	} > "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
 }
 
 
@@ -94,7 +94,7 @@ b_mkscript_user() {
 # - OFFS_USER2_SCRIPT - offset of the secondary user script
 # - BANKSWITCH - indicates if bankswitch command should be emitted
 b_mkscript_preinit() {
-	mkdir -p "$PREFIX_BUILD/plo/"
+	mkdir -p "$PLO_SCRIPT_DIR"
 
 	# Function needs external variables to be defined in a project file:
 	: "${PREINIT_SCRIPT:?variable unset}"     # array of basic commands which configure the platform
@@ -106,7 +106,7 @@ b_mkscript_preinit() {
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/script-ram.plo"
+	} > "$PLO_SCRIPT_DIR/script-ram.plo"
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
@@ -121,7 +121,7 @@ b_mkscript_preinit() {
 			printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER2_SCRIPT" "$MAGIC_USER_SCRIPT"
 		fi
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/script.plo"
+	} > "$PLO_SCRIPT_DIR/script.plo"
 }
 
 
@@ -152,7 +152,7 @@ b_prod_image() {
 	PHOENIX_DISK="$PREFIX_BOOT/phoenix.disk" # plo + PHOENIX_IMG
 	rm -f "$PHOENIX_IMG" "$PHOENIX_DISK"
 
-	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	sz=$(wc -c < "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
 		b_die "User script size too large. Please, change kernel offset or user script offset."
 	fi
@@ -163,7 +163,7 @@ b_prod_image() {
 
 	# User script
 	OFFSET="$OFFS_USER_SCRIPT"
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PHOENIX_DISK"
+	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PHOENIX_DISK"
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
@@ -213,7 +213,7 @@ b_dev_image() {
 	b_mkscript_user "${DEV_USER_SCRIPT[@]}"
 	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
 
-	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	sz=$(wc -c < "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
 		b_die "User script size too large. Please, change kernel offset or user script offset."
 	fi
@@ -224,14 +224,14 @@ b_dev_image() {
 
 	# Dev user script
 	OFFSET="$OFFS_USER_SCRIPT"
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
+	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
 
 	dd if=/dev/zero of="$PLO_DEV_IMG" bs=1 seek="$OFFSET" count=$((KERNEL_OFFS - OFFS_USER_SCRIPT)) 2>/dev/null
 
 
 	# Dev user script
 	OFFSET=0
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PHOENIX_DEV_IMG"
+	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PHOENIX_DEV_IMG"
 
 	# Kernel
 	KERNEL_OFFS=$((KERNEL_OFFS - OFFS_USER_SCRIPT))
