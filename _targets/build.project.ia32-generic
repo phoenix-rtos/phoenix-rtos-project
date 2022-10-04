@@ -44,12 +44,12 @@ PAGE_MASK=$((~(SIZE_PAGE - 1)))
 #
 # Project specific build
 #
-BOOT_DEVICE="hd0"             # Default boot device
-NAME_USER_SCRIPT="user.plo"   # User script name
-MAGIC_USER_SCRIPT=            # User script magic value
-OFFS_USER_SCRIPT=$((0x12000)) # Disk image user script offset (in bytes)
-KERNEL_OFFS=$((0x13000))      # Disk image kernel offset (in bytes)
-OFFS_ROOTFS=$((0x1000))       # Disk image rootfs offset (in 512 byte sectors)
+BOOT_DEVICE="hd0"                 # Default boot device
+NAME_USER_SCRIPT="user.plo"       # User script name
+MAGIC_USER_SCRIPT=$((0xBAADF00D)) # User script magic value
+OFFS_USER_SCRIPT=$((0x12000))     # Disk image user script offset (in bytes)
+KERNEL_OFFS=$((0x13000))          # Disk image kernel offset (in bytes)
+OFFS_ROOTFS=$((0x1000))           # Disk image rootfs offset (in 512 byte sectors)
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
