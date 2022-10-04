@@ -21,6 +21,10 @@ inputs:
   params:
     description: 'All parameters to the main build script - as string'
     required: true
+  buildroot:
+    description: 'Custom phoenix-rtos-project buildroot (relative path)'
+    default: ''
+    required: false
 
 # action runner
 runs:
@@ -30,6 +34,7 @@ runs:
     CONSOLE: 'serial'
     TARGET: ${{ inputs.target }}
     SYSPAGE: ${{ inputs.syspage }}
+    CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
   args:
     - ${{ inputs.params }}  # note: params will be split by build.sh internally
 

@@ -32,20 +32,28 @@ jobs:
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
     steps:
-      # step 1: checkout phoenix-rtos-project repository code inside the workspace directory of the runner
-      - name: Checkout phoenix-rtos-project
+      # step 1 : checkout submodule
+      - name: Checkout submodule
         uses: actions/checkout@v2
         with:
-          repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
 
-      # step 2: update the submodule (recurse-sumbodules=no is needed for phoenix-rtos-lwip checkout not to fail, but it fails to update the submodule (TODO)
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
+      # step 2: checkout phoenix-rtos-project repository code in .buildroot and symlink submodule name to `workspace`
+      # that way workspace file paths will match submodule paths - making problem matchers work
+      # BUILD_DIRECTORY - absolute path to phoenix-rtos-project
+      # CI_CUSTOM_BUILDROOT - relative path to phoenix-rtos-project (from GH Actions workspace)
+      - name: Checkout phoenix-rtos-project
+        # we need to use relative paths here so they would work in docker env
         run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+          mkdir .buildroot && cd .buildroot
+          git clone https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
+          cd phoenix-rtos-project
+          echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
+          echo "CI_CUSTOM_BUILDROOT=.buildroot/phoenix-rtos-project" >> $GITHUB_ENV
+          git log -1 --pretty=oneline
+          git submodule
+          rm -rf ${{ github.event.repository.name }}
+          ln -s ../.. ${{ github.event.repository.name }}
 
       # attach GCC problem matcher... might not work because of submodules... just trying
       - uses: ammaraskar/gcc-problem-matcher@master
@@ -53,15 +61,16 @@ jobs:
       # step 3: use our custom action to build the project
       - name: Build
         id: build
-        uses: ./.github/actions/phoenix-build
+        uses: ./.buildroot/phoenix-rtos-project/.github/actions/phoenix-build    # BUILD_DIRECTORY value, but we can't use templates here
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
+          buildroot: ${{env.CI_CUSTOM_BUILDROOT}}
 
       # step 4: tar rootfs
       - name: Tar rootfs
-        working-directory: _fs
+        working-directory: ${{env.BUILD_DIRECTORY}}/_fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
       # step 5: upload project boot directory and tarball of rootfs as build artifacts
@@ -70,8 +79,8 @@ jobs:
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            _boot/${{ matrix.target }}
-            rootfs-${{ matrix.target }}.tar
+            ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
+            ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
 
   test-emu:
     needs: build
