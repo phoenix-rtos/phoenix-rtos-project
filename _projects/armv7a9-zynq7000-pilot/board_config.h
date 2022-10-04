@@ -155,4 +155,20 @@
 #define PWM_MOTOR3 "/dev/pwm2"
 #define PWM_MOTOR4 "/dev/pwm3"
 
+
+/* RC bus Configuration */
+#define PATH_DEV_RC_BUS "/dev/ttyS0"
+
+#define RC_RIGHT_HSTICK_CH 0
+#define RC_RIGHT_VSTICK_CH 1
+#define RC_LEFT_VSTICK_CH  2
+#define RC_LEFT_HSTICK_CH  3
+#define RC_VRA_CH          4
+#define RC_VRB_CH          5
+#define RC_SWA_CH          6
+#define RC_SWB_CH          7
+#define RC_SWC_CH          8
+#define RC_SWD_CH          9
+#define RC_CHANNELS_CNT    10
+
 #endif
