@@ -88,7 +88,7 @@ b_syspage_gen() {
 	"$PREFIX_BOOT/syspagen" \
 		-a "64" \
 		-s "0x80200000:$addr:$sz" \
-		-p "$PREFIX_BUILD/plo/script.plo" \
+		-p "$PLO_SCRIPT_DIR/script.plo" \
 		-u "$uscript" \
 		-i "$img"
 }
@@ -104,7 +104,7 @@ b_build_target() {
 	b_log "Image"
 	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
 	b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
 
 	# Add kernel to boot loader
 	b_log "Adding kernel to boot loader"
