@@ -9,10 +9,8 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 
-# TODO: current implementation of qspi supports only 3-bytes addressing. Cannot access the 32 MB of the flash memory.
-
 # Example of the NOR flash memory layout for Spansion s25fl256s1 (32 MB) placed on Zedboard
-#    region 1 <0:0x1ffff>    #    region 2 <0x20000:1xFDFFFF>    #
+#    region 1 <0:0x1ffff>    #    region 2 <0x20000:1xFFDFFFF>    #
 #          /dev/mtd0         #              /dev/mtd1           #
 
 # No networking
@@ -33,12 +31,12 @@ PREINIT_SCRIPT=(
 
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
+	"wait 500"
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):0x800000:jffs2 ddr ddr"
-	"wait 500"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):0x800000:jffs2;-p;/dev/mtd1:0x1000000:0x800000 ddr ddr"
 	"go!")
 
 

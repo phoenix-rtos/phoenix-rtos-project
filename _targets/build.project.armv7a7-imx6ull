@@ -103,7 +103,7 @@ b_syspage_gen() {
 	"$PREFIX_BOOT/syspagen" \
 		-a 32\
 		-s "$ADDR_DDR:$addr:$sz" \
-		-p "$PREFIX_BUILD/plo/script.plo" \
+		-p "$PLO_SCRIPT_DIR/script.plo" \
 		-u "$uscript" \
 		-i "$img"
 }
@@ -118,12 +118,12 @@ b_image_target() {
 	# Build production image
 	b_log "RAM Image"
 	b_kernel_image "$PREFIX_BOOT/phoenix.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+	b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
 
 	b_log "FLASH Image"
 	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
 	b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
 
 	b_log "Creating rootfs"
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH

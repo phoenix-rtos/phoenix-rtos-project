@@ -12,19 +12,19 @@ KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 # Function gets the following argument:
 # - $1 - array contains user's commands
 #
-# Function needs external variables to be defined in a project file:
-# - MAGIC_USER_SCRIPT - number which is assigned to user script
-# - NAME_USER_SCRIPT - name of the user script
-# - KERNEL_OFFS - offset on flash memory where kernel is located
-# - SIZE_PAGE
-# - PAGE_MASK
-#
 # Output variables:
 # - PROGS - names of the applications defined in the script
 b_mkscript_user() {
 	PROGS=()
 	local cmds=("$@")
-	mkdir -p "$PREFIX_BUILD/plo/"
+	mkdir -p "$PLO_SCRIPT_DIR"
+
+	# Function needs external variables to be defined in a project file:
+	: "${MAGIC_USER_SCRIPT:?variable unset}" # number which is assigned to user script
+	: "${NAME_USER_SCRIPT:?variable unset}"  # name of the user script
+	: "${KERNEL_OFFS:?variable unset}"       # offset on flash memory where kernel is located
+	: "${SIZE_PAGE:?variable unset}"
+	: "${PAGE_MASK:?variable unset}"
 
 	# Find out if we need a .elf or a .bin kernel.
 	# We need to know the kernel size in the image before first app cmd (which might be before kernel cmd)
@@ -85,50 +85,55 @@ b_mkscript_user() {
 		done
 
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT"
+	} > "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
 }
 
 
-# Function needs external variables to be defined in a project file:
-# - PREINIT_SCRIPT - array of basic commands which configure the platform
-# - NAME_USER_SCRIPT - name of the user script
-# - MAGIC_USER_SCRIPT - number which is assigned to user script
-# - BOOT_DEVICE - name of the device from which script is called
-# - OFFS_USER_SCRIPT - offset on flash memory where user script is located
 # Optional variables used for remote firmware upgrade:
 # - NAME_USER2_SCRIPT - name of the secondary user script
 # - OFFS_USER2_SCRIPT - offset of the secondary user script
+# - BANKSWITCH - indicates if bankswitch command should be emitted
 b_mkscript_preinit() {
-	mkdir -p "$PREFIX_BUILD/plo/"
+	mkdir -p "$PLO_SCRIPT_DIR"
+
+	# Function needs external variables to be defined in a project file:
+	: "${PREINIT_SCRIPT:?variable unset}"     # array of basic commands which configure the platform
+	: "${NAME_USER_SCRIPT:?variable unset}"   # name of the user script
+	: "${MAGIC_USER_SCRIPT:?variable unset}"  # number which is assigned to user script
+	: "${BOOT_DEVICE:?variable unset}"        # name of the device from which script is called
+	: "${OFFS_USER_SCRIPT:?variable unset}"   # offset on flash memory where user script is located
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/script-ram.plo"
+	} > "$PLO_SCRIPT_DIR/script-ram.plo"
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
 
 		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
-		if [ ! -z ${NAME_USER2_SCRIPT} ]; then
+		if [ -n "${BANKSWITCH}" ]; then
+			printf "bankswitch\n"
+		fi
+		if [ -n "${NAME_USER2_SCRIPT}" ]; then
 			printf "alias %s 0x%x 0x%x\n" "$NAME_USER2_SCRIPT" "$OFFS_USER2_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 			printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER2_SCRIPT" "$MAGIC_USER_SCRIPT"
 		fi
 		printf "\0"
-	} > "$PREFIX_BUILD/plo/script.plo"
+	} > "$PLO_SCRIPT_DIR/script.plo"
 }
 
 
 # Function gets the following arguments:
 # - $1 - path to file which should be added to image
 # - $2 - path to image file
-#
-# Function needs external variables to be defined in a project file:
-# - OFFSET - starting file's position in the image
-# - SIZE_PAGE
-# - PAGE_MASK
 b_add2img() {
+	# Function needs external variables to be defined in a project file:
+	: "${OFFSET:?variable unset}"    # starting file's position in the image
+	: "${SIZE_PAGE:?variable unset}"
+	: "${PAGE_MASK:?variable unset}"
+
 	printf "Copying %s (offs=%dB)\n" "$1" "$OFFSET"
 	dd if="$1" of="$2" bs=1 seek="$OFFSET" conv=notrunc 2>/dev/null
 	sz=$((($(wc -c < "$1") + SIZE_PAGE - 1) & PAGE_MASK))
@@ -136,17 +141,18 @@ b_add2img() {
 }
 
 
-# Function needs external variables to be defined in a project file:
-# - OFFS_USER_SCRIPT - offset on flash memory where user script is located
-# - KERNEL_OFFS - offset on flash memory where kernel is located
 b_prod_image() {
 	b_log "Creating production images"
+
+	# Function needs external variables to be defined in a project file:
+	: "${OFFS_USER_SCRIPT:?variable unset}"    # offset on flash memory where user script is located
+	: "${KERNEL_OFFS:?variable unset}"         # offset on flash memory where kernel is located
 
 	PHOENIX_IMG="$PREFIX_BOOT/phoenix.img"   # user script + kernel + programs
 	PHOENIX_DISK="$PREFIX_BOOT/phoenix.disk" # plo + PHOENIX_IMG
 	rm -f "$PHOENIX_IMG" "$PHOENIX_DISK"
 
-	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	sz=$(wc -c < "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
 		b_die "User script size too large. Please, change kernel offset or user script offset."
 	fi
@@ -157,7 +163,7 @@ b_prod_image() {
 
 	# User script
 	OFFSET="$OFFS_USER_SCRIPT"
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PHOENIX_DISK"
+	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PHOENIX_DISK"
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
@@ -190,13 +196,14 @@ b_kernel_image() {
 }
 
 
-# Function needs external variables to be defined in a project file:
-# - DEV_USER_SCRIPT - set of development commands
-# - REMOTE_USER_SCRIPT - set of develpoment commands which are called by dev user script
-# - OFFS_USER_SCRIPT - offset on flash memory where user script is located
-# - KERNEL_OFFS - offset on flash memory where kernel is located
 b_dev_image() {
 	b_log "Creating development images"
+
+	# Function needs external variables to be defined in a project file:
+	: "${DEV_USER_SCRIPT:?variable unset}"     # set of development commands
+	: "${REMOTE_USER_SCRIPT:?variable unset}"  # set of develpoment commands which are called by dev user script
+	: "${OFFS_USER_SCRIPT:?variable unset}"    # offset on flash memory where user script is located
+	: "${KERNEL_OFFS:?variable unset}"         # offset on flash memory where kernel is located
 
 	REMOTE_SCRIPT_PATH="$PREFIX_BOOT/script-dev.plo"
 	PLO_DEV_IMG="$PREFIX_BOOT/plo-dev.img"
@@ -206,7 +213,7 @@ b_dev_image() {
 	b_mkscript_user "${DEV_USER_SCRIPT[@]}"
 	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
 
-	sz=$(wc -c < "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT")
+	sz=$(wc -c < "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
 		b_die "User script size too large. Please, change kernel offset or user script offset."
 	fi
@@ -217,14 +224,14 @@ b_dev_image() {
 
 	# Dev user script
 	OFFSET="$OFFS_USER_SCRIPT"
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
+	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
 
 	dd if=/dev/zero of="$PLO_DEV_IMG" bs=1 seek="$OFFSET" count=$((KERNEL_OFFS - OFFS_USER_SCRIPT)) 2>/dev/null
 
 
 	# Dev user script
 	OFFSET=0
-	b_add2img "$PREFIX_BUILD/plo/$NAME_USER_SCRIPT" "$PHOENIX_DEV_IMG"
+	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PHOENIX_DEV_IMG"
 
 	# Kernel
 	KERNEL_OFFS=$((KERNEL_OFFS - OFFS_USER_SCRIPT))

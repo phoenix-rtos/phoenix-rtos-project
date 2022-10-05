@@ -73,7 +73,7 @@ b_build_target() {
 
 	b_log "Building phoenix-rtos-loader"
 	b_mkscript_preinit
-	make -C plo base
+	make -C plo base ram
 
 	# plo image is reused only in loading system via qemu
 	if [ "${TARGET_PROJECT}" = "qemu" ]; then
@@ -84,6 +84,9 @@ b_build_target() {
 		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
 		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
 		0
+
+	# Copy plo.elf with symbols to provide loading plo using gdb
+	cp "${PREFIX_PROG}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/phoenix-kernel.elf"
@@ -96,7 +99,8 @@ b_build_target() {
 b_image_target() {
 	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
-	b_dev_image
+	# FIXME: DEV_USER_SCRIPT is unset here - can't build dev image
+	#b_dev_image
 
 	b_log "Creating rootfs"
 	# !!! NOTE: For non-standard NOR flash memories, erase_sz & page_sz should be changed..
