@@ -150,10 +150,10 @@
 #define GPIO1_21 -1
 
 /* Motors Configuration */
-#define PWM_MOTOR1 "/dev/pwm5"
-#define PWM_MOTOR2 "/dev/pwm4"
-#define PWM_MOTOR3 "/dev/pwm2"
-#define PWM_MOTOR4 "/dev/pwm3"
+#define PWM_MOTOR1 "/dev/pwm1"
+#define PWM_MOTOR2 "/dev/pwm2"
+#define PWM_MOTOR3 "/dev/pwm3"
+#define PWM_MOTOR4 "/dev/pwm0"
 
 
 /* RC bus Configuration */
