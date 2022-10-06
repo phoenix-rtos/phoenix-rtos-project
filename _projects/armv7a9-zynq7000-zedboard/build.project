@@ -36,7 +36,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):0x800000:jffs2;-p;/dev/mtd1:0x1000000:0x800000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):0x1000000:jffs2;-p;/dev/mtd1:0x1800000:0x4e0000 ddr ddr"
 	"go!")
 
 
