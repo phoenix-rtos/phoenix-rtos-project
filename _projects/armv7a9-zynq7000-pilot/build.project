@@ -36,6 +36,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-xgpio;-b0x41200000 ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-gpio ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-xspi;0 ddr ddr"
+	"app ${BOOT_DEVICE} -x uart16550 ddr ddr"
 	"alias bitstream.bin $BS_OFFS $BS_SZ"
 	"bitstream ${BOOT_DEVICE} bitstream.bin"
 	"wait 500"
