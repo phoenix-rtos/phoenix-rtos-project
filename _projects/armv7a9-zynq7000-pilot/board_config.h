@@ -156,6 +156,14 @@
 #define PWM_MOTOR4 "/dev/pwm0"
 
 
+/* Motors and Servos configuration for Plane */
+#define PWM_MAIN_MOTOR    "/dev/pwm0"
+#define PWM_LEFT_AILERON  "/dev/pwm1"
+#define PWM_RIGHT_AILERON "/dev/pwm2"
+#define PWM_ELEVATOR      "/dev/pwm3"
+#define PWM_RUDDER        "/dev/pwm4"
+
+
 /* RC bus Configuration */
 #define PATH_DEV_RC_BUS "/dev/ttyS0"
 
