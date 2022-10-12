@@ -96,11 +96,44 @@ b_build_target() {
 }
 
 
+b_write_cleanmarkers() {
+	local rootfs_file="$1"
+	local erase_sz="$2"
+	local part_sz="$3"
+
+	# 2 B : magic
+	# 2 B : node type
+	# 4 B : total len
+	# 4 B : crc
+	local cleanmarker="\x85\x19\x03\x20\x10\x00\x00\x00\x96\x58\xd1\xfe"
+
+	local rootfs_sz=$(du -b "$rootfs_file" | awk '{ print $1 }')
+
+	[ "$((rootfs_sz % erase_sz))" -ne "0" ] && b_die "ROOT FS size is not aligned to block size!"
+
+	local blocks_cnt=$(((part_sz - rootfs_sz) / erase_sz))
+	local offs_id=$((rootfs_sz / erase_sz))
+
+	# create single erase block
+	dd if=/dev/zero bs="$erase_sz" count=1 2>/dev/null | tr "\000" "\377" > "$PREFIX_BUILD/erase_block.bin"
+	echo -en "$cleanmarker" | dd of="$PREFIX_BUILD/erase_block.bin" conv=notrunc 2>/dev/null
+
+	# write erase blocks with cleanmarkers into rootfs file
+	for block_idx in $(seq 0 $((blocks_cnt - 1))); do
+		dd if="$PREFIX_BUILD/erase_block.bin" bs="$erase_sz" count=1 seek=$((offs_id + block_idx)) of="$rootfs_file" 2>/dev/null
+	done
+}
+
+
 b_image_target() {
 	b_mkscript_user "${USER_SCRIPT[@]}"
 	b_prod_image
 	# FIXME: DEV_USER_SCRIPT is unset here - can't build dev image
 	#b_dev_image
+
+	# Function needs external variables to be defined in a project file:
+	: "${FS_SZ:?variable unset}"                   # root filesystem size
+	: "${FS_WRITE_CLEANMARKERS:?variable unset}"   # define writing cleanmarkers to final image
 
 	b_log "Creating rootfs"
 	# !!! NOTE: For non-standard NOR flash memories, erase_sz & page_sz should be changed..
@@ -113,14 +146,14 @@ b_image_target() {
 	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
 	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
-	mkfs.jffs2 -U -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
-	if sumtool -e $erase_sz -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
-		echo "JFFS2 Summary nodes created"
-		mv "$ROOTFS.tmp" "$ROOTFS"
-	fi
+	# Create jffs2 image with padding at the end of the final erase block
+	mkfs.jffs2 -U -c 12 -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS" -p
 
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
 	echo "rootfs size: ${sz}KB"
+
+	# Write cleanmarkers to the rootfs partition
+	[ "${FS_WRITE_CLEANMARKERS}" = "y" ] && b_write_cleanmarkers "$ROOTFS" "$erase_sz" "$FS_SZ"
 
 	PATH="$OLD_PATH"
 
@@ -133,7 +166,6 @@ b_image_target() {
 	# Add rootfs to PHOENIX_DISK
 	printf "Copying "$ROOTFS" (offs="$((FS_OFFS/4096))" blocks)\n"
 	dd if="$ROOTFS" of="$PHOENIX_DISK" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
-	truncate -s 16M "$PHOENIX_DISK" 2>/dev/null
 }
 
 
