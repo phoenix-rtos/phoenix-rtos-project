@@ -12,10 +12,11 @@
 # Example of the NOR flash memory layout for Spansion s25fl256s1 (32 MB) placed on Zedboard
 #    region 1 <0:0x1ffff>    #    region 2 <0x20000:1xFFDFFFF>    #
 #          /dev/mtd0         #              /dev/mtd1           #
+export FS_SZ=$((0x1000000))
+export FS_WRITE_CLEANMARKERS=n
 
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
-
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
@@ -36,7 +37,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):0x1000000:jffs2;-p;/dev/mtd1:0x1800000:0x4e0000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):$((FS_SZ)):jffs2;-p;/dev/mtd1:0x1800000:0x4e0000 ddr ddr"
 	"go!")
 
 
