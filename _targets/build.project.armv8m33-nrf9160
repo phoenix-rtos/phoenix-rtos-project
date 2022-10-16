@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# Shell script for building armv8m33-nrf9160 project
+#
+# Copyright 2018, 2019, 2020, 2022 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski, Damian Loewnau
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=arm-phoenix-
+
+export BOARD_CONFIG=" -DUART_CONSOLE=0 -DTTY0=1 "
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+
+
+#
+# Platform dependent parameters
+#
+SIZE_PAGE=$((0x200))
+PAGE_MASK=$((0xfffffe00))
+KERNEL_OFFS=$((0xd000))
+
+#
+# Project specific build
+#
+
+BOOT_DEVICE="flash0"
+NAME_USER_SCRIPT="user.plo"
+OFFS_USER_SCRIPT=$((0xc800))
+MAGIC_USER_SCRIPT=$((0xdabaabad))
+
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=(
+	"echo on"
+	"map flash0 0x00000000 0x00100000 rx"
+	"map ram0 0x20000000 0x20040000 rwx"
+	"phfs flash0 2.0 raw"
+	"phfs uart1 0.1 phoenixd"
+	"console 0.0")
+
+
+# Production user script contains applications to run Phoenix-RTOS
+USER_SCRIPT=(
+	"kernelimg ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x nrf91-multi flash0 ram0"
+	"app ${BOOT_DEVICE} -x psh flash0 ram0"
+	"app ${BOOT_DEVICE} test_thread_rand flash0 ram0"
+	"wait 500"
+	"go!")
+
+# Example of user dev script which call remotely script
+DEV_USER_SCRIPT=(
+	"echo on"
+	"wait 3000")
+
+
+REMOTE_USER_SCRIPT=("5a5aa5a5")
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building sample project for $TARGET"
+	b_log "Building phoenix-rtos-loader"
+
+	b_mkscript_preinit
+
+	make -C plo all
+
+}
+
+
+b_image_target() {
+	b_mkscript_user "${USER_SCRIPT[@]}"
+	b_prod_image
+	b_dev_image
+	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "${PREFIX_BOOT}/"
+}
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
