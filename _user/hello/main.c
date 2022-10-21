@@ -15,10 +15,18 @@
 
 #include <stdio.h>
 
+int add(int a, int b) {
+	int c = a + b;
+	printf("Add: %d\n", c);
+	return c;
+}
+
 
 int main(void)
 {
 	printf("Hello World!!\n");
+
+	add(1, 2);
 
 	return 0;
 }
