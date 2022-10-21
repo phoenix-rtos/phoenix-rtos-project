@@ -8,7 +8,8 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-. "_targets/build.project.armv7a9-zynq7000"
+export FS_SZ=$((0x800000))
+export FS_WRITE_CLEANMARKERS=n
 
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
@@ -31,7 +32,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0x800000:jffs2; ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2; ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-pwm;-r1000000;-b0x43c00000 ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-xgpio;-b0x41200000 ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-gpio ddr ddr"
