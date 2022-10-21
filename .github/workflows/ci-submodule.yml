@@ -34,7 +34,7 @@ jobs:
     steps:
       # step 1 : checkout submodule
       - name: Checkout submodule
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -55,7 +55,7 @@ jobs:
           rm -rf ${{ github.event.repository.name }}
           ln -s ../.. ${{ github.event.repository.name }}
 
-      # attach GCC problem matcher... might not work because of submodules... just trying
+      # attach GCC problem matcher - will pin problems to files only in current submodule
       - uses: ammaraskar/gcc-problem-matcher@master
 
       # step 3: use our custom action to build the project
@@ -75,7 +75,7 @@ jobs:
 
       # step 5: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
@@ -94,7 +94,7 @@ jobs:
 
     steps:
       - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
@@ -107,7 +107,7 @@ jobs:
           git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: phoenix-rtos-${{ matrix.target }}
 
@@ -134,7 +134,7 @@ jobs:
 
     steps:
       - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
@@ -147,7 +147,7 @@ jobs:
           git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: phoenix-rtos-${{ matrix.target }}
 

@@ -9,7 +9,9 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 # bitstream is not used in qemu, FS_OFFS is changed from 0x800000 to 0x400000 to provide more memory for rootfs
-FS_OFFS=$((0x400000))
+export FS_OFFS=$((0x400000))
+export FS_SZ=$((0xc00000))
+export FS_WRITE_CLEANMARKERS=y
 
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
@@ -33,7 +35,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:0xc00000:jffs2 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2 ddr ddr"
 	"go!")
 
 
