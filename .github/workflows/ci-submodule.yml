@@ -13,7 +13,7 @@ on:
       build_params:
         type: string
         description: "parameters to build.sh script"
-        default: 'core fs test project image'  # by default don't build ports
+        default: 'bear core fs test project image'  # by default don't build ports
         required: false
 
 
@@ -25,12 +25,12 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
+        target: ['ia32-generic-qemu', 'armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk']
         include:
           - target: 'ia32-generic-qemu'
             syspage: 'psh pc-ata uart16550'
-          - target: 'armv7a9-zynq7000-qemu'
-            additional_params: 'ports'
+          #- target: 'armv7a9-zynq7000-qemu'
+          #  additional_params: 'ports'
     steps:
       # step 1 : checkout submodule
       - name: Checkout submodule
@@ -46,7 +46,7 @@ jobs:
         # we need to use relative paths here so they would work in docker env
         run: |
           mkdir .buildroot && cd .buildroot
-          git clone https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
+          git clone -b jsarzy/cpptest https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
           cd phoenix-rtos-project
           echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
           echo "CI_CUSTOM_BUILDROOT=.buildroot/phoenix-rtos-project" >> $GITHUB_ENV
@@ -81,6 +81,67 @@ jobs:
           path: |
             ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
             ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
+
+      - name: Upload compile database artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: compile-db-artifacts
+          path: |
+            ${{env.BUILD_DIRECTORY}}/_build/*/include
+            ${{env.BUILD_DIRECTORY}}/_build/*/compile_commands.json
+
+  cpptestcli:
+    if: github.event_name == 'pull_request'
+    needs: build
+    name: run cpptestcli
+    runs-on: parasoft
+
+    steps:
+      - name: Checkout phoenix-rtos-project
+        uses: actions/checkout@v3
+        with:
+          repository: phoenix-rtos/phoenix-rtos-project
+          ref: jsarzy/cpptest
+          submodules: recursive
+
+      # step 2: update the submodule (recurse-sumbodules=no is needed for phoenix-rtos-lwip checkout not to fail, but it fails to update the submodule (TODO)
+      - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
+        run: |
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+
+      - name: Download compile database artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: compile-db-artifacts
+          path: _build
+
+      - name: Get changed and added files
+        working-directory: ${{ github.event.repository.name }}
+        id: files
+        run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+
+      - name: Run cpptestcli
+        run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.files.outputs.files }}
+
+      - name: Fail
+        run: return 1
+
+      #- name: Install reviewdog
+      #  run: |
+      #    wget http://misc.nalajcie.org/reviewdog -O /tmp/reviewdog 2>/dev/null
+      #    chmod +x /tmp/reviewdog
+
+      #- name: Reviewdog
+      #  env:
+      #    REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  run: |
+      #    cd ${{ github.event.repository.name }}
+      #    git diff -U0 HEAD^
+      #    cat ../result.json | /tmp/reviewdog -f=rdjson -diff="git diff -U0 HEAD^" -name=clang-tidy -reporter=github-pr-review -fail-on-error
+
 
   test-emu:
     needs: build
@@ -122,67 +183,67 @@ jobs:
           target: ${{ matrix.target }}
 
   # runs on self-hosted runners with HW targets attached
-  test-hw:
-    needs: build
-    name: run tests on hardware
-    runs-on: ${{ matrix.target }}
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
-    strategy:
-      matrix:
-        target: ['armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk']
+    test-hw:
+      needs: build
+      name: run tests on hardware
+      runs-on: ${{ matrix.target }}
+      outputs:
+        runner_result: ${{ steps.runner.outcome }}
+      strategy:
+        matrix:
+          target: ['armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk']
 
-    steps:
-      - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v3
-        with:
-          repository: phoenix-rtos/phoenix-rtos-project
-          submodules: recursive
+      steps:
+        - name: Checkout phoenix-rtos-project
+          uses: actions/checkout@v3
+          with:
+            repository: phoenix-rtos/phoenix-rtos-project
+            submodules: recursive
 
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+        - name: Update submodule ${{ github.event.repository.name }}
+          working-directory: ${{ github.event.repository.name }}
+          run: |
+            git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+            git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+            git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: phoenix-rtos-${{ matrix.target }}
+        - name: Download build artifacts
+          uses: actions/download-artifact@v3
+          with:
+            name: phoenix-rtos-${{ matrix.target }}
 
-      - name: Untar rootfs
-        working-directory: _fs
-        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+        - name: Untar rootfs
+          working-directory: _fs
+          run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
-      - name: Test runner
-        id: runner
-        run: |
-          python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
+        - name: Test runner
+          id: runner
+          run: |
+            python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
 
-  mail-notification:
-    if: ${{ failure() }}
-    needs: ['build', 'test-emu', 'test-hw']
-    name: notify ci team using e-mail
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send mail
-        # If there is some failure, not caused by build step or test runner step send mail
-        if: >-
-          ${{ needs.build.outputs.build_result != 'failure'
-          && needs.test-emu.outputs.runner_result != 'failure'
-          && needs.test-hw.outputs.runner_result != 'failure' }}
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
-          password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
-          subject: Github Actions Warning
-          to: ci@phoenix-rtos.com
-          # Required sender full name (address can be skipped):
-          from: Continuous Integration Bot
-          # Optional whether this connection use TLS (default is true if server_port is 465)
-          secure: true
-          body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-
+  #  mail-notification:
+  #    if: ${{ failure() }}
+  #    needs: ['build', 'test-emu', 'test-hw']
+  #    name: notify ci team using e-mail
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Send mail
+  #        # If there is some failure, not caused by build step or test runner step send mail
+  #        if: >-
+  #          ${{ needs.build.outputs.build_result != 'failure'
+  #          && needs.test-emu.outputs.runner_result != 'failure'
+  #          && needs.test-hw.outputs.runner_result != 'failure' }}
+  #        uses: dawidd6/action-send-mail@v3
+  #        with:
+  #          server_address: smtp.gmail.com
+  #          server_port: 465
+  #          username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
+  #          password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
+  #          subject: Github Actions Warning
+  #          to: ci@phoenix-rtos.com
+  #          # Required sender full name (address can be skipped):
+  #          from: Continuous Integration Bot
+  #          # Optional whether this connection use TLS (default is true if server_port is 465)
+  #          secure: true
+  #          body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  #
