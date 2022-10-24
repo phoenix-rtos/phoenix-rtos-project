@@ -100,6 +100,8 @@ jobs:
           chmod +x /tmp/reviewdog
 
       - name: Post results using reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cat rdf.json | /tmp/reviewdog -f=rdjson -diff="git diff -U0 HEAD^" -name=cpptestcli -reporter=github-pr-review -fail-on-error
 
       - name: Upload cpptestcli results
