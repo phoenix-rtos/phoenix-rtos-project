@@ -88,11 +88,11 @@ jobs:
           path: _build
 
       - name: Get changed and added files
-        id: files
+        id: changed_files
         run: scripts/ci/changed_files.sh
 
       - name: Run cpptestcli
-        run: scripts/ci/parasoft_cpptestcli.py ${{ steps.files.outputs.added_files }} ${{ steps.files.outputs.modified_files }}
+        run: scripts/ci/parasoft_cpptestcli.py ${{ steps.changed_files.outputs.files }}
 
       - name: Upload cpptestcli results
         uses: actions/upload-artifact@v3
