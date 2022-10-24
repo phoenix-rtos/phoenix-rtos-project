@@ -69,6 +69,7 @@ jobs:
             _build/*/compile_commands.json
 
   cpptestcli:
+    if: github.event_name == 'pull_request'
     needs: build
     name: run cpptestcli 
     runs-on: parasoft
@@ -87,7 +88,7 @@ jobs:
 
       - name: Get changed and added files
         id: files
-        run: scripts/ci/changed_files.sh ${{ github.head_ref }} ${{ github.sha }}
+        run: scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
 
       - name: Run cpptestcli
         run: scripts/ci/parasoft_cpptestcli.py ${{ steps.files.outputs.added_files }} ${{ steps.files.outputs.modified_files }}
