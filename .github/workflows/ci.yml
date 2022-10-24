@@ -94,6 +94,14 @@ jobs:
       - name: Run cpptestcli
         run: scripts/ci/parasoft_cpptestcli.py ${{ steps.changed_files.outputs.files }}
 
+      - name: Install reviewdog
+        run: |
+          wget http://misc.nalajcie.org/reviewdog -O /tmp/reviewdog 2>/dev/null
+          chmod +x /tmp/reviewdog
+
+      - name: Post results using reviewdog
+        run: cat rdf.json | /tmp/reviewdog -f=rdjson -diff="git diff -U0 HEAD^" -name=cpptestcli -reporter=github-pr-review -fail-on-error
+
       - name: Upload cpptestcli results
         uses: actions/upload-artifact@v3
         with:

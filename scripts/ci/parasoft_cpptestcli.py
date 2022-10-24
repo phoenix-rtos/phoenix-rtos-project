@@ -233,6 +233,18 @@ def fix_compile_db(compile_db: str, submodule: Optional[str] = None):
         f.write(json.dumps(data, indent=4))
 
 
+def diagnostics_to_rdfjson(diagnostics: Set[CpptestDiagnostic]) -> str:
+    rdf = {
+        "source": {
+            "name": "cpptestcli",
+        },
+        "severity": "WARNING",
+        "diagnostics": [d.rdf() for d in diagnostics],
+    }
+
+    return json.dumps(rdf, indent=4, sort_keys=True)
+
+
 def parse_opts() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Blablabla for now")
 
@@ -282,5 +294,11 @@ def main() -> None:
         diagnostics |= run_cpptestcli_process(target, compile_db, opts.files)
 
     print(f"Total: {len(diagnostics)}")
+    # Convert to rdf format
+    rdf = diagnostics_to_rdfjson(diagnostics)
+
+    with open('rdf.json', 'w') as f:
+        f.write(rdf)
+
 
 main()
