@@ -254,7 +254,12 @@ def parse_opts() -> argparse.Namespace:
 
     # TODO
     opts.files = [file for s in opts.files for file in s.split()]
-    print(opts.files)
+    print('files', opts.files)
+    if len(opts.files) == 0:
+        print("exit...")
+        exit(1)
+        # For now exit here
+
     #opts.files = opts.files.split()
 
     return opts
