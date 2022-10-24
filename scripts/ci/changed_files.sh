@@ -2,24 +2,22 @@
 
 set -o pipefail
 
-if [ "$#" -ge 2 ]; then
-    base="$1"
-    head="$2"
+if [ "$#" -eq 0 ]; then
+	files=$(git diff HEAD^ --name-only --diff-filter=MA)
+elif [ "$#" -eq 2 ]; then
+	echo "base: $1"
+	echo "head: $2"
+	files=$(git diff "$1" "$2" --name-only --diff-filter=MA)
 else
     echo "need base sha and head sha"
     exit 1
 fi
 
-echo "base: $base"
-echo "head: $head"
-
-files=$(git diff "$base" "$head" --name-only --diff-filter=MA)
 # shellcheck disable=SC2181
 if [ "$?" -ne 0 ]; then
     echo "diff command failed"
     exit 1
 fi
-
 
 files=$(echo "$files" | egrep '\.c$|\.h$' | tr '\n' ' ')
 # shellcheck disable=SC2181
