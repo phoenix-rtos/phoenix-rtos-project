@@ -87,7 +87,7 @@ jobs:
 
       - name: Get changed and added files
         id: files
-        run: scripts/ci/changed_files.sh ${{ github.event.before }} ${{ github.event.after }}
+        run: scripts/ci/changed_files.sh ${{ github.head_ref }} ${{ github.sha }}
 
       - name: Run cpptestcli
         run: scripts/ci/parasoft_cpptestcli.py ${{ steps.files.outputs.added_files }} ${{ steps.files.outputs.modified_files }}
