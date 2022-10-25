@@ -52,7 +52,7 @@ b_mkscript_user() {
 			case "${args[0]}"
 			in
 				app)
-					if [ "${args[2]}" = "-x" ]; then
+					if [ "${args[2]:0:1}" = "-" ]; then
 						name=${args[3]%%;*}
 					else
 						name=${args[2]%%;*}
