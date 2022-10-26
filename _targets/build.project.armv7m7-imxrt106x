@@ -29,6 +29,8 @@ export PORTS_OPENVPN=n
 export PORTS_JANSSON=n
 export PORTS_CURL=n
 export PORTS_MICROPYTHON=n
+export PORTS_MBEDTLS=n
+export PORTS_AZURE_SDK=n
 
 
 #
