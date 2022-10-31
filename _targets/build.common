@@ -59,9 +59,9 @@ b_mkscript_user() {
 					fi
 
 					PROGS+=("$name")
-					psz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}$name") + SIZE_PAGE - 1) & PAGE_MASK))
+					psz=$(wc -c < "${PREFIX_PROG_STRIPPED}$name")
 					printf "alias %s 0x%x 0x%x\n" "$name" "$poffs" "$psz"
-					((poffs+=psz))
+					((poffs+=(psz + SIZE_PAGE - 1) & PAGE_MASK))
 					printf "%s\n" "$cmd";;
 
 				kernel)
