@@ -75,12 +75,13 @@
 #define UART1_RX 49
 #define UART1_TX 48
 
-#define UART_CONSOLE     1
-#define UART_CONSOLE_PLO 1
+#define UART_CONSOLE_KERNEL 1
+#define UART_CONSOLE_USER   1
+#define UART_CONSOLE_PLO    1
 
 /* UART16550 configuration */
-#define UART16550_CONSOLE  1
-#define UART16550_BAUDRATE 115200
+#define UART16550_CONSOLE_USER -1
+#define UART16550_BAUDRATE      115200
 
 /* QSPI configuration */
 #define QSPI_CS   1
