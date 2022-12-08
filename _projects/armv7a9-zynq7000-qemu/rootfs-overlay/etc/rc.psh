@@ -1,4 +1,5 @@
 :{}:
 W /bin/bind devfs /dev
 X /bin/posixsrv
+T /dev/console
 X /linuxrc
