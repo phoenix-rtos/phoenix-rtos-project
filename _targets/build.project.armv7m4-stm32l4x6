@@ -64,10 +64,10 @@ PREINIT_SCRIPT=(
 
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
-	"wait 2000"
 	"kernelimg ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram"
 	"app ${BOOT_DEVICE} -x psh flash0 ram"
+	"wait 2000"
 	"go!")
 
 
