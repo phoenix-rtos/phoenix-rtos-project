@@ -9,7 +9,7 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 export FS_SZ=$((0x800000))
-export FS_WRITE_CLEANMARKERS=n
+export FS_WRITE_CLEANMARKERS=y
 
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
@@ -33,7 +33,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2; ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-pwm;-r1000000;-b0x43c00000 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-pwm;-r250000;-b0x43c00000 ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-xgpio;-b0x41200000 ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-gpio ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-xspi;0 ddr ddr"
