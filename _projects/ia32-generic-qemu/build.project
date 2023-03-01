@@ -9,6 +9,13 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 
+#
+# Ports configuration - additional to the one from _targets
+#
+export PORTS_MBEDTLS=y
+export PORTS_AZURE_SDK=y
+
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }

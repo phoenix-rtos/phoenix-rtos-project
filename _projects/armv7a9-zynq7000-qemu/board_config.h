@@ -69,18 +69,26 @@
 #define SPI1_SS1  -1
 #define SPI1_SS2  -1
 
+/* I2C configuration */
+#define I2C0_SDA -1
+#define I2C0_SCL -1
+
+#define I2C1_SDA -1
+#define I2C1_SCL -1
+
 /* UART configuration */
 #define UART0_RX 10
 #define UART0_TX 11
 #define UART1_RX 49
 #define UART1_TX 48
 
-#define UART_CONSOLE     1
-#define UART_CONSOLE_PLO 1
+#define UART_CONSOLE_KERNEL 1
+#define UART_CONSOLE_USER   1
+#define UART_CONSOLE_PLO    1
 
 /* UART16550 configuration */
-#define UART16550_CONSOLE  1
-#define UART16550_BAUDRATE 115200
+#define UART16550_CONSOLE_USER -1
+#define UART16550_BAUDRATE      115200
 
 /* QSPI configuration */
 #define QSPI_CS   1

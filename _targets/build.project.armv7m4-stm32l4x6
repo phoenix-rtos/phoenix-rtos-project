@@ -58,15 +58,16 @@ PREINIT_SCRIPT=(
 	"map ram 0x20000000 0x20050000 rwx"
 	"phfs flash0 2.0 raw"
 	"phfs flash1 2.1 raw"
+	"phfs ramdev 4.0 raw"
 	"console 0.1")
 
 
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
-	"wait 2000"
 	"kernelimg ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram"
 	"app ${BOOT_DEVICE} -x psh flash0 ram"
+	"wait 2000"
 	"go!")
 
 
@@ -102,5 +103,6 @@ b_image_target() {
 }
 
 b_test_target() {
-	:
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
 }
