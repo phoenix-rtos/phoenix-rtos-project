@@ -69,6 +69,13 @@
 #define SPI1_SS1  14
 #define SPI1_SS2  15
 
+/* I2C configuration */
+#define I2C0_SDA -1
+#define I2C0_SCL -1
+
+#define I2C1_SDA -1
+#define I2C1_SCL -1
+
 /* UART configuration */
 #define UART0_RX 10
 #define UART0_TX 11
