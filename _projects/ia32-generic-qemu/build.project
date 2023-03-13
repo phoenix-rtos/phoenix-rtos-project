@@ -13,7 +13,7 @@
 # Ports configuration - additional to the one from _targets
 #
 export PORTS_MBEDTLS=y
-export PORTS_AZURE_SDK=y
+export PORTS_AZURE_SDK=n # FIXME: requires port to macos
 
 
 b_image_project () {
