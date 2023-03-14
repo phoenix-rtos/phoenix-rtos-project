@@ -15,7 +15,7 @@ inputs:
 # action runner
 runs:
   using: 'docker'
-  image: 'phoenixrtos/devel'
+  image: 'ghcr.io/phoenix-rtos/devel'
   entrypoint: ./phoenix-rtos-tests/runner.py
   args:
     - '-T${{ inputs.target }}'
