@@ -34,14 +34,13 @@ export PORTS_CURL=y
 #
 SIZE_PAGE=$((0x1000))
 PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0x0))          # Disk image kernel offset (in bytes)
+KERNEL_OFFS=$((0x0))              # Disk image kernel offset (in bytes)
 ADDR_DDR=$((0x80000000))
 
 
 #
 # Project specific build
 #
-
 BOOT_DEVICE="flash0"              # Default boot device
 NAME_USER_SCRIPT="user.plo"       # User script name
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
@@ -54,26 +53,28 @@ PREINIT_SCRIPT=(
 	"map ddr 0x80000000 0x87ffffff rwx"
 	"phfs usb0 1.2 phoenixd"
 	"console 0.0"
-	"wait 2000"
 )
 
 
-#TODO: if plo is introduced, BOOT_DEVICE should be changed
 #TODO: if flash driver for imx6ull-evk implementation is introduced, psh should be replaced by imx6ul-flash and psd
 # This is temporary solution for running a system image in RAM
 UPLOAD_SCRIPT=(
-	"kernelimg ${BOOT_DEVICE}"
+	"wait 2000"
+	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
 	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"go!"
 )
 
 
 PRIMARY_SCRIPT=(
-	"kernelimg ${BOOT_DEVICE}"
+	"wait 2000"
+	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
 	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"go!"
 )
 
 
@@ -85,6 +86,15 @@ b_build_project() {
 
 b_build_target() {
 	b_log "Building $TARGET project"
+	if [ "$KERNEL_PLO_BOOT" = "y" ]; then
+		b_log "Building PLO"
+
+		b_mkscript_preinit
+		make -C plo all
+
+		cp -a "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" "$PREFIX_BOOT/plo-ram.sdp"
+		cp -a "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	fi
 }
 
 
@@ -113,17 +123,31 @@ b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
 	b_mkscript_user "${UPLOAD_SCRIPT[@]}"
-	b_mkscript_preinit
 
-	# Build production image
-	b_log "RAM Image"
-	b_kernel_image "$PREFIX_BOOT/phoenix.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
+	if [ "$KERNEL_PLO_BOOT" = "y" ]; then
+		b_log "Image will boot from PLO."
 
-	b_log "FLASH Image"
-	b_mkscript_user "${PRIMARY_SCRIPT[@]}"
-	b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
-	b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
+		b_log "FLASH image"
+		b_mkscript_user "${PRIMARY_SCRIPT[@]}"
+		b_prod_image
+	else
+		# Parsed by syspagen for map and console commands.
+		b_mkscript_preinit
+
+		# Build production image
+		b_log "RAM Image"
+		b_kernel_image "$PREFIX_BOOT/phoenix.img"
+		b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
+
+		b_log "FLASH Image"
+		# This is a workaround for target not using PLO.
+		# As plo is not used user script is used only to:
+		#    - upload executable binary file instead of elf to the board(kernelimg),
+		#    - upload required apps(app).
+		b_mkscript_user "${PRIMARY_SCRIPT[@]}"
+		b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
+		b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
+	fi
 
 	b_log "Creating rootfs"
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
