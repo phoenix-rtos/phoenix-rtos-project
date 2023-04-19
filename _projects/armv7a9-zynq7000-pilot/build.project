@@ -30,7 +30,7 @@ PREINIT_SCRIPT=(
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-uart;-n;1 ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2; ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-pwm;-r250000;-b0x43c00000 ddr ddr"
