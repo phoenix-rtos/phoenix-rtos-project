@@ -4,11 +4,12 @@ DOCKER_IMG_NAME=phoenixrtos/build
 DOCKER_USER="$(id -u):$(id -g)"
 
 TMPFS_OVERLAY=()
-if [ "$(uname)" = "Darwin" ]; then
-    # I/O operations on bind mounts in Darwin are painfully slow - use tmpfs for intermediate build artifacts
-    chmod 777 "_build"  # fix against invalid tmpfs permissions
-    TMPFS_OVERLAY=("--tmpfs"  "/src/_build:exec")
-fi
+# FIXME: due to building as root in docker the tmpfs approach doesn't work
+# if [ "$(uname)" = "Darwin" ]; then
+#     # I/O operations on bind mounts in Darwin are painfully slow - use tmpfs for intermediate build artifacts
+#     chmod 777 "_build"  # fix against invalid tmpfs permissions
+#     TMPFS_OVERLAY=("--tmpfs"  "/src/_build:exec")
+# fi
 
 if [ "$#" -eq 1 ] && [ "$1" = "bash" ]; then
     # run interactive shell - using ROOT user
