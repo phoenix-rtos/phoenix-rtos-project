@@ -1,7 +1,7 @@
 # vim:sw=2:ts=2
-# reusable build/test workflow for submodules
-name: ci-submodule
+name: ci-project
 
+# on events
 on:
   workflow_call:
     secrets:
@@ -20,7 +20,7 @@ on:
         default: false
         required: false
 
-
+# jobs
 jobs:
   build:
     name: build
@@ -36,55 +36,38 @@ jobs:
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
     steps:
-      # step 1 : checkout submodule
-      - name: Checkout submodule
+      # step 1: checkout repository code inside the workspace directory of the runner
+      - name: Checkout the repository
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      # step 2: checkout phoenix-rtos-project repository code in .buildroot and symlink submodule name to `workspace`
-      # that way workspace file paths will match submodule paths - making problem matchers work
-      # BUILD_DIRECTORY - absolute path to phoenix-rtos-project
-      # CI_CUSTOM_BUILDROOT - relative path to phoenix-rtos-project (from GH Actions workspace)
-      - name: Checkout phoenix-rtos-project
-        # we need to use relative paths here so they would work in docker env
-        run: |
-          mkdir .buildroot && cd .buildroot
-          git clone https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
-          cd phoenix-rtos-project
-          echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
-          echo "CI_CUSTOM_BUILDROOT=.buildroot/phoenix-rtos-project" >> $GITHUB_ENV
-          git log -1 --pretty=oneline
-          git submodule
-          rm -rf ${{ github.event.repository.name }}
-          ln -s ../.. ${{ github.event.repository.name }}
-
       # attach GCC problem matcher - will pin problems to files only in current submodule
       - uses: ammaraskar/gcc-problem-matcher@master
 
-      # step 3: use our custom action to build the project
+      # step 2: use our custom action to build the project
       - name: Build
         id: build
-        uses: ./.buildroot/phoenix-rtos-project/.github/actions/phoenix-build    # BUILD_DIRECTORY value, but we can't use templates here
+        uses: ./.github/actions/phoenix-build
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
-          buildroot: ${{env.CI_CUSTOM_BUILDROOT}}
+          nightly: ${{ inputs.nightly }}
 
-      # step 4: tar rootfs
+      # step 3: tar rootfs
       - name: Tar rootfs
-        working-directory: ${{env.BUILD_DIRECTORY}}/_fs
+        working-directory: _fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 5: upload project boot directory and tarball of rootfs as build artifacts
+      # step 4: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
-            ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
+            _boot/${{ matrix.target }}
+            rootfs-${{ matrix.target }}.tar
 
   test-emu:
     needs: build
@@ -93,22 +76,15 @@ jobs:
     outputs:
       runner_result: ${{ steps.runner.outcome }}
     strategy:
+      fail-fast: ${{ ! inputs.nightly }}
       matrix:
         target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
 
     steps:
-      - name: Checkout phoenix-rtos-project
+      - name: Checkout the repository
         uses: actions/checkout@v3
         with:
-          repository: phoenix-rtos/phoenix-rtos-project
-          submodules: recursive
-
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+          submodules: true
 
       - name: Download build artifacts
         uses: actions/download-artifact@v3
@@ -124,8 +100,8 @@ jobs:
         uses: ./.github/actions/phoenix-runner
         with:
           target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
 
-  # runs on self-hosted runners with HW targets attached
   test-hw:
     needs: build
     name: run tests on hardware
@@ -133,22 +109,15 @@ jobs:
     outputs:
       runner_result: ${{ steps.runner.outcome }}
     strategy:
+      fail-fast: ${{ ! inputs.nightly }}
       matrix:
         target: ['armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
 
     steps:
-      - name: Checkout phoenix-rtos-project
+      - name: Checkout the repository
         uses: actions/checkout@v3
         with:
-          repository: phoenix-rtos/phoenix-rtos-project
-          submodules: recursive
-
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+          submodules: true
 
       - name: Download build artifacts
         uses: actions/download-artifact@v3
@@ -162,7 +131,7 @@ jobs:
       - name: Test runner
         id: runner
         run: |
-          python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
+          python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }}
 
   mail-notification:
     if: ${{ failure() }}
@@ -189,4 +158,3 @@ jobs:
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-
