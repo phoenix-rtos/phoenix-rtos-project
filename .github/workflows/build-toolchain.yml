@@ -1,0 +1,35 @@
+name: Build toolchain
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: build-macos-toolchain
+    runs-on: macos-12
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install denependecies
+        run: |
+          brew install bash coreutils autoconf automake genext2fs make wget gnu-sed
+          echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
+          echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
+
+      - name: Build toolchain
+        run: |
+          mkdir ~/toolchain
+          git rev-parse --short HEAD > ~/toolchain/git-version
+          cd phoenix-rtos-build/toolchain/
+          ./build-toolchain.sh i386-pc-phoenix "$HOME"/toolchain/
+          # upload/download-artifact action don't preserve permissions and compresses to zip. Pack to archive and don't compress.
+          tar -C ~/toolchain -cvf ~/i386-pc-phoenix-macos.tar i386-pc-phoenix git-version
+
+      - name: Upload toolchain artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: i386-pc-phoenix-macos
+          path: ~/i386-pc-phoenix-macos.tar

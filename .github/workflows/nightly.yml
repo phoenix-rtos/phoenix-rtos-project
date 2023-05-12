@@ -1,0 +1,58 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # everyday at 02:00 UTC+1
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: build-macos
+    runs-on: macos-12
+    strategy:
+      matrix:
+        target: [ia32-generic-qemu]
+        include:
+          - toolchain: i386-pc-phoenix
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install denependecies
+        run: |
+          brew install bash coreutils autoconf automake genext2fs make wget gnu-sed
+          echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
+          echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
+
+      - name: Download toolchain
+        # TODO: download from github packages/releases
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build-toolchain.yml
+
+      - name: Install toolchain
+        working-directory: ${{ matrix.toolchain }}-macos
+        run: |
+          tar -xvf ${{ matrix.toolchain }}-macos.tar
+          echo "$(pwd)"/${{ matrix.toolchain }}/bin >> $GITHUB_PATH
+
+      - name: Build
+        run: ./phoenix-rtos-build/build.sh all tests
+        env:
+          TARGET: ${{ matrix.target }}
+
+      - name: Tar rootfs
+        working-directory: _fs
+        run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: phoenix-rtos-${{ matrix.target }}-macos-host
+          path: |
+            _boot/${{ matrix.target }}
+            rootfs-${{ matrix.target }}.tar
+
