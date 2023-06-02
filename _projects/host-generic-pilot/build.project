@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Shell script for building host-generic-pc project
+# Shell script for building host-generic-pilot project
 #
-# Copyright 2022 Phoenix Systems
+# Copyright 2022, 2023 Phoenix Systems
 # Author: Lukasz Kosinski, Piotr Nieciecki
 #
 
@@ -14,6 +14,9 @@ b_build_project () {
 	# FIXME: Remove this when there is a possibility to add test form different submodules than `phoenix-rtos-tests`
 	b_log "Building unity"
 	make -C "phoenix-rtos-tests" unity
+
+	b_log "Building libsensors"
+	make -C "phoenix-rtos-devices" libsensors
 
 	b_log "Building phoenix-pilot-core"
 	make -C phoenix-pilot-core all install
