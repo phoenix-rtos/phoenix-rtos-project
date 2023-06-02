@@ -76,7 +76,7 @@ b_build_target() {
 	make -C plo base ram
 
 	# plo image is reused only in loading system via qemu
-	if [ "${TARGET_PROJECT}" = "qemu" ]; then
+	if [ "${TARGET_PROJECT}" = "qemu" ] || [ "${TARGET_PROJECT}" = "vpilot" ]; then
 		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
 	fi
 
