@@ -8,6 +8,56 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+#
+# Boot configuration
+#
+export KERNEL_PLO_BOOT=y
+export PLO_NOR_BOOT=y
+
+#
+# PLO configuration
+#
+export PLO_NOR=y
+
+#
+# Project specific build
+#
+BOOT_DEVICE="nor0"                # Default boot device
+OFFS_USER_SCRIPT=$((0x20000))     # Disk image user script offset (in bytes)
+
+KERNEL_OFFS=$((0x21000))          # Disk image kernel offset (in bytes)
+
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=(
+	"map ddr 0x80000000 0x87ffffff rwx"
+	"phfs usb0 1.2 phoenixd"
+	"phfs ${BOOT_DEVICE} 2.0 raw"
+	"console 0.0"
+)
+
+
+#TODO: if flash driver for imx6ull-evk implementation is introduced, psh should be replaced by imx6ul-flash and psd
+# This is temporary solution for running a system image in RAM
+UPLOAD_SCRIPT=(
+	"wait 2000"
+	"kernel ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"go!"
+)
+
+
+PRIMARY_SCRIPT=(
+	"wait 2000"
+	"kernel ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"go!"
+)
+
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
