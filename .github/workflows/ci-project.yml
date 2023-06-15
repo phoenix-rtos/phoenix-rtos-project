@@ -19,10 +19,7 @@ on:
         type: boolean
         default: false
         required: false
-  # Run workflow every day to make sure that in the incoming day everything will work properly
-  schedule:
-    # triggered every day at 1:00 UTC
-    - cron: '0 1 * * *'
+
 
 # jobs
 jobs:
