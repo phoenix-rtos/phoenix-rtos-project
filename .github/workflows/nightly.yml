@@ -11,3 +11,6 @@ jobs:
     with:
       build_params: all tests
       nightly: true
+    secrets:
+      CI_BOT_EMAIL_USERNAME: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
+      CI_BOT_EMAIL_PASSWORD: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
