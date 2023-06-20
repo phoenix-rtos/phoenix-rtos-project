@@ -118,7 +118,7 @@ b_image_target() {
 	ROOTFS="$PREFIX_BOOT/rootfs.ext2"
 	rm -f "$ROOTFS"
 	SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
-	SIZE_ROOTFS=$((3 * SIZE_ROOTFS / 2))
+	SIZE_ROOTFS=$((3 * SIZE_ROOTFS))
 	echo "rootfs size: ${SIZE_ROOTFS}KB"
 	genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
 
