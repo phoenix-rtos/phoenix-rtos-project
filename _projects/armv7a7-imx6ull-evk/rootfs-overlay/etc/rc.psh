@@ -1,0 +1,4 @@
+:{}:
+W /bin/bind devfs /dev
+X /bin/posixsrv
+X /bin/psh
