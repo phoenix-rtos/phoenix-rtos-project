@@ -263,8 +263,8 @@ b_dev_image() {
 	OFFSET="$OFFS_USER_SCRIPT"
 	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
 
-	# TODO is this resize really needed?
-	b_pad "$KERNEL_OFFS" "$PLO_DEV_IMG"
+	# Size passed to preinit script is padded to KERNEL_OFFS
+	b_pad "$PLO_DEV_IMG" "$KERNEL_OFFS"
 
 	# Dev user script
 	OFFSET=0
