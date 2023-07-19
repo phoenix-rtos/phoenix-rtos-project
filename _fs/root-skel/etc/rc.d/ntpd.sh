@@ -48,9 +48,6 @@ start() {
 				if $NTPD $PARAMS -n -q 2>&1; then
 					touch $SYNCFILE
 
-					# Set RTC time
-					hwclock -w
-
 				else
 					find "$SYNCFILE" -type f -mmin +$MAX_UNSYNC_TIME -exec rm "{}" \; >/dev/null 2>&1
 				fi

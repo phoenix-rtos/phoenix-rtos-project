@@ -8,6 +8,14 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+
+#
+# lwIP configuration
+#
+export LWIPOPTS_DIR="$(pwd)/_projects/armv7a7-imx6ull-evk/lwip"
+export LWIP_IPSEC_BUILD=no
+export LWIP_WIFI_BUILD=no
+
 #
 # Boot configuration
 #
