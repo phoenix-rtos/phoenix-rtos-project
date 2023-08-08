@@ -36,6 +36,7 @@ runs:
   image: 'phoenixrtos/build'
   env:
     CONSOLE: 'serial'
+    DEBUG: '1'
     TARGET: ${{ inputs.target }}
     SYSPAGE: ${{ inputs.syspage }}
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
