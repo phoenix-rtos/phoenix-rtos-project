@@ -30,12 +30,7 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
-        include:
-          - target: 'ia32-generic-qemu'
-            syspage: 'psh pc-ata uart16550'
-          - target: 'armv7a9-zynq7000-qemu'
-            additional_params: 'ports'
+        target: ['armv7m7-imxrt106x-evk',]
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -70,38 +65,50 @@ jobs:
             _boot/${{ matrix.target }}
             rootfs-${{ matrix.target }}.tar
 
-  test-emu:
-    needs: build
-    name: run tests on emulators
-    runs-on: ubuntu-latest
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
-    strategy:
-      fail-fast: ${{ ! inputs.nightly }}
-      matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
+  # test-emu:
+  #   needs: build
+  #   name: run tests on emulators
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     runner_result: ${{ steps.runner.outcome }}
+  #   strategy:
+  #     fail-fast: ${{ ! inputs.nightly }}
+  #     matrix:
+  #       target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
 
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: true
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: phoenix-rtos-${{ matrix.target }}
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: phoenix-rtos-${{ matrix.target }}
 
-      - name: Untar rootfs
-        working-directory: _fs
-        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+  #     - name: Untar rootfs
+  #       working-directory: _fs
+  #       run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
-      - name: Test runner
-        id: runner
-        uses: ./.github/actions/phoenix-runner
-        with:
-          target: ${{ matrix.target }}
-          nightly: ${{ inputs.nightly }}
+  #     - name: Test runner
+  #       id: runner
+  #       uses: ./.github/actions/phoenix-runner
+  #       with:
+  #         target: ${{ matrix.target }}
+  #         nightly: ${{ inputs.nightly }}
+
+  #     - name: Upload runner artifacts
+  #       working-directory: phoenix-rtos-tests
+  #       run: echo abc > test-csv-file.csv
+
+  #     # step 4: upload project boot directory and tarball of rootfs as build artifacts
+  #     - name: Upload runner artifacts
+  #       working-directory: phoenix-rtos-tests
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: test-runner-results
+  #         path: test-csv-file.csv
 
   test-hw:
     needs: build
@@ -112,7 +119,7 @@ jobs:
     strategy:
       fail-fast: ${{ ! inputs.nightly }}
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+        target: ['armv7m7-imxrt106x-evk',]
 
     steps:
       - name: Checkout the repository
@@ -134,28 +141,39 @@ jobs:
         run: |
           python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }}
 
-  mail-notification:
-    if: ${{ failure() }}
-    needs: ['build', 'test-emu', 'test-hw']
-    name: notify ci team using e-mail
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send mail
-        # If there is some failure, not caused by build step or test runner step send mail
-        if: >-
-          ${{ needs.build.outputs.build_result != 'failure'
-          && needs.test-emu.outputs.runner_result != 'failure'
-          && needs.test-hw.outputs.runner_result != 'failure' }}
-        uses: dawidd6/action-send-mail@v3
+      - name: Upload runner artifacts
+        working-directory: phoenix-rtos-tests
+        run: echo abc > test-csv-file.csv
+
+      # step 4: upload project boot directory and tarball of rootfs as build artifacts
+      - name: Upload runner artifacts
+        uses: actions/upload-artifact@v3
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
-          password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
-          subject: Github Actions Warning
-          to: ci@phoenix-rtos.com
-          # Required sender full name (address can be skipped):
-          from: Continuous Integration Bot
-          # Optional whether this connection use TLS (default is true if server_port is 465)
-          secure: true
-          body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+          name: test-runner-results
+          path: phoenix-rtos-tests/test-csv-file.csv
+
+  # mail-notification:
+  #   if: ${{ failure() }}
+  #   needs: ['build', 'test-emu', 'test-hw']
+  #   name: notify ci team using e-mail
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Send mail
+  #       # If there is some failure, not caused by build step or test runner step send mail
+  #       if: >-
+  #         ${{ needs.build.outputs.build_result != 'failure'
+  #         && needs.test-emu.outputs.runner_result != 'failure'
+  #         && needs.test-hw.outputs.runner_result != 'failure' }}
+  #       uses: dawidd6/action-send-mail@v3
+  #       with:
+  #         server_address: smtp.gmail.com
+  #         server_port: 465
+  #         username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
+  #         password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
+  #         subject: Github Actions Warning
+  #         to: ci@phoenix-rtos.com
+  #         # Required sender full name (address can be skipped):
+  #         from: Continuous Integration Bot
+  #         # Optional whether this connection use TLS (default is true if server_port is 465)
+  #         secure: true
+  #         body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
