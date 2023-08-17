@@ -141,16 +141,12 @@ jobs:
         run: |
           python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }}
 
-      - name: Upload runner artifacts
-        working-directory: phoenix-rtos-tests
-        run: echo abc > test-csv-file.csv
-
       # step 4: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload runner artifacts
         uses: actions/upload-artifact@v3
         with:
           name: test-runner-results
-          path: phoenix-rtos-tests/test-csv-file.csv
+          path: ${{ matrix.target }}.csv
 
   # mail-notification:
   #   if: ${{ failure() }}
