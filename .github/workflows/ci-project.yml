@@ -30,7 +30,12 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7m7-imxrt106x-evk',]
+        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
+        include:
+          - target: 'ia32-generic-qemu'
+            syspage: 'psh pc-ata uart16550'
+          - target: 'armv7a9-zynq7000-qemu'
+            additional_params: 'ports'
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -65,50 +70,45 @@ jobs:
             _boot/${{ matrix.target }}
             rootfs-${{ matrix.target }}.tar
 
-  # test-emu:
-  #   needs: build
-  #   name: run tests on emulators
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     runner_result: ${{ steps.runner.outcome }}
-  #   strategy:
-  #     fail-fast: ${{ ! inputs.nightly }}
-  #     matrix:
-  #       target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
+  test-emu:
+    needs: build
+    name: run tests on emulators
+    runs-on: ubuntu-latest
+    outputs:
+      runner_result: ${{ steps.runner.outcome }}
+    strategy:
+      fail-fast: ${{ ! inputs.nightly }}
+      matrix:
+        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
 
-  #   steps:
-  #     - name: Checkout the repository
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: true
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
 
-  #     - name: Download build artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: phoenix-rtos-${{ matrix.target }}
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
 
-  #     - name: Untar rootfs
-  #       working-directory: _fs
-  #       run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
-  #     - name: Test runner
-  #       id: runner
-  #       uses: ./.github/actions/phoenix-runner
-  #       with:
-  #         target: ${{ matrix.target }}
-  #         nightly: ${{ inputs.nightly }}
+      - name: Test runner
+        id: runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
 
-  #     - name: Upload runner artifacts
-  #       working-directory: phoenix-rtos-tests
-  #       run: echo abc > test-csv-file.csv
-
-  #     # step 4: upload project boot directory and tarball of rootfs as build artifacts
-  #     - name: Upload runner artifacts
-  #       working-directory: phoenix-rtos-tests
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: test-runner-results
-  #         path: test-csv-file.csv
+      # step 4: upload project boot directory and tarball of rootfs as build artifacts
+      - name: Upload runner artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ matrix.target }}.csv
 
   test-hw:
     needs: build
@@ -119,7 +119,7 @@ jobs:
     strategy:
       fail-fast: ${{ ! inputs.nightly }}
       matrix:
-        target: ['armv7m7-imxrt106x-evk',]
+        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
 
     steps:
       - name: Checkout the repository
@@ -145,7 +145,7 @@ jobs:
       - name: Upload runner artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: test-runner-results
+          name: ${{ matrix.target }}
           path: ${{ matrix.target }}.csv
 
   # mail-notification:
