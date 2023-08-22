@@ -128,6 +128,14 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
+      - name: Upload runner results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+
   # runs on self-hosted runners with HW targets attached
   test-hw:
     needs: build
@@ -165,7 +173,50 @@ jobs:
       - name: Test runner
         id: runner
         run: |
-          python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} -Oresults.csv
+
+      - name: Upload runner results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+
+  tests-summary:
+    if: success() || failure()   # don't care about cancelled runs
+    needs: ['test-emu', 'test-hw']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        # FIXME: download-artifact don't support downloading artifacts by wildcard, download all artifacts for now
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Merge Test Results
+        run: |
+          pip3 install junitparser junit2html
+          junitparser merge artifacts/test-results-*/results.xml junit.xml
+          junit2html junit.xml junit.html
+
+      - name: Upload Merged Unit Test Results in HTML
+        uses: actions/upload-artifact@v3
+        with:
+          name: Merged Unit Test Results
+          if-no-files-found: ignore
+          path: |
+            junit.html
+            junit.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Unit Test Results
+          files: "junit.xml"
 
   mail-notification:
     if: failure()
