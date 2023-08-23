@@ -70,10 +70,10 @@ b_mkscript_user() {
 
 				kernelimg)
 					printf "alias %s 0x%x 0x%x\n" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
-					tbeg=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $3 }')
-					tsz=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $6 }')
-					dbeg=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $3 }')
-					dsz=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $6 }')
+					tbeg=$(${CROSS}readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $3 }')
+					tsz=$(${CROSS}readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $6 }')
+					dbeg=$(${CROSS}readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $3 }')
+					dsz=$(${CROSS}readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $6 }')
 					tsz=$(((tsz + SIZE_PAGE - 1) & PAGE_MASK))
 					dsz=$(((dsz + SIZE_PAGE - 1) & PAGE_MASK))
 					printf "%s %s %x %x %x %x\n" "$cmd" "${KERNEL_FILE}" $((tbeg)) $((tsz)) $((dbeg)) $((dsz));;

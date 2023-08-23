@@ -78,9 +78,9 @@ b_syspage_gen() {
 	img="$1"
 	uscript="$2"
 
-	start=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_start\b" | awk '{ printf("0x%s", $2) }')
-	syspage=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_syspage_data\b" | awk '{ printf("0x%s", $2) }')
-	syspage_end=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_syspage_data_end\b" | awk '{ printf("0x%s", $2) }')
+	start=$(${CROSS}readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_start\b" | awk '{ printf("0x%s", $2) }')
+	syspage=$(${CROSS}readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_syspage_data\b" | awk '{ printf("0x%s", $2) }')
+	syspage_end=$(${CROSS}readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "\b_syspage_data_end\b" | awk '{ printf("0x%s", $2) }')
 
 	addr=$((syspage-start))
 	sz=$((syspage_end-syspage))
