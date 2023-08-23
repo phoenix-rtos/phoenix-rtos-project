@@ -107,9 +107,9 @@ b_syspage_gen() {
 	img="$1"
 	uscript="$2"
 
-	vectors=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "init_vectors" | awk '{ printf("0x%s", $2) }')
-	syspage=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "syspage_data" | awk '{ printf("0x%s", $2) }')
-	plugin=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "plugin_ivt" | awk '{ printf("0x%s", $2) }')
+	vectors=$(${CROSS}readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "init_vectors" | awk '{ printf("0x%s", $2) }')
+	syspage=$(${CROSS}readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "syspage_data" | awk '{ printf("0x%s", $2) }')
+	plugin=$(${CROSS}readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "plugin_ivt" | awk '{ printf("0x%s", $2) }')
 
 	addr=$((syspage-vectors))
 	sz=$((plugin-syspage))
