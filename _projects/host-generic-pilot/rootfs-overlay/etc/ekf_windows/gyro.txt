@@ -1,1 +1,1 @@
-../../../../armv7a9-zynq7000-pilot/rootfs-overlay/etc/ekf_windows/gyro.txt
+1.0
