@@ -14,4 +14,10 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
+/* Motors Configuration */
+#define PWM_MOTOR1 ""
+#define PWM_MOTOR2 ""
+#define PWM_MOTOR3 ""
+#define PWM_MOTOR4 ""
+
 #endif
