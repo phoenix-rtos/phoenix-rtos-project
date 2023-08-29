@@ -119,6 +119,9 @@ jobs:
         working-directory: _fs
         run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
       - name: Test runner
         id: runner
         uses: ./.github/actions/phoenix-runner
