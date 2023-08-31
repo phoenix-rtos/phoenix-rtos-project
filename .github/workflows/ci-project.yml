@@ -146,6 +146,7 @@ jobs:
           python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
 
       - name: Upload runner results
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.target }}

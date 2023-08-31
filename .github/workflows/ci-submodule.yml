@@ -129,6 +129,7 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Upload runner results
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.target }}
