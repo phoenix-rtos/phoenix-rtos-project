@@ -88,7 +88,7 @@ jobs:
 
   test-emu:
     needs: build
-    name: run tests on emulators
+    name: test EMU
     runs-on: ubuntu-latest
     outputs:
       runner_result: ${{ steps.runner.outcome }}
@@ -119,16 +119,27 @@ jobs:
         working-directory: _fs
         run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
       - name: Test runner
         id: runner
         uses: ./.github/actions/phoenix-runner
         with:
           target: ${{ matrix.target }}
 
+      - name: Upload runner results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+
   # runs on self-hosted runners with HW targets attached
   test-hw:
     needs: build
-    name: run tests on hardware
+    name: test HW
     runs-on: ${{ matrix.target }}
     outputs:
       runner_result: ${{ steps.runner.outcome }}
@@ -162,10 +173,61 @@ jobs:
       - name: Test runner
         id: runner
         run: |
-          python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} -Oresults.csv
+
+      - name: Upload runner results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+
+  tests-summary:
+    if: success() || failure()   # don't care about cancelled runs
+    needs: ['test-emu', 'test-hw']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        # FIXME: download-artifact don't support downloading artifacts by wildcard, download all artifacts for now
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Merge Test Results
+        run: |
+          pip3 install junitparser junit2html
+          junitparser merge artifacts/test-results-*/results.xml junit.xml
+          junit2html junit.xml junit.html
+
+      - name: Upload Merged Unit Test Results in HTML
+        uses: actions/upload-artifact@v3
+        with:
+          name: Merged Unit Test Results
+          if-no-files-found: ignore
+          path: |
+            junit.html
+            junit.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Unit Test Results
+          files: "junit.xml"
+
+
+  send-notification:
+    needs: ['build', 'test-emu', 'test-hw']
+    if: failure() && github.event_name != 'pull_request'
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
+    secrets: inherit
+
 
   mail-notification:
-    if: ${{ failure() }}
+    if: failure()
     needs: ['build', 'test-emu', 'test-hw']
     name: notify ci team using e-mail
     runs-on: ubuntu-latest
@@ -189,4 +251,3 @@ jobs:
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-

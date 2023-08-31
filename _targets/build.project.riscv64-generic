@@ -116,7 +116,7 @@ b_build_target() {
 		mkdir -p "$BBL_BUILD_DIR"
 		pushd "$BBL_BUILD_DIR" > /dev/null || exit 1
 			if [ ! -f "$BBL_BUILD_DIR/stamp.configured" ]; then
-				"$TOPDIR/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_BOOT/phoenix-kernel.img" --disable-fp-emulation
+				"$PREFIX_PROJECT/riscv/riscv-pk/configure" --host="${CROSS%?}" --with-payload="$PREFIX_BOOT/phoenix-kernel.img" --disable-fp-emulation
 				touch "$BBL_BUILD_DIR/stamp.configured"
 			fi
 
@@ -125,7 +125,7 @@ b_build_target() {
 
 		cp "$BBL_BUILD_DIR/bbl" "$PREFIX_BOOT/phoenix.bbl"
 	elif [ "$RISCV_LOADER" = "opensbi" ]; then
-		(cd "$TOPDIR/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix-kernel.img")
+		(cd "$PREFIX_PROJECT/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix-kernel.img")
 
 		cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix.osbi"
 	else
