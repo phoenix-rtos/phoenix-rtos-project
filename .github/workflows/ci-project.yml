@@ -85,7 +85,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Download build artifacts
         uses: actions/download-artifact@v3
@@ -118,7 +118,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Download build artifacts
         uses: actions/download-artifact@v3
@@ -135,7 +135,7 @@ jobs:
           python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }}
 
   mail-notification:
-    if: ${{ failure() }}
+    if: failure()
     needs: ['build', 'test-emu', 'test-hw']
     name: notify ci team using e-mail
     runs-on: ubuntu-latest
