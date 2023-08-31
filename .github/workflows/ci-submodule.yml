@@ -88,7 +88,7 @@ jobs:
 
   test-emu:
     needs: build
-    name: run tests on emulators
+    name: test EMU
     runs-on: ubuntu-latest
     outputs:
       runner_result: ${{ steps.runner.outcome }}
@@ -128,7 +128,7 @@ jobs:
   # runs on self-hosted runners with HW targets attached
   test-hw:
     needs: build
-    name: run tests on hardware
+    name: test HW
     runs-on: ${{ matrix.target }}
     outputs:
       runner_result: ${{ steps.runner.outcome }}
