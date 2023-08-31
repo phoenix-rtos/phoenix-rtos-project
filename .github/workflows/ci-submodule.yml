@@ -165,7 +165,7 @@ jobs:
           python3 ./phoenix-rtos-tests/runner.py -T${{ matrix.target }}
 
   mail-notification:
-    if: ${{ failure() }}
+    if: failure()
     needs: ['build', 'test-emu', 'test-hw']
     name: notify ci team using e-mail
     runs-on: ubuntu-latest
@@ -189,4 +189,3 @@ jobs:
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-
