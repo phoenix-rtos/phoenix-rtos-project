@@ -36,6 +36,8 @@ jobs:
             syspage: 'psh pc-ata uart16550'
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
+          - target: 'host-generic-pc'
+            additional_params: 'host'
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
