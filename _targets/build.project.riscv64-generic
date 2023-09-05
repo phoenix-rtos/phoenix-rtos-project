@@ -79,9 +79,9 @@ b_syspage_gen() {
 	uscript="$2"
 
 	fn="${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
-	start=$(${CROSS}readelf -s "$fn" | awk '/_start$/ { printf("0x%s", $2) }')
-	syspage=$(${CROSS}readelf -s "$fn" | awk '/syspage_data$/ { printf("0x%s", $2) }')
-	syspage_end=$(${CROSS}readelf -s "$fn" | awk '/syspage_data_end$/ { printf("0x%s", $2) }')
+	start=$(${CROSS}readelf -s "$fn" | awk '/[[:blank:]]_start$/ { printf("0x%s", $2) }')
+	syspage=$(${CROSS}readelf -s "$fn" | awk '/[[:blank:]]_syspage_data$/ { printf("0x%s", $2) }')
+	syspage_end=$(${CROSS}readelf -s "$fn" | awk '/[[:blank:]]_syspage_data_end$/ { printf("0x%s", $2) }')
 
 	addr=$((syspage-start))
 	sz=$((syspage_end-syspage))
