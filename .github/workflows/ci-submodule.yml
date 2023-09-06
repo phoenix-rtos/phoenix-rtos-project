@@ -13,7 +13,7 @@ on:
       build_params:
         type: string
         description: "parameters to build.sh script"
-        default: 'core fs test project image'  # by default don't build ports
+        default: 'host core fs test project image'  # by default don't build ports
         required: false
       nightly:
         type: boolean
@@ -35,8 +35,6 @@ jobs:
             syspage: 'psh pc-ata uart16550'
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
-          - target: 'host-generic-pc'
-            additional_params: 'host'
     steps:
       # step 1 : checkout submodule
       - name: Checkout submodule
