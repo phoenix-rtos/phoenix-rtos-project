@@ -27,6 +27,6 @@ exec qemu-system-riscv64 \
 	"$OPTIMG" "$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/phoenix.osbi" \
 	-serial stdio \
 	-device virtio-gpu-device \
-	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/phoenix.disk",cache=unsafe,if=none,id=vblk0 \
+	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/phoenix.disk",format=raw,cache=unsafe,if=none,id=vblk0 \
 	-device virtio-blk-device,drive=vblk0 \
 	-netdev user,id=net0 -device virtio-net-device,netdev=net0
