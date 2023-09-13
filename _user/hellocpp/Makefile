@@ -6,5 +6,6 @@
 
 NAME := hellocpp
 LOCAL_SRCS := main.cpp
+LOCAL_LDLIBS := -lstdc++
 
 include $(binary.mk)
