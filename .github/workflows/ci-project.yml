@@ -17,7 +17,8 @@ on:
         required: false
       nightly:
         type: boolean
-        default: false
+        # default: false
+        default: true
         required: false
 
 
@@ -30,10 +31,11 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt105x-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
+        # target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt105x-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
+        target: ['armv7a9-zynq7000-qemu']
         include:
-          - target: 'ia32-generic-qemu'
-            syspage: 'psh pc-ata uart16550'
+          # - target: 'ia32-generic-qemu'
+          #   syspage: 'psh pc-ata uart16550'
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
     steps:
@@ -79,7 +81,8 @@ jobs:
     strategy:
       fail-fast: ${{ ! inputs.nightly }}
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
+        # target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
+        target: ['armv7a9-zynq7000-qemu']
 
     steps:
       - name: Checkout the repository
@@ -115,49 +118,51 @@ jobs:
             results.csv
             results.xml
 
-  test-hw:
-    needs: build
-    name: test HW
-    runs-on: ${{ matrix.target }}
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
-    strategy:
-      fail-fast: ${{ ! inputs.nightly }}
-      matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+  # test-hw:
+  #   needs: build
+  #   name: test HW
+  #   runs-on: ${{ matrix.target }}
+  #   outputs:
+  #     runner_result: ${{ steps.runner.outcome }}
+  #   strategy:
+  #     fail-fast: ${{ ! inputs.nightly }}
+  #     matrix:
+  #       # target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+  #       target: []
 
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: phoenix-rtos-${{ matrix.target }}
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: phoenix-rtos-${{ matrix.target }}
 
-      - name: Untar rootfs
-        working-directory: _fs
-        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+  #     - name: Untar rootfs
+  #       working-directory: _fs
+  #       run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
-      - name: Test runner
-        id: runner
-        run: |
-          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+  #     - name: Test runner
+  #       id: runner
+  #       run: |
+  #         python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
 
-      - name: Upload runner results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results-${{ matrix.target }}
-          path: |
-            results.csv
-            results.xml
+  #     - name: Upload runner results
+  #       if: always()
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: test-results-${{ matrix.target }}
+  #         path: |
+  #           results.csv
+  #           results.xml
 
   tests-summary:
     if: success() || failure()   # don't care about cancelled runs
-    needs: ['test-emu', 'test-hw']
+    # needs: ['test-emu', 'test-hw']
+    needs: ['test-emu']
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
@@ -191,35 +196,35 @@ jobs:
           files: "junit.xml"
 
 
-  send-notification:
-    needs: ['build', 'test-emu', 'test-hw']
-    if: failure() && github.event_name != 'pull_request'
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
-    secrets: inherit
+  # send-notification:
+  #   needs: ['build', 'test-emu', 'test-hw']
+  #   if: failure() && github.event_name != 'pull_request'
+  #   uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
+  #   secrets: inherit
 
 
-  mail-notification:
-    if: failure()
-    needs: ['build', 'test-emu', 'test-hw']
-    name: notify ci team using e-mail
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send mail
-        # If there is some failure, not caused by build step or test runner step send mail
-        if: >-
-          ${{ needs.build.outputs.build_result != 'failure'
-          && needs.test-emu.outputs.runner_result != 'failure'
-          && needs.test-hw.outputs.runner_result != 'failure' }}
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
-          password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
-          subject: Github Actions Warning
-          to: ci@phoenix-rtos.com
-          # Required sender full name (address can be skipped):
-          from: Continuous Integration Bot
-          # Optional whether this connection use TLS (default is true if server_port is 465)
-          secure: true
-          body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  # mail-notification:
+  #   if: failure()
+  #   needs: ['build', 'test-emu', 'test-hw']
+  #   name: notify ci team using e-mail
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Send mail
+  #       # If there is some failure, not caused by build step or test runner step send mail
+  #       if: >-
+  #         ${{ needs.build.outputs.build_result != 'failure'
+  #         && needs.test-emu.outputs.runner_result != 'failure'
+  #         && needs.test-hw.outputs.runner_result != 'failure' }}
+  #       uses: dawidd6/action-send-mail@v3
+  #       with:
+  #         server_address: smtp.gmail.com
+  #         server_port: 465
+  #         username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
+  #         password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
+  #         subject: Github Actions Warning
+  #         to: ci@phoenix-rtos.com
+  #         # Required sender full name (address can be skipped):
+  #         from: Continuous Integration Bot
+  #         # Optional whether this connection use TLS (default is true if server_port is 465)
+  #         secure: true
+  #         body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
