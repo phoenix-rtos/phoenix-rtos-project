@@ -32,11 +32,11 @@ export PORTS_CURL=n
 #
 SIZE_PAGE=$((0x200))
 PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0xE000))
+KERNEL_OFFS=$((0xF000))
 
 BOOT_DEVICE="flash0"              # Default boot device
 NAME_USER_SCRIPT="user.plo"       # User script name
-OFFS_USER_SCRIPT=$((0xD000))
+OFFS_USER_SCRIPT=$((0xE000))
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
 
 PREINIT_SCRIPT=(
@@ -72,7 +72,8 @@ b_build_target() {
 
 	make -C plo all
 
-	./phoenix-rtos-build/scripts/gr716-convert.py -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+	./phoenix-rtos-build/scripts/gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	./phoenix-rtos-build/scripts/gr716-bch.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.bch"
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 }
 

@@ -32,7 +32,7 @@ jobs:
                                           "widgets": [
                                               {
                                                   "textParagraph": {
-                                                      "text": "Workflow '<b>${{ github.workflow }}</b>' <b><font color='#ff0000'>FAILED</font></b>"
+                                                      "text": "Workflow '\''<b>${{ github.workflow }}</b>'\'' <b><font color='\''#ff0000'\''>FAILED</font></b>"
                                                   }
                                               }
                                           ]

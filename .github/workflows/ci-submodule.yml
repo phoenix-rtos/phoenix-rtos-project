@@ -13,7 +13,7 @@ on:
       build_params:
         type: string
         description: "parameters to build.sh script"
-        default: 'core fs test project image'  # by default don't build ports
+        default: 'host core fs test project image'  # by default don't build ports
         required: false
       nightly:
         type: boolean
@@ -29,7 +29,7 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
+        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt105x-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike']
         include:
           - target: 'ia32-generic-qemu'
             syspage: 'psh pc-ata uart16550'
@@ -129,6 +129,7 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Upload runner results
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.target }}
@@ -176,6 +177,7 @@ jobs:
           python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} -Oresults.csv
 
       - name: Upload runner results
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.target }}
