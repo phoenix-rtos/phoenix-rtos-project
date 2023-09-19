@@ -9,8 +9,9 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 # bitstream is not used in qemu, FS_OFFS is changed from 0x800000 to 0x400000 to provide more memory for rootfs
-export FS_OFFS=$((0x400000))
-export FS_SZ=$((0xc00000))
+# export FS_OFFS=$((0x400000))
+# export FS_SZ=$((0xc00000 + 0x1000000))
+export FS_SZ=$((0x1000000))
 export FS_WRITE_CLEANMARKERS=y
 
 # No networking
@@ -27,7 +28,6 @@ PREINIT_SCRIPT=(
 	"phfs flash0 2.0 raw"
 	"console 0.1")
 
-
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
 	"wait 500"
@@ -35,10 +35,12 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2 ddr ddr"
+	# "app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:${FS_OFFS}:${FS_SZ}:jffs2 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):${FS_SZ}:jffs2;-p;/dev/mtd1:0x1800000:0x4e0000 ddr ddr"
 	"go!")
 
 
 b_image_project () {
+	truncate -s 33554432 "$PHOENIX_DISK"
 	b_log "The images have been built for the ${TARGET} platform"
 }
