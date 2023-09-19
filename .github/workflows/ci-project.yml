@@ -102,8 +102,8 @@ jobs:
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+      # - name: Setup upterm session
+      #   uses: lhotari/action-upterm@v1
 
       - name: Test runner
         id: runner
