@@ -226,30 +226,3 @@ jobs:
     if: failure() && github.event_name != 'pull_request'
     uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
     secrets: inherit
-
-
-  mail-notification:
-    if: failure()
-    needs: ['build', 'test-emu', 'test-hw']
-    name: notify ci team using e-mail
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send mail
-        # If there is some failure, not caused by build step or test runner step send mail
-        if: >-
-          ${{ needs.build.outputs.build_result != 'failure'
-          && needs.test-emu.outputs.runner_result != 'failure'
-          && needs.test-hw.outputs.runner_result != 'failure' }}
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.CI_BOT_EMAIL_USERNAME }}
-          password: ${{ secrets.CI_BOT_EMAIL_PASSWORD }}
-          subject: Github Actions Warning
-          to: ci@phoenix-rtos.com
-          # Required sender full name (address can be skipped):
-          from: Continuous Integration Bot
-          # Optional whether this connection use TLS (default is true if server_port is 465)
-          secure: true
-          body: There is some problem with GH Actions. https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
