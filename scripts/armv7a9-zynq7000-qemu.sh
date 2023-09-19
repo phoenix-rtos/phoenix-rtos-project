@@ -6,6 +6,16 @@
 # Author: Hubert Buczynski
 #
 
+# /home/badochov/phoenix-rtos-project/docker-devel.sh ./scripts/armv7a9-zynq7000-qemu-helper.sh
+
+#!/bin/bash
+#
+# Shell script for running phoenix-rtos loader on Qemu fork from Xilinx (zynq-7000)
+#
+# Copyright 2021 Phoenix Systems
+# Author: Hubert Buczynski
+#
+
 IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu/plo.img"
 IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu/phoenix.disk"
 DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000-zc702.dtb"
@@ -23,4 +33,5 @@ exec qemu-system-aarch64 \
 	-serial null \
 	-serial mon:stdio \
 	-device loader,file="$IMG_PLO_ZYNQ7000" \
-	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0
+	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0 \
+    -s -S
