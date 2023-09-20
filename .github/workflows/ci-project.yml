@@ -86,9 +86,8 @@ jobs:
         target: ['armv7a9-zynq7000-qemu']
 
     steps:
-      - name: Untar rootfs
-        working-directory: _fs
-        run: sudo apt install gdb-multiarch
+      - name: Install gdb
+        run: sudo apt update && sudo apt install gdb-multiarch
 
       - name: Checkout the repository
         uses: actions/checkout@v3
