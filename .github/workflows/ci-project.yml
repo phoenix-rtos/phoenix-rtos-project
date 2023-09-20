@@ -102,6 +102,10 @@ jobs:
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        # with:
+        #   detached: true
       # - name: Setup upterm session
       #   uses: lhotari/action-upterm@v1
 
