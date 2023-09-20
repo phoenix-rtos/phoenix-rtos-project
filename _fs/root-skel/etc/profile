@@ -21,4 +21,6 @@ case $- in *i*)
     export HISTSIZE=500
 
     cat /etc/logo
+
+    reboot
 esac

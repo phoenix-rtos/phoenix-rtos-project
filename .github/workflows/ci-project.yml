@@ -70,6 +70,7 @@ jobs:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
             _boot/${{ matrix.target }}
+            _build/${{ matrix.target }}
             rootfs-${{ matrix.target }}.tar
 
   test-emu:
@@ -85,6 +86,10 @@ jobs:
         target: ['armv7a9-zynq7000-qemu']
 
     steps:
+      - name: Untar rootfs
+        working-directory: _fs
+        run: sudo apt install gdb-multiarch
+
       - name: Checkout the repository
         uses: actions/checkout@v3
         with:
@@ -116,14 +121,14 @@ jobs:
           target: ${{ matrix.target }}
           nightly: ${{ inputs.nightly }}
 
-      - name: Upload runner results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results-${{ matrix.target }}
-          path: |
-            results.csv
-            results.xml
+      # - name: Upload runner results
+      #   if: always()
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: test-results-${{ matrix.target }}
+      #     path: |
+      #       results.csv
+      #       results.xml
 
   # test-hw:
   #   needs: build
