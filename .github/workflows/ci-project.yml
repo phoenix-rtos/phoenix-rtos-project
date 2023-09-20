@@ -70,7 +70,7 @@ jobs:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
             _boot/${{ matrix.target }}
-            _build/${{ matrix.target }}
+            _build/${{ matrix.target }}/prog
             rootfs-${{ matrix.target }}.tar
 
   test-emu:
