@@ -1,5 +1,5 @@
 :{}:
-# W /bin/bind devfs /dev
+W /bin/bind devfs /dev
 X /bin/posixsrv
 X /bin/reboot
 # T /dev/console
