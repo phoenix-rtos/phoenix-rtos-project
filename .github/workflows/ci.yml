@@ -13,5 +13,5 @@ on:
 
 jobs:
   call-ci:
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@badochov/zynq7000-qemu-test-branch
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@badochov/zynq7000-test-branch2
     secrets: inherit
