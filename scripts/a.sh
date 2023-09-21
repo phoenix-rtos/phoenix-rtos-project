@@ -23,5 +23,4 @@ exec qemu-system-aarch64 \
 	-serial null \
 	-serial mon:stdio \
 	-device loader,file="$IMG_PLO_ZYNQ7000" \
-	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0 \
-    # -s -S
+	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0
