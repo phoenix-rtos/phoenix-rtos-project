@@ -1,6 +1,6 @@
 :{}:
 W /bin/bind devfs /dev
 X /bin/posixsrv
-X /bin/reboot
-# T /dev/console
-# X /linuxrc
+# X /bin/reboot
+T /dev/console
+X /linuxrc

@@ -22,5 +22,5 @@ case $- in *i*)
 
     cat /etc/logo
 
-    reboot
+    # reboot
 esac
