@@ -20,7 +20,7 @@ inputs:
 # action runner
 runs:
     using: 'docker'
-    image: 'phoenixrtos/devel'
+    image: 'maska989/devel:amd64'
     entrypoint: ./phoenix-rtos-tests/runner.py
     args:
       - '-v' # output SKIP subresults at a top level
