@@ -14,6 +14,7 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
+#define SYSCLK_FREQ (50 * 1000 * 1000) /* MHz */
 
 #define UART_MAX_CNT 6
 
