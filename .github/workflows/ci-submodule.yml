@@ -94,7 +94,7 @@ jobs:
       runner_result: ${{ steps.runner.outcome }}
     strategy:
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
+        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu']
 
     steps:
       - name: Checkout phoenix-rtos-project
