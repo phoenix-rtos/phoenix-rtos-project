@@ -66,5 +66,7 @@
 #define GPIO_DIR_IN  0
 #define GPIO_DIR_OUT 1
 
+/* Signals configuration */
+#define SIGNALS_DISABLE 0
 
 #endif

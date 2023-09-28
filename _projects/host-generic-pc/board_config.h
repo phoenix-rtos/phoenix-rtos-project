@@ -14,4 +14,7 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
+/* Signals configuration */
+#define SIGNALS_DISABLE 0
+
 #endif

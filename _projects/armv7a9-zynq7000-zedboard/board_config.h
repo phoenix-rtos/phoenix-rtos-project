@@ -158,4 +158,7 @@
 #define GPIO1_20 -1
 #define GPIO1_21 -1
 
+/* Signals configuration */
+#define SIGNALS_DISABLE 0
+
 #endif

@@ -17,4 +17,7 @@
 #define UART1        1
 #define UART_CONSOLE 1
 
+/* Signals configuration */
+#define SIGNALS_DISABLE 0
+
 #endif

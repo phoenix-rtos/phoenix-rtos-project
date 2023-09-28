@@ -21,4 +21,7 @@
 /* SPIKE-TTY configuration */
 #define SPIKETTY_CONSOLE_USER 0
 
+/* Signals configuration */
+#define SIGNALS_DISABLE 0
+
 #endif

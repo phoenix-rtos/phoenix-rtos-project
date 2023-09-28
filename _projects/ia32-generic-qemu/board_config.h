@@ -18,4 +18,7 @@
 #define UART16550_CONSOLE_USER  0
 #define UART16550_BAUDRATE      115200
 
+/* Signals configuration */
+#define SIGNALS_DISABLE 0
+
 #endif
