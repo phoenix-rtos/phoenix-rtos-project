@@ -84,10 +84,11 @@ jobs:
       matrix:
         # target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu']
         target: ['armv7a9-zynq7000-qemu']
+        iteration: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16']
 
     steps:
-      - name: Install gdb
-        run: sudo apt update && sudo apt install gdb-multiarch
+      # - name: Install gdb
+      #   run: sudo apt update && sudo apt install gdb-multiarch
 
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -119,6 +120,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           nightly: ${{ inputs.nightly }}
+          iteration: ${{ matrix.iteration }}
 
       # - name: Upload runner results
       #   if: always()
