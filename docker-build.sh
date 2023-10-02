@@ -20,8 +20,16 @@ else
 
     # FOR NOW: run build as root to be able to overwrite files installed in toolchain
     docker run -it --rm -v "$(pwd):/src:delegated" -w /src "${TMPFS_OVERLAY[@]}" -e TARGET -e SYSPAGE -e CONSOLE -e LONG_TEST "$DOCKER_IMG_NAME" "$@"
+    BUILD_RET=$?
 
     # FIX file ownership in "_build"
     docker run -it --rm -v "$(pwd):/src:delegated" -w /src "${TMPFS_OVERLAY[@]}" --entrypoint bash "$DOCKER_IMG_NAME" -c "chown -R \"$DOCKER_USER\" _build/ _fs/$TARGET _boot"
+    OWNERSHIP_RET=$?
+
+    if [ $BUILD_RET -ne 0 ]; then
+        exit $BUILD_RET
+    elif [ $OWNERSHIP_RET -ne 0 ]; then
+        exit $OWNERSHIP_RET
+    fi
 fi
 
