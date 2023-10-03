@@ -1,0 +1,14 @@
+name: nightly
+
+on:
+  schedule:
+    # triggered every day at 1:00 UTC
+    - cron: '0 1 * * *'
+
+jobs:
+  call-ci:
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@master
+    with:
+      build_params: all tests
+      nightly: true
+    secrets: inherit

@@ -3,11 +3,10 @@
 . /etc/rc.subr
 
 DEFCONF=/etc/rc.conf.d/network
-CONF=/local/etc/rc.conf.d/network
+CONF=/etc/rc.conf.d/network
 
-ROUTES=/var/run/routes
+ROUTES=/var/routes
 RET=0
-
 
 # Function evaluates network variable
 network_var() {

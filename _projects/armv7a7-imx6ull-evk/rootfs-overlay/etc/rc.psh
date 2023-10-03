@@ -1,0 +1,7 @@
+:{}:
+W /bin/bind devfs /dev
+X /sbin/imx6ull-gpio
+W /sbin/dummyfs -m /var -D
+X /sbin/lwip enet:0x02188000:150:PHY:0.2:irq:-5:/dev/gpio5 enet:0x020b4000:152:no-mdio:PHY:0.1:irq:-6:/dev/gpio5
+X /bin/posixsrv
+X /bin/psh

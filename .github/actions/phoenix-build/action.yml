@@ -25,6 +25,10 @@ inputs:
     description: 'Custom phoenix-rtos-project buildroot (relative path)'
     default: ''
     required: false
+  nightly:
+    description: 'Build additional tests'
+    default: false
+    required: false
 
 # action runner
 runs:
@@ -32,9 +36,11 @@ runs:
   image: 'phoenixrtos/build'
   env:
     CONSOLE: 'serial'
+    DEBUG: '1'
     TARGET: ${{ inputs.target }}
     SYSPAGE: ${{ inputs.syspage }}
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
+    LONG_TEST: ${{ inputs.nightly == 'true' && 'y' || 'n' }}
   args:
     - ${{ inputs.params }}  # note: params will be split by build.sh internally
 

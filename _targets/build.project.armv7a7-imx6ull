@@ -2,8 +2,8 @@
 #
 # Shell script for building armv7a7-imx6ull project
 #
-# Copyright 2018, 2019, 2020, 2021 Phoenix Systems
-# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski, Maciej Purski
+# Copyright 2018, 2019, 2020, 2021, 2023 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski, Maciej Purski, Hubert Badocha
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
@@ -46,6 +46,10 @@ NAME_USER_SCRIPT="user.plo"       # User script name
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
 OFFS_USER_SCRIPT=$((0x0))         # Disk image user script offset (in bytes)
 OFFS_ROOTFS=$((0x1000))           # Disk image rootfs offset (in 512 byte sectors)
+ERASE_SIZE=$((64 * 4096))         # Rootfs disk erase block size (in bytes)
+SECTOR_SIZE=$((4096))             # Rootfs write sector size (in bytes)
+CLEANMARKER_SIZE=$((0))           # JFFS2 cleanmarker size (in bytes)
+
 
 
 # Pre-init script is launched before user script
@@ -103,9 +107,10 @@ b_syspage_gen() {
 	img="$1"
 	uscript="$2"
 
-	vectors=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "init_vectors" | awk '{ printf("0x%s", $2) }')
-	syspage=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "syspage_data" | awk '{ printf("0x%s", $2) }')
-	plugin=$(readelf -s "${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" | grep "plugin_ivt" | awk '{ printf("0x%s", $2) }')
+	fn="${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+	vectors=$(${CROSS}readelf -s "$fn" | awk '/init_vectors/ { printf("0x%s", $2) }')
+	syspage=$(${CROSS}readelf -s "$fn" | awk '/syspage_data/ { printf("0x%s", $2) }')
+	plugin=$(${CROSS}readelf -s "$fn" | awk '/plugin_ivt/ { printf("0x%s", $2) }')
 
 	addr=$((syspage-vectors))
 	sz=$((plugin-syspage))
@@ -116,6 +121,12 @@ b_syspage_gen() {
 		-p "$PLO_SCRIPT_DIR/script.plo" \
 		-u "$uscript" \
 		-i "$img"
+}
+
+
+# Defined as a function instead of a constant as $PREFIX_BOOT is not set at top level.
+b_rootfs_path_get_target() {
+	echo "$PREFIX_BOOT/rootfs.jffs2"
 }
 
 
@@ -153,10 +164,18 @@ b_image_target() {
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
 	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
-	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
-	mkfs.jffs2 -U -m none -e $((64*4096)) -s 4096 -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
-	if sumtool -e $((64*4096)) -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
+	ROOTFS=$(b_rootfs_path_get_target)
+
+	if [ $CLEANMARKER_SIZE -eq 0 ]; then
+		CLEANMARKER_ARG=("-n")
+	else
+		CLEANMARKER_ARG=("-c" "$CLEANMARKER_SIZE")
+	fi
+
+	mkfs.jffs2 -U "${CLEANMARKER_ARG[@]}" -l -m none -e $ERASE_SIZE -s $SECTOR_SIZE -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
+
+	if sumtool "${CLEANMARKER_ARG[@]}" -e $ERASE_SIZE -l -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
 		echo "JFFS2 Summary nodes created"
 		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi

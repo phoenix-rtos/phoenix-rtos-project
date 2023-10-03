@@ -3,3 +3,4 @@ _fs/*
 _build/*
 _boot/*
 .DS_Store
+.vscode/*

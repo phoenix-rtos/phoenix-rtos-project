@@ -11,5 +11,5 @@ exec qemu-system-i386 \
 	-smp 1 \
 	-serial stdio \
 	-vga cirrus \
-	-hda "$(dirname "${BASH_SOURCE[0]}")/../_boot/ia32-generic-qemu/phoenix.disk" \
+	-drive "file=$(dirname "${BASH_SOURCE[0]}")/../_boot/ia32-generic-qemu/phoenix.disk,format=raw,media=disk,index=0" \
 	-netdev bridge,br=virbr0,id=net0 -device rtl8139,netdev=net0,id=nic0,addr=03.0

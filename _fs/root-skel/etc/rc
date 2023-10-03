@@ -4,6 +4,11 @@
 
 export PATH=/bin:/usr/bin
 
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+RESET="\033[0m"
+
 # Mount RAM disks
 mkdir -p /var/log /var/run /var/cfg /var/cfg-req /var/tmp /var/login /var/users-req
 
@@ -40,3 +45,28 @@ fi
 if [ -f /etc/rc.local ]; then
 	/etc/rc.local
 fi
+
+run_scripts () {
+    for file in /etc/rc.d/* ; do
+        feedback_message="SUCCESS" ; color=$GREEN
+        exec_time="0.00"
+        printf "%-63s [ $YELLOW%8s$RESET ]\n" "$(basename "$file")" "starting"
+
+        # we test if the script has execution right
+        if [ ! -x "$file" ]; then
+            feedback_message="not exec" ; color=$RED
+        else
+            # run the script
+            start=$(date +%s.%N)
+            if ! "$file"; then
+                feedback_message="FAIL" ; color=$RED
+            fi
+            end=$(date +%s.%N)
+            exec_time=$(echo "$start" "$end" | awk '{print $2-$1}')
+        fi
+
+        printf "%-63s [ $color%8s$RESET ] ( %6.3fs )\n" "$(basename "$file")" "$feedback_message" "$exec_time"
+    done
+}
+
+run_scripts;

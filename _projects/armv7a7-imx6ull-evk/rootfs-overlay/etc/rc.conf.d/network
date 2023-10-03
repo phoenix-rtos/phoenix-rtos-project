@@ -1,0 +1,16 @@
+#
+# Network configuration
+#
+
+network_interfaces="en1 en2"
+
+network_en1_enabled="1"
+network_en1_mode="static"
+network_en1_ip="192.168.122.10"
+network_en1_mask="255.255.255.0"
+network_en1_gateway="192.168.122.0"
+network_en1_metric="0"
+
+network_en2_enabled="1"
+network_en2_mode="dhcp"
+network_en2_metric="0"

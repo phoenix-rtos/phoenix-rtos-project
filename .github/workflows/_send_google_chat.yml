@@ -1,0 +1,87 @@
+# vim:sw=2:ts=2
+# reusable workflow for sending google chat messages notifying about build failures
+name: send-notif
+
+# on events
+on:
+  workflow_call:
+
+jobs:
+  send-notif:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Debug details
+      run: |
+          echo "Workflow name: ${{ github.workflow }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Repo: ${{ github.repository	}}"
+          echo "Repo URL: ${{ github.repositoryUrl }}"
+          echo "Repo URL: ${{ github.server_url }}/${{ github.repository }}"
+          echo "Actions URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+    - name: Send Google Chat Notification
+      run: |
+          curl --location --request POST '${{ secrets.GOOGLE_CHAT_CI_WEBHOOK }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+                          "cards": [
+                              {
+                                  "sections": [
+                                      {
+                                          "widgets": [
+                                              {
+                                                  "textParagraph": {
+                                                      "text": "Workflow '\''<b>${{ github.workflow }}</b>'\'' <b><font color='\''#ff0000'\''>FAILED</font></b>"
+                                                  }
+                                              }
+                                          ]
+                                      },
+                                      {
+                                          "widgets": [
+                                              {
+                                                  "keyValue": {
+                                                      "topLabel": "Repo",
+                                                      "content": "${{ github.repository }}",
+                                                      "iconUrl": "https://git-scm.com/images/logos/logomark-black@2x.png",
+                                                      "button": {
+                                                          "textButton": {
+                                                              "text": "OPEN",
+                                                              "onClick": {
+                                                                  "openLink": {
+                                                                      "url": "${{ github.server_url }}/${{ github.repository }}"
+                                                                  }
+                                                              }
+                                                          }
+                                                      }
+                                                  }
+                                              },
+                                              {
+                                                  "keyValue": {
+                                                      "topLabel": "Event",
+                                                      "icon": "TICKET",
+                                                      "content": "${{ github.event_name }}"
+                                                  }
+                                              },
+                                              {
+                                                  "buttons": [
+                                                      {
+                                                          "textButton": {
+                                                              "text": "OPEN FAILED RUN",
+                                                              "onClick": {
+                                                                  "openLink": {
+                                                                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                                                                  }
+                                                              }
+                                                          }
+                                                      }
+                                                  ]
+                                              }
+                                          ]
+                                      }
+                                  ]
+                              }
+                          ]
+                      }'
+
+

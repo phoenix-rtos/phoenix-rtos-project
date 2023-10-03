@@ -11,15 +11,25 @@ inputs:
     default: 'ia32-generic-qemu'
     required: false
 
+  nightly:
+    description: 'Run nightly mode'
+    default: false
+    required: false
+
 
 # action runner
 runs:
-  using: 'docker'
-  image: 'phoenixrtos/devel'
-  entrypoint: ./phoenix-rtos-tests/runner.py
-  args:
-    - '-T${{ inputs.target }}'
-
+    using: 'docker'
+    image: 'phoenixrtos/devel'
+    entrypoint: ./phoenix-rtos-tests/runner.py
+    args:
+      - '-v' # output SKIP subresults at a top level
+      - '-T${{ inputs.target }}'
+      # HACK: We can't pass an empty argument to the runner due to strict arg parsing.
+      # Additionally, there is no conditional arg in github actions. If this is not a nightly run
+      # then repeating the target flag is acceptable, the runner is OK with that.
+      - ${{ inputs.nightly == 'true' && '--nightly' || format('-T{0}', inputs.target) }}
+      - '-Oresults.csv'
 
 # branding
 branding:

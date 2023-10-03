@@ -1,0 +1,93 @@
+#!/bin/bash
+#
+# Shell script for building sparcv8leon3-gr716 project
+#
+# Copyright 2022 Phoenix Systems
+# Author: Lukasz Leczkowski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=sparc-phoenix-
+
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+
+#
+# Platform dependent parameters
+#
+SIZE_PAGE=$((0x200))
+PAGE_MASK=$((~(SIZE_PAGE - 1)))
+KERNEL_OFFS=$((0xF000))
+
+BOOT_DEVICE="flash0"              # Default boot device
+NAME_USER_SCRIPT="user.plo"       # User script name
+OFFS_USER_SCRIPT=$((0xE000))
+MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+
+PREINIT_SCRIPT=(
+	"map dram 0x30000000 0x3000FFFF rw"
+	"map iram 0x31000000 0x3101FFFF rx"
+	"map extram 0x40000000 0x401FFFFF rwx"
+	"phfs uart3 0.3 phoenixd"
+	"phfs flash0 2.0 raw"
+	"console 0.2"
+)
+
+USER_SCRIPT=(
+	"kernel ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs extram extram"
+	"app ${BOOT_DEVICE} -x gr716-multi extram extram"
+	"app ${BOOT_DEVICE} -x psh extram extram"
+	"app ${BOOT_DEVICE} -x gr716-flash extram extram"
+	"wait 2000"
+	"go!"
+)
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+	b_log "Building phoenix-rtos-loader"
+
+	b_mkscript_preinit
+
+	make -C plo all
+
+	./phoenix-rtos-build/scripts/gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	./phoenix-rtos-build/scripts/gr716-bch.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.bch"
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+}
+
+
+
+b_image_target() {
+	b_mkscript_user "${USER_SCRIPT[@]}"
+	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
+
+	b_prod_image
+}
+
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}

@@ -70,10 +70,11 @@ b_mkscript_user() {
 
 				kernelimg)
 					printf "alias %s 0x%x 0x%x\n" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
-					tbeg=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $3 }')
-					tsz=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "R E" | awk '{ print $6 }')
-					dbeg=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $3 }')
-					dsz=$(readelf -l "${PREFIX_PROG_STRIPPED}$KERNEL_ELF" | grep "RW" | awk '{ print $6 }')
+					fn="${PREFIX_PROG_STRIPPED}$KERNEL_ELF"
+					tbeg=$(${CROSS}readelf -l "$fn" | awk '/R E/ { print $3 }')
+					tsz=$(${CROSS}readelf -l "$fn" | awk '/R E/ { print $6 }')
+					dbeg=$(${CROSS}readelf -l "$fn" | awk '/RW/ { print $3 }')
+					dsz=$(${CROSS}readelf -l "$fn" | awk '/RW/ { print $6 }')
 					tsz=$(((tsz + SIZE_PAGE - 1) & PAGE_MASK))
 					dsz=$(((dsz + SIZE_PAGE - 1) & PAGE_MASK))
 					printf "%s %s %x %x %x %x\n" "$cmd" "${KERNEL_FILE}" $((tbeg)) $((tsz)) $((dbeg)) $((dsz));;
@@ -126,17 +127,54 @@ b_mkscript_preinit() {
 
 
 # Function gets the following arguments:
+# - $1 - path to image file
+# - $2 - pad size
+# When variable IMAGE_PAD_FF is set to "y" parts of the images get padded with 0xff.
+b_pad()
+{
+	if [ "$2" -ne 0 ]; then
+		if [ "$IMAGE_PAD_FF" = 'y' ]; then
+			dd if=/dev/zero bs="$2" count=1 2>/dev/null | tr "\000" "\377" > padding.img
+			dd if="$1" of=padding.img conv=notrunc 2>/dev/null
+			mv padding.img "$1"
+		else
+			truncate -s "$2" "$1"
+		fi
+	fi
+}
+
+
+# Function gets the following arguments:
 # - $1 - path to file which should be added to image
 # - $2 - path to image file
+# When variable IMAGE_PAD_FF is set to "y" parts of the images get padded with 0xff.
 b_add2img() {
 	# Function needs external variables to be defined in a project file:
 	: "${OFFSET:?variable unset}"    # starting file's position in the image
 	: "${SIZE_PAGE:?variable unset}"
 	: "${PAGE_MASK:?variable unset}"
 
-	printf "Copying %s (offs=%dB)\n" "$1" "$OFFSET"
-	dd if="$1" of="$2" bs=1 seek="$OFFSET" conv=notrunc 2>/dev/null
-	sz=$((($(wc -c < "$1") + SIZE_PAGE - 1) & PAGE_MASK))
+	if [ "$IMAGE_PAD_FF" = "y" ]; then
+		dd_pad_str=", pad=0xff"
+	else
+		dd_pad_str=""
+	fi
+
+	sz=$(wc -c < "$1")
+
+	printf "Copying %-100s (size=0x%06xB, offs=0x%08x%s) to %s\n" "$1" "$sz" "$OFFSET" "$dd_pad_str" "$(basename "$2")"
+
+	touch "$2"
+	if [ "$OFFSET" -ge "$(wc -c < "$2")" ]; then
+		# Fill the space between parts of the image with 0xff.
+		b_pad "$2" "$OFFSET"
+		cat "$1" >> "$2"
+	else
+		# Writing in the middle of the image. Have to use slower dd.
+		dd if="$1" of="$2" bs=1 seek="$OFFSET" conv=notrunc 2>/dev/null
+	fi
+
+	sz=$(((sz + SIZE_PAGE - 1) & PAGE_MASK))
 	OFFSET=$((OFFSET + sz))
 }
 
@@ -175,7 +213,7 @@ b_prod_image() {
 	done
 
 	# System image (without plo)
-	dd if="$PHOENIX_DISK" of="$PHOENIX_IMG" bs=1 skip="$OFFS_USER_SCRIPT" 2>/dev/null
+	tail -c +$((OFFS_USER_SCRIPT + 1)) "$PHOENIX_DISK" > "$PHOENIX_IMG"
 }
 
 
@@ -226,8 +264,8 @@ b_dev_image() {
 	OFFSET="$OFFS_USER_SCRIPT"
 	b_add2img "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "$PLO_DEV_IMG"
 
-	dd if=/dev/zero of="$PLO_DEV_IMG" bs=1 seek="$OFFSET" count=$((KERNEL_OFFS - OFFS_USER_SCRIPT)) 2>/dev/null
-
+	# Size passed to preinit script is padded to KERNEL_OFFS
+	b_pad "$PLO_DEV_IMG" "$KERNEL_OFFS"
 
 	# Dev user script
 	OFFSET=0

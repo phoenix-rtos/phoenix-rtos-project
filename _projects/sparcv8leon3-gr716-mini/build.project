@@ -1,15 +1,13 @@
 #!/bin/bash
 #
-# Shell script for building armv7m7-imxrt105x-evk project
+# Shell script for building sparcv8leon3-gr716-mini project
 #
 # Copyright 2022 Phoenix Systems
-# Author: Lukasz Kosinski
+# Author: Lukasz Leczkowski
 #
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-: "${WATCHDOG:=0}"
-export WATCHDOG
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
