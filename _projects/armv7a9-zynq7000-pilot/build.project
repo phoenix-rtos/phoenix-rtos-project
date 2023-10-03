@@ -13,6 +13,8 @@ export FS_WRITE_CLEANMARKERS=y
 
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
+export DEVICE_SENSORS="imu/mpu6000 mag/lis2mdl baro/ms5611 gps/ubx " # FIXME: move to board_config.h
+
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
