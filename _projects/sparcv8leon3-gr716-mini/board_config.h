@@ -66,5 +66,7 @@
 #define GPIO_DIR_IN  0
 #define GPIO_DIR_OUT 1
 
+#define PSEUDODEV 1
+
 
 #endif

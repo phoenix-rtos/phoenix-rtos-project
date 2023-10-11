@@ -17,4 +17,6 @@
 #define UART1        1
 #define UART_CONSOLE 1
 
+#define PSEUDODEV 1
+
 #endif
