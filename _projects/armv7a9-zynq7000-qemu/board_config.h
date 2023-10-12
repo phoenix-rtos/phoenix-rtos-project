@@ -99,6 +99,16 @@
 #define QSPI_CLK  6
 #define QSPI_FCLK 8
 
+/* SD card configuration */
+#define SD_CARD_CLK -1
+#define SD_CARD_CMD -1
+#define SD_CARD_D0  -1
+#define SD_CARD_D1  -1
+#define SD_CARD_D2  -1
+#define SD_CARD_D3  -1
+#define SD_CARD_CD  -1
+#define SD_CARD_WP  -1
+
 /* GPIO bank 0 configuration */
 #define GPIO0_0  -1
 #define GPIO0_1  -1
