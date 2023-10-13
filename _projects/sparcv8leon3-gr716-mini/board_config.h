@@ -34,13 +34,6 @@
 #define UART4_IRQ 6
 #define UART5_IRQ 7
 
-#define UART0_IRQ_LINE 24
-#define UART1_IRQ_LINE 25
-#define UART2_IRQ_LINE 42
-#define UART3_IRQ_LINE 44
-#define UART4_IRQ_LINE 45
-#define UART5_IRQ_LINE 46
-
 #define UART0_TX 2
 #define UART0_RX 3
 
@@ -59,6 +52,13 @@
 #define UART5_TX 43
 #define UART5_RX 44
 
+#define UART0_ACTIVE 0
+#define UART1_ACTIVE 0
+#define UART2_ACTIVE 1
+#define UART3_ACTIVE 1
+#define UART4_ACTIVE 0
+#define UART5_ACTIVE 0
+
 #define UART_CONSOLE_PLO    2
 #define UART_CONSOLE_KERNEL 2
 #define UART_CONSOLE_USER   2
@@ -67,6 +67,8 @@
 #define GPIO_DIR_OUT 1
 
 #define PSEUDODEV 1
-
+#define MULTI_SPI
+#define MULTI_GPIO
+#define MULTI_ADC
 
 #endif
