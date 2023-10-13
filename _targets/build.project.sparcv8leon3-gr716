@@ -72,8 +72,8 @@ b_build_target() {
 
 	make -C plo all
 
-	./phoenix-rtos-build/scripts/gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
-	./phoenix-rtos-build/scripts/gr716-bch.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.bch"
+	declare -F b_convert_project >/dev/null && b_convert_project
+
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 }
 

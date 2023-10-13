@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Shell script for building sparcv8leon3-gr716-mimas project
+#
+# Copyright 2023 Phoenix Systems
+# Author: Lukasz Leczkowski
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+BOOT_DEVICE="uart2"
+
+PREINIT_SCRIPT=(
+	"map ocram 0x31000000 0x3101FFFF rwx"
+	"map extram 0x40000000 0x401FFFFF rwx"
+	"phfs uart2 0.2 phoenixd"
+	"console 0.3"
+)
+
+
+USER_SCRIPT=(
+	"kernel ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs extram extram"
+	"app ${BOOT_DEVICE} -x gr716-multi extram extram"
+	"app ${BOOT_DEVICE} -x psh extram extram"
+	"wait 2000"
+	"go!"
+)
+
+
+b_convert_project() {
+	local f="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	local sz=$(stat -c%s "$f")
+	sz=$(((sz - 4)/4))
+	printf "\xde\xad\xbe\xef" > "$PREFIX_BOOT/plo.img"
+	printf "%08X" $sz | xxd -r -p >> "$PREFIX_BOOT/plo.img"
+	printf "\x40\x10\x00\x00" >> "$PREFIX_BOOT/plo.img"
+	cat "$f" >> "$PREFIX_BOOT/plo.img"
+}
+
+
+b_image_project () {
+	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
+	cp "${PREFIX_PROG_STRIPPED}dummyfs" "$PREFIX_BOOT/"
+	cp "${PREFIX_PROG_STRIPPED}gr716-multi" "$PREFIX_BOOT/"
+	cp "${PREFIX_PROG_STRIPPED}psh" "$PREFIX_BOOT/"
+
+	b_log "The images have been built for the ${TARGET} platform"
+}

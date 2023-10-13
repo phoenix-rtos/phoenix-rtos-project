@@ -1,9 +1,9 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for sparcv8leon3-gr716-mini
+ * Board config for sparcv8leon3-gr716-mimas
  *
- * Copyright 2022 Phoenix Systems
+ * Copyright 2023 Phoenix Systems
  * Author: Lukasz Leczkowski
  *
  * This file is part of Phoenix-RTOS.
@@ -14,7 +14,7 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
-#define SYSCLK_FREQ (50 * 1000 * 1000) /* MHz */
+#define SYSCLK_FREQ (100 * 1000 * 1000) /* MHz */
 
 #define UART_MAX_CNT 6
 
@@ -59,17 +59,15 @@
 #define UART4_ACTIVE 0
 #define UART5_ACTIVE 0
 
-#define UART_CONSOLE_PLO    2
-#define UART_CONSOLE_KERNEL 2
-#define UART_CONSOLE_USER   2
+#define UART_CONSOLE_PLO    3
+#define UART_CONSOLE_KERNEL 3
+#define UART_CONSOLE_USER   3
 
 #define GPIO_DIR_IN  0
 #define GPIO_DIR_OUT 1
 
 #define PSEUDODEV 1
-#define MULTI_SPI
-#define MULTI_GPIO
-#define MULTI_ADC
+
 
 /* Interrupts */
 
