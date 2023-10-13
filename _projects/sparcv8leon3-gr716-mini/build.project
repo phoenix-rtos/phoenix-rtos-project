@@ -9,6 +9,12 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 
+b_convert_project() {
+	./phoenix-rtos-build/scripts/gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	./phoenix-rtos-build/scripts/gr716-bch.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.bch"
+}
+
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
