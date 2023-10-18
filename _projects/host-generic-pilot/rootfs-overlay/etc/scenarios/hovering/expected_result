@@ -1,0 +1,26 @@
+@EXP_EKF_STATUS
+attitude_a = 1
+attitude_i = 0
+attitude_j = 0
+attitude_k = 0
+attitude_eps = 0.2
+
+gyro_bias_x = 0
+gyro_bias_y = 0
+gyro_bias_z = 0
+gyro_bias_eps = 0.5
+
+velocity_x = 0
+velocity_y = 0
+velocity_z = 0
+velocity_eps = 0.5
+
+accel_bias_x = 0
+accel_bias_y = 0
+accel_bias_z = 0
+accel_bias_eps = 0.5
+
+position_x = 0
+position_y = 0
+position_z = 0
+position_eps = 1
