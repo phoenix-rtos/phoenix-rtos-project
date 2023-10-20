@@ -16,5 +16,6 @@
 
 #define TTY2         1
 #define UART_CONSOLE 2
+#define TTY2_DMA     1
 
 #endif
