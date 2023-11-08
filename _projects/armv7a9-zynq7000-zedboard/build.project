@@ -24,10 +24,10 @@ PREINIT_SCRIPT=(
 	"map ddr 0x130000 0x900000 rwx"
 	"map ocram1 0x00000000 0x00030000 rwx"
 	"phfs usb0 1.2 phoenixd"
-	"phfs uart0 0.0 phoenixd"
+	"phfs uart0 0.0 raw"
 	"phfs uart1 0.1 raw"
 	"phfs flash0 2.0 raw"
-	"console 0.1")
+	"console 0.0")
 
 
 # Production user script contains applications to run Phoenix-RTOS
@@ -35,7 +35,7 @@ USER_SCRIPT=(
 	"wait 500"
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-uart;-n;0 ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd1:$((FS_OFFS-0x20000)):${FS_SZ}:jffs2;-p;/dev/mtd1:0x1800000:0x4e0000 ddr ddr"
 	"go!")
