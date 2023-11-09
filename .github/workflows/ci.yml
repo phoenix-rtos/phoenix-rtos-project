@@ -13,5 +13,5 @@ on:
 
 jobs:
   call-ci:
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@master
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@mateusz-bloch/test
     secrets: inherit

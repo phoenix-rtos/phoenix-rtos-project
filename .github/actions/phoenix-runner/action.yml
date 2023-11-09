@@ -21,8 +21,8 @@ inputs:
 runs:
     using: 'docker'
     image: 'phoenixrtos/devel'
-    entrypoint: ./phoenix-rtos-tests/runner.py
     args:
+      - './phoenix-rtos-tests/runner.py'
       - '-v' # output SKIP subresults at a top level
       - '-T${{ inputs.target }}'
       # HACK: We can't pass an empty argument to the runner due to strict arg parsing.
