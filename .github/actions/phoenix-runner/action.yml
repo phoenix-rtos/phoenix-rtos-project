@@ -20,9 +20,10 @@ inputs:
 # action runner
 runs:
     using: 'docker'
-    image: 'phoenixrtos/devel'
+    image: 'maska989/devel:amd64'
+    entrypoint: '/usr/bin/entrypoint.sh'
     args:
-      - './phoenix-rtos-tests/runner.py'
+      - ' && ./phoenix-rtos-tests/runner.py'
       - '-v' # output SKIP subresults at a top level
       - '-T${{ inputs.target }}'
       # HACK: We can't pass an empty argument to the runner due to strict arg parsing.
