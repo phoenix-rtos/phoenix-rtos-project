@@ -42,7 +42,7 @@ runs:
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
     LONG_TEST: ${{ inputs.nightly == 'true' && 'y' || 'n' }}
   args:
-    - ${{ inputs.params }}  # note: params will be split by build.sh internally
+    - ${{ inputs.params }} ports # note: params will be split by build.sh internally
 
 # branding
 branding:
