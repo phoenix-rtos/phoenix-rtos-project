@@ -8,7 +8,7 @@ description: 'Runs Phoenix-RTOS tests'
 inputs:
   target:
     description: 'Specifies target to run tests'
-    default: 'ia32-generic-qemu'
+    default: 'armv7a7-imx6ull-evk'
     required: false
 
   nightly:
@@ -20,7 +20,7 @@ inputs:
 # action runner
 runs:
     using: 'docker'
-    image: 'phoenixrtos/devel'
+    image: 'maska989/devel:amd64'
     entrypoint: ./phoenix-rtos-tests/runner.py
     args:
       - '-v' # output SKIP subresults at a top level

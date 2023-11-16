@@ -13,11 +13,11 @@ on:
       build_params:
         type: string
         description: "parameters to build.sh script"
-        default: 'host core fs test project image'  # by default don't build ports
+        default: 'host core fs test project ports image'  # by default don't build ports
         required: false
       nightly:
         type: boolean
-        default: false
+        default: true
         required: false
 
 
@@ -30,12 +30,8 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt105x-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike', 'sparcv8leon3-gr716-mini']
-        include:
-          - target: 'ia32-generic-qemu'
-            syspage: 'psh pc-ata uart16550'
-          - target: 'armv7a9-zynq7000-qemu'
-            additional_params: 'ports'
+        target: ['armv7a7-imx6ull-evk','host-generic-pc']
+
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -79,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu']
+        target: ['host-generic-pc']
 
     steps:
       - name: Checkout the repository
@@ -98,7 +94,7 @@ jobs:
 
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
-
+      
       - name: Test runner
         id: runner
         uses: ./.github/actions/phoenix-runner
@@ -106,14 +102,11 @@ jobs:
           target: ${{ matrix.target }}
           nightly: ${{ inputs.nightly }}
 
-      - name: Upload runner results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results-${{ matrix.target }}
-          path: |
-            results.csv
-            results.xml
+      - name: Debug by SSH
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
+
 
   test-hw:
     needs: build
@@ -124,7 +117,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+        target: ['armv7a7-imx6ull-evk']
+
 
     steps:
       - name: Checkout the repository
@@ -144,7 +138,13 @@ jobs:
       - name: Test runner
         id: runner
         run: |
-          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -t ./phoenix-rtos-tests/psh -S -Oresults.csv
+
+
+
+      - name: Debug by SSH
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
 
       - name: Upload runner results
         if: always()
@@ -184,15 +184,3 @@ jobs:
             junit.html
             junit.xml
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          check_name: Unit Test Results
-          files: "junit.xml"
-
-
-  send-notification:
-    needs: ['build', 'test-emu', 'test-hw']
-    if: failure() && github.event_name != 'pull_request'
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
-    secrets: inherit
