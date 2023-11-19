@@ -1,4 +1,6 @@
 :{}:
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export HOME=/root
 X /bin/posixsrv
 X /sbin/lwip rtl:0x18:11
 X /bin/psh
