@@ -47,7 +47,6 @@ MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
 OFFS_USER_SCRIPT=$((0x0))         # Disk image user script offset (in bytes)
 OFFS_ROOTFS=$((0x1000))           # Disk image rootfs offset (in 512 byte sectors)
 ERASE_SIZE=$((64 * 4096))         # Rootfs disk erase block size (in bytes)
-SECTOR_SIZE=$((4096))             # Rootfs write sector size (in bytes)
 CLEANMARKER_SIZE=$((0))           # JFFS2 cleanmarker size (in bytes)
 
 
@@ -173,7 +172,7 @@ b_image_target() {
 		CLEANMARKER_ARG=("-c" "$CLEANMARKER_SIZE")
 	fi
 
-	mkfs.jffs2 -U "${CLEANMARKER_ARG[@]}" -l -m none -e $ERASE_SIZE -s $SECTOR_SIZE -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
+	mkfs.jffs2 -U "${CLEANMARKER_ARG[@]}" -l -m none -e $ERASE_SIZE -s $SIZE_PAGE -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
 
 	if sumtool "${CLEANMARKER_ARG[@]}" -e $ERASE_SIZE -l -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
 		echo "JFFS2 Summary nodes created"
