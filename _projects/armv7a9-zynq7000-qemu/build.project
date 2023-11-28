@@ -25,6 +25,7 @@ PREINIT_SCRIPT=(
 	"phfs uart0 0.0 phoenixd"
 	"phfs uart1 0.1 raw"
 	"phfs flash0 2.0 raw"
+	"phfs sdcard0 2.1 raw"
 	"console 0.1")
 
 
@@ -35,7 +36,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2 ddr ddr"
+	"app ${BOOT_DEVICE} -x zynq7000-sdcard;-r;/dev/mmcblk0p1:jffs2 ddr ddr"
 	"go!")
 
 
