@@ -136,9 +136,8 @@ b_image_target() {
 	: "${FS_WRITE_CLEANMARKERS:?variable unset}"   # define writing cleanmarkers to final image
 
 	b_log "Creating rootfs"
-	# !!! NOTE: For non-standard NOR flash memories, erase_sz & page_sz should be changed..
+	# !!! NOTE: For non-standard NOR flash memories, erase_sz should be changed.
 	local erase_sz=$((0x10000))
-	local page_sz=$((0x100))
 
 	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
 	mtd-utils/build.sh
@@ -147,7 +146,7 @@ b_image_target() {
 	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
 	# Create jffs2 image with padding at the end of the final erase block
-	mkfs.jffs2 -U -c 12 -m none -e $erase_sz -s $page_sz -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS" -p
+	mkfs.jffs2 -U -c 12 -m none -e $erase_sz -s $SIZE_PAGE -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS" -p
 
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
 	echo "rootfs size: ${sz}KB"
