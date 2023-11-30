@@ -32,27 +32,31 @@ export PORTS_CURL=n
 #
 SIZE_PAGE=$((0x1000))
 PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0xF000))
+KERNEL_OFFS=$((0x10000))
 
-BOOT_DEVICE="ram0"              # Default boot device
+BOOT_DEVICE="flash0"              # Default boot device
 NAME_USER_SCRIPT="user.plo"       # User script name
-OFFS_USER_SCRIPT=$((0xE000))
+OFFS_USER_SCRIPT=$((0xf000))
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+ERASE_SIZE=$((0x20000))           # Rootfs disk erase block size (in bytes)
+FS_OFFS=$((0xc0000))
+
 
 PREINIT_SCRIPT=(
 	"map ksram 0x40000000 0x4003ffff rwx"
 	"map sram 0x40040000 0x80000000 rwx"
 	"console 0.0"
 	"phfs uart1 0.1 phoenixd"
-	"phfs ram0 4.0 raw"
+	"phfs flash0 2.0 raw"
 )
 
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D sram sram"
 	"app ${BOOT_DEVICE} -x grlib-uart sram sram"
-	"app ${BOOT_DEVICE} -x dummyfs sram sram"
-	"app ${BOOT_DEVICE} -x psh sram sram"
-	"wait 2000"
+	"app ${BOOT_DEVICE} -x gr712rc-flash;-r;root:jffs2 sram sram"
+	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh sram sram"
+	"wait 500"
 	"go!"
 )
 
@@ -72,6 +76,7 @@ b_build_target() {
 	make -C plo all
 
 	cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 }
 
 
@@ -80,6 +85,45 @@ b_image_target() {
 	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
 
 	b_prod_image
+
+	b_log "Creating rootfs"
+	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
+	mtd-utils/build.sh
+	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
+
+	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
+
+	# Create jffs2 image with padding at the end of the final erase block, no cleanmarkers (are written by PLO)
+	mkfs.jffs2 -U -b -m none -e "$ERASE_SIZE" -s "$SIZE_PAGE" -r "$PREFIX_ROOTFS/" -o "$ROOTFS" -p -n
+
+	if sumtool -n -e "$ERASE_SIZE" -b -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
+		echo "JFFS2 Summary nodes created"
+		mv "$ROOTFS.tmp" "$ROOTFS"
+	fi
+
+	sz=$(du -b "$ROOTFS" | awk '{ print $1 }')
+	echo "rootfs size: $((sz/1024))KB"
+
+	local start=$(((FS_OFFS+sz+ERASE_SIZE-1)/ERASE_SIZE)) # Start clean block after rootfs
+	local end=$((FLASH_SZ/ERASE_SIZE))                    # Number of blocks in flash
+	local nblocks=$((end-start-1))                        # Clean blocks
+
+	# cmd for creating cleanmarkers in plo on clean system
+	echo "Create cleanmarkers in plo:"
+	echo "jffs2 -d 2.0 -c ${start}:${nblocks}:${ERASE_SIZE}:16"
+
+	# set rootfs offset in image
+	OFFSET=$FS_OFFS
+	b_add2img "$ROOTFS" "$PHOENIX_DISK"
+
+	if [[ -f "$PREFIX_BOOT"/ptable.img ]]; then
+		rm "$PREFIX_BOOT"/ptable.img
+	fi
+
+	"$PREFIX_BOOT"/psdisk "$PREFIX_BOOT"/ptable.img -m "$FLASH_SZ",0x20000 \
+		-p boot0,0,$((FS_OFFS)),0x51 \
+		-p root,$((FS_OFFS)),$((FLASH_SZ-FS_OFFS-ERASE_SIZE)),0x72 \
+		-p ptable,$((FLASH_SZ-ERASE_SIZE)),$((ERASE_SIZE)),0x51
 }
 
 
