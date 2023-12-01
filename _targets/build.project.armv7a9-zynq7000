@@ -86,7 +86,7 @@ b_build_target() {
 		0
 
 	# Copy plo.elf with symbols to provide loading plo using gdb
-	cp "${PREFIX_PROG}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
+	cp "${PREFIX_PROG}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/phoenix-kernel.elf"
