@@ -1,6 +1,8 @@
 :{}:
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export HOME=/root
+W /bin/bind devfs /dev
 X /bin/posixsrv
 X /sbin/lwip rtl:0x18:11
+T /dev/console
 X /bin/psh
