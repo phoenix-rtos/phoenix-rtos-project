@@ -8,20 +8,20 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-BOOT_DEVICE="uart2"
+BOOT_DEVICE="uart0"
 
 PREINIT_SCRIPT=(
 	"map ocram 0x31000000 0x3101FFFF rwx"
 	"map extram 0x40000000 0x401FFFFF rwx"
-	"phfs uart2 0.2 phoenixd"
-	"console 0.3"
+	"phfs uart0 0.0 phoenixd"
+	"console 0.1"
 )
 
 
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs extram extram"
-	"app ${BOOT_DEVICE} -x gr716-multi extram extram"
+	"app ${BOOT_DEVICE} -x grlib-multi extram extram"
 	"app ${BOOT_DEVICE} -x psh extram extram"
 	"wait 2000"
 	"go!"
@@ -42,7 +42,7 @@ b_convert_project() {
 b_image_project () {
 	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
 	cp "${PREFIX_PROG_STRIPPED}dummyfs" "$PREFIX_BOOT/"
-	cp "${PREFIX_PROG_STRIPPED}gr716-multi" "$PREFIX_BOOT/"
+	cp "${PREFIX_PROG_STRIPPED}grlib-multi" "$PREFIX_BOOT/"
 	cp "${PREFIX_PROG_STRIPPED}psh" "$PREFIX_BOOT/"
 
 	b_log "The images have been built for the ${TARGET} platform"

@@ -53,7 +53,7 @@ PREINIT_SCRIPT=(
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D sram sram"
-	"app ${BOOT_DEVICE} -x grlib-uart sram sram"
+	"app ${BOOT_DEVICE} -x grlib-multi sram sram"
 	"app ${BOOT_DEVICE} -x gr712rc-flash;-r;root:jffs2 sram sram"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh sram sram"
 	"wait 500"

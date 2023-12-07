@@ -51,7 +51,7 @@ PREINIT_SCRIPT=(
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs extram extram"
-	"app ${BOOT_DEVICE} -x gr716-multi extram extram"
+	"app ${BOOT_DEVICE} -x grlib-multi extram extram"
 	"app ${BOOT_DEVICE} -x psh extram extram"
 	"app ${BOOT_DEVICE} -x gr716-flash extram extram"
 	"wait 2000"

@@ -67,9 +67,6 @@
 #define GPIO_DIR_OUT 1
 
 #define PSEUDODEV 1
-#define MULTI_SPI
-#define MULTI_GPIO
-#define MULTI_ADC
 
 /* Interrupts */
 
@@ -83,6 +80,28 @@
 #define TIMER_IRQ     9
 #define GPTIMER0_BASE ((void *)0x80003000)
 #define GPTIMER1_BASE ((void *)0x80004000)
+
+
+/* ADC */
+
+#define ADC_CNT 8
+
+#define ADC0_ACTIVE 1
+#define ADC1_ACTIVE 0
+#define ADC2_ACTIVE 0
+#define ADC3_ACTIVE 0
+#define ADC4_ACTIVE 0
+#define ADC5_ACTIVE 0
+#define ADC6_ACTIVE 0
+#define ADC7_ACTIVE 0
+
+/* SPI */
+
+#define SPI_CNT 2
+
+/* GPIO */
+
+#define GPIO_PORT_CNT 2
 
 
 #endif

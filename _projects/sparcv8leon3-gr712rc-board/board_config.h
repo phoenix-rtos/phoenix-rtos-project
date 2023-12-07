@@ -79,6 +79,27 @@
 #define GPTIMER0_BASE ((void *)0x80000300)
 #define GPTIMER1_BASE ((void *)0x80100600)
 
+/* ADC */
+
+#define ADC_CNT 0
+
+#define ADC0_ACTIVE 0
+#define ADC1_ACTIVE 0
+#define ADC2_ACTIVE 0
+#define ADC3_ACTIVE 0
+#define ADC4_ACTIVE 0
+#define ADC5_ACTIVE 0
+#define ADC6_ACTIVE 0
+#define ADC7_ACTIVE 0
+
+/* SPI */
+
+#define SPI_CNT 1
+
+/* GPIO */
+
+#define GPIO_PORT_CNT 2
+
 /* SMP */
 
 #define TLB_IRQ 14
