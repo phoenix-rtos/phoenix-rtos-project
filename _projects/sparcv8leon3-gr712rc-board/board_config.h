@@ -100,6 +100,17 @@
 
 #define GPIO_PORT_CNT 2
 
+/* SpaceWire */
+
+#define SPW_CNT 6
+
+#define SPW0_ACTIVE 1
+#define SPW1_ACTIVE 1
+#define SPW2_ACTIVE 0
+#define SPW3_ACTIVE 0
+#define SPW4_ACTIVE 0
+#define SPW5_ACTIVE 0
+
 /* SMP */
 
 #define TLB_IRQ 14

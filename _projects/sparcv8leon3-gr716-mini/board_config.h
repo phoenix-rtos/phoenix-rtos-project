@@ -103,5 +103,16 @@
 
 #define GPIO_PORT_CNT 2
 
+/* SpaceWire */
+
+#define SPW_CNT 1
+
+#define SPW0_ACTIVE 0
+#define SPW1_ACTIVE 0
+#define SPW2_ACTIVE 0
+#define SPW3_ACTIVE 0
+#define SPW4_ACTIVE 0
+#define SPW5_ACTIVE 0
+
 
 #endif
