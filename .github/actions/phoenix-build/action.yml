@@ -29,6 +29,10 @@ inputs:
     description: 'Build additional tests'
     default: false
     required: false
+  libphoenix_nopic:
+    description: 'LIBPHOENIX_NOPIC'
+    default: 'n'
+    required: false
 
 # action runner
 runs:
@@ -41,6 +45,7 @@ runs:
     SYSPAGE: ${{ inputs.syspage }}
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
     LONG_TEST: ${{ inputs.nightly == 'true' && 'y' || 'n' }}
+    LIBPHOENIX_NOPIC: ${{ inputs.libphoenix_nopic }}
   args:
     - ${{ inputs.params }}  # note: params will be split by build.sh internally
 
