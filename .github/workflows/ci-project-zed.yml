@@ -1,0 +1,380 @@
+# vim:sw=2:ts=2
+name: ci-project
+
+# on events
+on:
+  workflow_call:
+    secrets:
+      CI_BOT_EMAIL_USERNAME:
+        required: false
+      CI_BOT_EMAIL_PASSWORD:
+        required: false
+    inputs:
+      build_params:
+        type: string
+        description: "parameters to build.sh script"
+        default: 'host core fs test project image'  # by default don't build ports
+        required: false
+      nightly:
+        type: boolean
+        default: false
+        required: false
+      libphoenix_nopic:
+        type: string
+        default: 'n'
+        required: false
+
+
+# jobs
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    outputs:
+      build_result: ${{ steps.build.outcome }}
+    strategy:
+      matrix:
+        # target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt105x-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike', 'sparcv8leon3-gr716-mini']
+        target: ['armv7a9-zynq7000-zedboard']
+        # include:
+        #   - target: 'ia32-generic-qemu'
+        #     syspage: 'psh pc-ata uart16550'
+        #   - target: 'armv7a9-zynq7000-qemu'
+        #     additional_params: 'ports'
+    steps:
+      # step 1: checkout repository code inside the workspace directory of the runner
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      # attach GCC problem matcher - will pin problems to files only in current submodule
+      - uses: ammaraskar/gcc-problem-matcher@master
+
+      # step 2: use our custom action to build the project
+      - name: Build
+        id: build
+        uses: ./.github/actions/phoenix-build
+        with:
+          target: ${{ matrix.target }}
+          syspage: ${{ matrix.syspage }}
+          params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
+          nightly: ${{ inputs.nightly }}
+          libphoenix_nopic: ${{ inputs.libphoenix_nopic }}
+
+      # step 3: tar rootfs
+      - name: Tar rootfs
+        working-directory: _fs
+        run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
+
+      # step 4: upload project boot directory and tarball of rootfs as build artifacts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+          path: |
+            _boot/${{ matrix.target }}
+            rootfs-${{ matrix.target }}.tar
+
+  # test-emu:
+  #   needs: build
+  #   name: test EMU
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     runner_result: ${{ steps.runner.outcome }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu']
+
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: phoenix-rtos-${{ matrix.target }}
+
+  #     - name: Untar rootfs
+  #       working-directory: _fs
+  #       run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+  #     - name: Add sanitizers problem matcher
+  #       run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+  #     - name: Test runner
+  #       id: runner
+  #       uses: ./.github/actions/phoenix-runner
+  #       with:
+  #         target: ${{ matrix.target }}
+  #         nightly: ${{ inputs.nightly }}
+
+  #     - name: Upload runner results
+  #       if: always()
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: test-results-${{ matrix.target }}
+  #         path: |
+  #           results.csv
+  #           results.xml
+
+  test-hw:
+    needs: build
+    name: test HW
+    runs-on: ${{ matrix.target }}
+    outputs:
+      runner_result: ${{ steps.runner.outcome }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+        target: ['armv7a9-zynq7000-zedboard']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs-1
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-1
+        id: runner-1
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-1
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-1
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-1
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-2
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-2
+        id: runner-2
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-2
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-2
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-2
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-3
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-3
+        id: runner-3
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-3
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-3
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-3
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-4
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-4
+        id: runner-4
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-4
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-4
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-4
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-5
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-5
+        id: runner-5
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-5
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-5
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-5
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-6
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-6
+        id: runner-6
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-6
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-6
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-6
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-7
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-7
+        id: runner-7
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-7
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-7
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-7
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+      - name: Untar rootfs-8
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Test runner-8
+        id: runner-8
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+
+      - name: Upload runner results-8
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.target }}-8
+          path: |
+            results.csv
+            results.xml
+
+      - name: Remofe rootfs-8
+        working-directory: _fs
+        run: rm -rf ${{ matrix.target }}
+
+      # I Abarot
+
+  tests-summary:
+    if: success() || failure()   # don't care about cancelled runs
+    # needs: ['test-emu', 'test-hw']
+    needs: ['test-hw']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        # FIXME: download-artifact don't support downloading artifacts by wildcard, download all artifacts for now
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Merge Test Results
+        run: |
+          pip3 install junitparser junit2html
+          junitparser merge artifacts/test-results-*/results.xml junit.xml
+          junit2html junit.xml junit.html
+
+      - name: Upload Merged Unit Test Results in HTML
+        uses: actions/upload-artifact@v3
+        with:
+          name: Merged Unit Test Results
+          if-no-files-found: ignore
+          path: |
+            junit.html
+            junit.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Unit Test Results
+          files: "junit.xml"
+
+
+  # send-notification:
+  #   needs: ['build', 'test-emu', 'test-hw']
+  #   if: failure() && github.event_name != 'pull_request'
+  #   uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
+  #   secrets: inherit
