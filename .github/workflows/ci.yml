@@ -12,6 +12,10 @@ on:
       - 'feature/*'
 
 jobs:
-  call-ci:
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@master
+  pic-2:
+    uses: ./.github/workflows/ci-project.yml
+    with:
+      nightly: true
+      build_params: all tests
+      libphoenix_nopic: n
     secrets: inherit
