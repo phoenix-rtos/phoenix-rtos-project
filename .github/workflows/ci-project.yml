@@ -19,6 +19,10 @@ on:
         type: boolean
         default: false
         required: false
+      libphoenix_nopic:
+        type: string
+        default: 'n'
+        required: false
 
 
 # jobs
@@ -55,6 +59,7 @@ jobs:
           syspage: ${{ matrix.syspage }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
+          libphoenix_nopic: ${{ inputs.libphoenix_nopic }}
 
       # step 3: tar rootfs
       - name: Tar rootfs
