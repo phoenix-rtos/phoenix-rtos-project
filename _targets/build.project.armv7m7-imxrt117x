@@ -36,7 +36,7 @@ export PORTS_CURL=n
 #
 SIZE_PAGE=$((0x200))
 PAGE_MASK=$((0xfffffe00))
-KERNEL_OFFS=$((0x11000))
+KERNEL_OFFS=$((0x12000))
 
 
 #
@@ -45,7 +45,7 @@ KERNEL_OFFS=$((0x11000))
 
 BOOT_DEVICE="flash0"
 NAME_USER_SCRIPT="user.plo"
-OFFS_USER_SCRIPT=$((0x10a00))
+OFFS_USER_SCRIPT=$((0x11000))
 MAGIC_USER_SCRIPT=$((0xdabaabad))
 
 # Pre-init script is launched before user script
