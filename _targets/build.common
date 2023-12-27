@@ -42,6 +42,11 @@ b_mkscript_user() {
 		fi
 	done
 
+	local RELATIVE_ALIAS=""
+	if [ -n "${NAME_USER2_SCRIPT}" ] && [ -n "${BANK2_BASE}" ]; then
+		RELATIVE_ALIAS=" -r"
+	fi
+
 	ksz=$((($(wc -c < "${PREFIX_PROG_STRIPPED}${KERNEL_FILE}") + SIZE_PAGE - 1) & PAGE_MASK))
 	poffs=$((KERNEL_OFFS + ksz))
 
@@ -60,16 +65,16 @@ b_mkscript_user() {
 
 					PROGS+=("$name")
 					psz=$(wc -c < "${PREFIX_PROG_STRIPPED}$name")
-					printf "alias %s 0x%x 0x%x\n" "$name" "$poffs" "$psz"
+					printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "$name" "$poffs" "$psz"
 					((poffs+=(psz + SIZE_PAGE - 1) & PAGE_MASK))
 					printf "%s\n" "$cmd";;
 
 				kernel)
-					printf "alias %s 0x%x 0x%x\n" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
+					printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
 					printf "%s\n" "$cmd";;
 
 				kernelimg)
-					printf "alias %s 0x%x 0x%x\n" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
+					printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
 					fn="${PREFIX_PROG_STRIPPED}$KERNEL_ELF"
 					tbeg=$(${CROSS}readelf -l "$fn" | awk '/R E/ { print $3 }')
 					tsz=$(${CROSS}readelf -l "$fn" | awk '/R E/ { print $6 }')
@@ -94,6 +99,7 @@ b_mkscript_user() {
 # - NAME_USER2_SCRIPT - name of the secondary user script
 # - OFFS_USER2_SCRIPT - offset of the secondary user script
 # - BANKSWITCH - indicates if bankswitch command should be emitted
+# - BANK2_BASE - address of secondary firmware image
 b_mkscript_preinit() {
 	mkdir -p "$PLO_SCRIPT_DIR"
 
@@ -117,8 +123,14 @@ b_mkscript_preinit() {
 		if [ -n "${BANKSWITCH}" ]; then
 			printf "bankswitch\n"
 		fi
+
+		local RELATIVE_ALIAS=""
 		if [ -n "${NAME_USER2_SCRIPT}" ]; then
-			printf "alias %s 0x%x 0x%x\n" "$NAME_USER2_SCRIPT" "$OFFS_USER2_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
+			if [ -n "${BANK2_BASE}" ]; then
+				printf "alias -b 0x%x\n" "$BANK2_BASE"
+				RELATIVE_ALIAS=" -r"
+			fi
+			printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "$NAME_USER2_SCRIPT" "$OFFS_USER2_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 			printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER2_SCRIPT" "$MAGIC_USER_SCRIPT"
 		fi
 		printf "\0"
