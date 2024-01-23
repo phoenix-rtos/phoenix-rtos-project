@@ -45,6 +45,7 @@ NAME_USER_SCRIPT="user.plo"       # User script name
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
 OFFS_USER_SCRIPT=$((0x10000))     # Disk image user script offset (in bytes)
 KERNEL_OFFS=$((0x11000))          # Disk image kernel offset (in bytes)
+OFFS_ROOTFS=$((0x10))             # Disk image rootfs offset (in 512 byte sectors)
 
 
 # Pre-init script is launched before user script
@@ -58,9 +59,10 @@ PREINIT_SCRIPT=(
 
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
 	"app ${BOOT_DEVICE} -x uart16550 ddr ddr"
-	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
+	"app ${BOOT_DEVICE} -x virtio-blk;-r;0:0 ddr ddr"
 	"wait 500"
 	"go!"
 )
@@ -91,15 +93,52 @@ b_build_target() {
 }
 
 
+b_le32hex() {
+	local n=$1
+	for ((i=0; i<4; i++)); do
+		printf "%s%02x" "\x" $((n & 0xff))
+		n=$((n >> 8))
+	done
+}
+
+
 b_image_target() {
+	b_log "Creating image from $PREFIX_ROOTFS"
+
+	b_log "Creating rootfs"
+	ROOTFS="$PREFIX_BOOT/rootfs.ext2"
+	rm -f "$ROOTFS"
+	SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
+	SIZE_ROOTFS=$((3 * SIZE_ROOTFS))
+	echo "rootfs size: ${SIZE_ROOTFS}KB"
+	genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
+
+	# Generate MBR partition table
+	PTABLE="$PREFIX_BOOT/disk.ptable"
+	{
+		printf "$(b_le32hex $((0x80)))"
+		printf "$(b_le32hex $((0x83)))"
+		printf "$(b_le32hex $((OFFS_ROOTFS)))"
+		printf "$(b_le32hex $((2 * SIZE_ROOTFS)))"
+		for ((i=0; i<48; i++)); do
+			printf "\x00"
+		done
+		# add MBR magic
+		printf "\x55\xaa"
+	} > "$PTABLE"
+
+	# Generate disk image
+	DISK="$PREFIX_BOOT/rootfs.disk"
+	rm -f "$DISK"
+	OFFSET=$((0x1be))
+	b_add2img "$PTABLE" "$DISK"
+	printf "Copying %s (offs=%s blocks)\n" "$ROOTFS" "$OFFS_ROOTFS"
+	dd if="$ROOTFS" of="$DISK" seek="$OFFS_ROOTFS" conv=notrunc 2>/dev/null
+
 	b_mkscript_user "${USER_SCRIPT[@]}"
 	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
 
 	b_prod_image
-
-	(cd "$PREFIX_PROJECT/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix.disk")
-
-	cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix.osbi"
 }
 
 
