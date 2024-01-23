@@ -24,5 +24,8 @@ USER_SCRIPT=(
 
 
 b_image_project () {
+	(cd "$PREFIX_PROJECT/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix.disk")
+	cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix.osbi"
+
 	b_log "The images have been built for the ${TARGET} platform"
 }
