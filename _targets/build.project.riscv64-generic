@@ -15,7 +15,7 @@ CROSS=riscv64-phoenix-
 
 export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
-export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+export PSH_DEFUSRPWDHASH="0BYmID1BwiOS4WZX5kGH+e1xEheBc="
 
 #
 # Ports configuration

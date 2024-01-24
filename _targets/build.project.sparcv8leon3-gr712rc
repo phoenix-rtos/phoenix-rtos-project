@@ -11,7 +11,7 @@
 
 CROSS=sparc-phoenix-
 
-export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+export PSH_DEFUSRPWDHASH="0BYmID1BwiOS4WZX5kGH+e1xEheBc="
 
 #
 # Ports configuration
