@@ -27,8 +27,8 @@
 #define UART4_BASE ((void *)-1)
 #define UART5_BASE ((void *)-1)
 
-#define UART0_IRQ 3
-#define UART1_IRQ 5
+#define UART0_IRQ 10
+#define UART1_IRQ 12
 #define UART2_IRQ -1
 #define UART3_IRQ -1
 #define UART4_IRQ -1
@@ -58,6 +58,13 @@
 #define UART3_ACTIVE 0
 #define UART4_ACTIVE 0
 #define UART5_ACTIVE 0
+
+#define UART0_DMA 1
+#define UART1_DMA 0
+#define UART2_DMA 0
+#define UART3_DMA 0
+#define UART4_DMA 0
+#define UART5_DMA 0
 
 #define UART_CONSOLE_PLO    1
 #define UART_CONSOLE_KERNEL 1
@@ -113,6 +120,10 @@
 #define SPW3_ACTIVE 0
 #define SPW4_ACTIVE 0
 #define SPW5_ACTIVE 0
+
+/* DMA */
+
+#define DMA_MAX_CNT 1
 
 
 #endif
