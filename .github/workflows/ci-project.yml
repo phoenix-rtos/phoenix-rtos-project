@@ -39,7 +39,7 @@ jobs:
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -63,7 +63,7 @@ jobs:
 
       # step 4: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
@@ -83,12 +83,12 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: phoenix-rtos-${{ matrix.target }}
 
@@ -108,7 +108,7 @@ jobs:
 
       - name: Upload runner results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.target }}
           path: |
@@ -128,12 +128,12 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: phoenix-rtos-${{ matrix.target }}
 
@@ -148,7 +148,7 @@ jobs:
 
       - name: Upload runner results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.target }}
           path: |
@@ -161,10 +161,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
-        # FIXME: download-artifact don't support downloading artifacts by wildcard, download all artifacts for now
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: test-results-*
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -176,7 +176,7 @@ jobs:
           junit2html junit.xml junit.html
 
       - name: Upload Merged Unit Test Results in HTML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Merged Unit Test Results
           if-no-files-found: ignore
