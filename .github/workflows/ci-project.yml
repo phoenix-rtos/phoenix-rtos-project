@@ -44,7 +44,8 @@ jobs:
           submodules: recursive
 
       # attach GCC problem matcher - will pin problems to files only in current submodule
-      - uses: ammaraskar/gcc-problem-matcher@master
+      - name: Add GCC problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/gcc.json"
 
       # step 2: use our custom action to build the project
       - name: Build
