@@ -59,6 +59,13 @@
 #define UART4_ACTIVE 0
 #define UART5_ACTIVE 0
 
+#define UART0_DMA 0
+#define UART1_DMA 0
+#define UART2_DMA 0
+#define UART3_DMA 0
+#define UART4_DMA 0
+#define UART5_DMA 0
+
 #define UART_CONSOLE_PLO    2
 #define UART_CONSOLE_KERNEL 2
 #define UART_CONSOLE_USER   2
@@ -113,6 +120,10 @@
 #define SPW3_ACTIVE 0
 #define SPW4_ACTIVE 0
 #define SPW5_ACTIVE 0
+
+/* DMA */
+
+#define DMA_MAX_CNT 0
 
 
 #endif
