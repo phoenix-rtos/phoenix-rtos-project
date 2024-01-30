@@ -25,7 +25,7 @@ exec qemu-system-riscv64 \
 	-smp 1 \
 	-machine virt \
 	"$OPTIMG" "$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/phoenix.osbi" \
-	-nographic \
+	-serial stdio \
 	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/rootfs.disk",format=raw,cache=unsafe,if=none,id=vblk0 \
 	-device virtio-blk-device,drive=vblk0 \
 	-device loader,file="$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/phoenix.disk",addr=0x20000000
