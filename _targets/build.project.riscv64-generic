@@ -63,6 +63,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x uart16550 ddr ddr"
 	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
 	"app ${BOOT_DEVICE} -x virtio-blk;-r;0:0 ddr ddr"
+	"app ${BOOT_DEVICE} -x test ddr ddr"
 	"wait 500"
 	"go!"
 )

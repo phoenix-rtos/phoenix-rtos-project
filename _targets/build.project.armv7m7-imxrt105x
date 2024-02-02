@@ -68,6 +68,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs xip1 dtcm"
 	"app ${BOOT_DEVICE} -x imxrt-multi xip1 dtcm"
 	"app ${BOOT_DEVICE} -x psh xip1 dtcm"
+	"app ${BOOT_DEVICE} -x test xip1 dtcm"
 	"wait 2000"
 	"go!")
 

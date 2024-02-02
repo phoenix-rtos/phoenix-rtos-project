@@ -64,6 +64,7 @@ USER_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram"
 	"app ${BOOT_DEVICE} -x psh flash0 ram"
+	"app ${BOOT_DEVICE} -x test flash0 ram"
 	"wait 2000"
 	"go!")
 

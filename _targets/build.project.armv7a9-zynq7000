@@ -58,6 +58,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
 	"app ${BOOT_DEVICE} -x psh ddr ddr"
 	"app ${BOOT_DEVICE} -x zynq7000-flash ddr ddr"
+	"app ${BOOT_DEVICE} -x test ddr ddr"
 	"wait 500"
 	"go!")
 
