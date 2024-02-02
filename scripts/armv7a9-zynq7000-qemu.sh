@@ -21,6 +21,6 @@ exec qemu-system-aarch64 \
 	-M arm-generic-fdt-7series \
 	-dtb "$DTB_ZYNQ7000" \
 	-serial null \
-	-serial mon:stdio \
+	-serial stdio \
 	-device loader,file="$IMG_PLO_ZYNQ7000" \
 	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0
