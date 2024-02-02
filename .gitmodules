@@ -1,45 +1,59 @@
 [submodule "phoenix-rtos-kernel"]
 	path = phoenix-rtos-kernel
 	url = https://github.com/phoenix-rtos/phoenix-rtos-kernel.git
+	branch = release/3.1
 [submodule "libphoenix"]
 	path = libphoenix
 	url = https://github.com/phoenix-rtos/libphoenix
+	branch = release/3.1
 [submodule "phoenix-rtos-build"]
 	path = phoenix-rtos-build
 	url = https://github.com/phoenix-rtos/phoenix-rtos-build
+	branch = release/3.1
 [submodule "phoenix-rtos-ports"]
 	path = phoenix-rtos-ports
 	url = https://github.com/phoenix-rtos/phoenix-rtos-ports
+	branch = release/3.1
 [submodule "phoenix-rtos-devices"]
 	path = phoenix-rtos-devices
 	url = https://github.com/phoenix-rtos/phoenix-rtos-devices
+	branch = release/3.1
 [submodule "phoenix-rtos-filesystems"]
 	path = phoenix-rtos-filesystems
 	url = https://github.com/phoenix-rtos/phoenix-rtos-filesystems
+	branch = release/3.1
 [submodule "phoenix-rtos-usb"]
 	path = phoenix-rtos-usb
 	url = https://github.com/phoenix-rtos/phoenix-rtos-usb
+	branch = release/3.1
 [submodule "phoenix-rtos-lwip"]
 	path = phoenix-rtos-lwip
 	url = https://github.com/phoenix-rtos/phoenix-rtos-lwip
+	branch = release/3.1
 [submodule "phoenix-rtos-posixsrv"]
 	path = phoenix-rtos-posixsrv
 	url = https://github.com/phoenix-rtos/phoenix-rtos-posixsrv
+	branch = release/3.1
 [submodule "phoenix-rtos-tests"]
 	path = phoenix-rtos-tests
 	url = https://github.com/phoenix-rtos/phoenix-rtos-tests
+	branch = release/3.1
 [submodule "phoenix-rtos-corelibs"]
 	path = phoenix-rtos-corelibs
-	url = https://github.com/phoenix-rtos/phoenix-rtos-corelibs/
+	url = https://github.com/phoenix-rtos/phoenix-rtos-corelibs
+	branch = release/3.1
 [submodule "phoenix-rtos-hostutils"]
 	path = phoenix-rtos-hostutils
-	url = https://github.com/phoenix-rtos/phoenix-rtos-hostutils/
+	url = https://github.com/phoenix-rtos/phoenix-rtos-hostutils
+	branch = release/3.1
 [submodule "phoenix-rtos-utils"]
 	path = phoenix-rtos-utils
-	url = https://github.com/phoenix-rtos/phoenix-rtos-utils/
+	url = https://github.com/phoenix-rtos/phoenix-rtos-utils
+	branch = release/3.1
 [submodule "plo"]
 	path = plo
 	url = https://github.com/phoenix-rtos/plo.git
+	branch = release/3.1
 [submodule "riscv/riscv-pk"]
 	path = riscv/riscv-pk
 	url = https://github.com/riscv/riscv-pk.git
@@ -49,3 +63,4 @@
 [submodule "phoenix-rtos-doc"]
 	path = phoenix-rtos-doc
 	url = https://github.com/phoenix-rtos/phoenix-rtos-doc
+	branch = release/3.1
