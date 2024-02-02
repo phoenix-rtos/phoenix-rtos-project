@@ -50,7 +50,7 @@ static ssize_t server_handleRead(oid_t *oid, void *data, size_t len, off_t offse
 {
 	/* This is where we handle read request (i.e. user is reading from the server). */
 	printf("serverdemo: Read from oid %u:%u of %zu bytes @offset %lld\n",
-		(unsigned)oid->port, (unsigned)oid->id, len, offset);
+		(unsigned)oid->port, (unsigned)oid->id, len, (long long)offset);
 
 	/* Put something into the requester buffer. */
 	memset(data, 'x', len);
@@ -64,7 +64,7 @@ static ssize_t server_handleWrite(oid_t *oid, const void *data, size_t len, off_
 {
 	/* This is where we handle write request (i.e. user is writing to the server). */
 	printf("serverdemo: Write to oid %u:%u of %zu bytes @offset %lld\n",
-		(unsigned)oid->port, (unsigned)oid->id, len, offset);
+		(unsigned)oid->port, (unsigned)oid->id, len, (long long)offset);
 
 	/* Print out received data. */
 	printf("Data:");
