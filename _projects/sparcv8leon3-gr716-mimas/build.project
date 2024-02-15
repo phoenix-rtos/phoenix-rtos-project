@@ -23,7 +23,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs extram extram"
 	"app ${BOOT_DEVICE} -x grlib-multi extram extram"
 	"app ${BOOT_DEVICE} -x psh extram extram"
-	"wait 2000"
+	"wait 500"
 	"go!"
 )
 
