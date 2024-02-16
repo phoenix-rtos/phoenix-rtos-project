@@ -18,4 +18,7 @@
 #define UART_CONSOLE 2
 #define TTY2_DMA     1
 
+#define BUILTIN_POSIXSRV 1
+
+
 #endif
