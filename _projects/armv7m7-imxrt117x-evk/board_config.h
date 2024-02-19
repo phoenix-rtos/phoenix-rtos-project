@@ -41,8 +41,8 @@
 #define UART1_RTS_PIN     ad_27
 #define UART1_CTS_PIN     ad_26
 
-/*
-#define UART2             0
+
+#define UART2             1
 #define UART2_BAUDRATE    115200
 #define UART2_BUFSIZE     512
 #define UART2_TX_PIN      disp_b2_10
@@ -51,6 +51,7 @@
 #define UART2_RTS_PIN     disp_b2_13
 #define UART2_CTS_PIN     disp_b2_12
 
+/*
 #define UART3             0
 #define UART3_BAUDRATE    115200
 #define UART3_BUFSIZE     512
