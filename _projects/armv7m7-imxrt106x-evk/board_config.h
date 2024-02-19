@@ -15,6 +15,9 @@
 #define _BOARD_CONFIG_H_
 
 
+#define UART2 1
+
+
 /*
  * libpseudodev and libposixsrv shall be used exclusively, libpseudodev uses
  * less resources, but libposixsrv provides POSIX support and may be resource

@@ -17,6 +17,7 @@
 
 #define UART1        1
 #define UART_CONSOLE 1
+#define UART2        1
 
 /*
  * libpseudodev and libposixsrv shall be used exclusively, libpseudodev uses
