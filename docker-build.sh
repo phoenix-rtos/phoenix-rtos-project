@@ -1,6 +1,9 @@
 #!/bin/bash
 
 DOCKER_IMG_NAME=phoenixrtos/build
+if [ -e .docker_build_img ]; then
+    DOCKER_IMG_NAME="$(cat  .docker_build_img)"
+fi
 PATH_TO_PROJECT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/"
 DOCKER_USER="$(id -u):$(id -g)"
 
