@@ -40,9 +40,6 @@
 [submodule "plo"]
 	path = plo
 	url = https://github.com/phoenix-rtos/plo.git
-[submodule "riscv/riscv-pk"]
-	path = riscv/riscv-pk
-	url = https://github.com/riscv/riscv-pk.git
 [submodule "riscv/opensbi"]
 	path = riscv/opensbi
 	url = https://github.com/riscv/opensbi.git
