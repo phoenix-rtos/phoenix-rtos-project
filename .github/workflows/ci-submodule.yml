@@ -63,6 +63,13 @@ jobs:
       - name: Add GCC problem matcher
         run: echo "::add-matcher::./.buildroot/phoenix-rtos-project/.github/problem-matchers/gcc.json"
 
+      # Issue caused by incompability between the amount of entropy bits in the specific linux kernel version (32) and ASAN (28)
+      # To be removed after updating Actions Runner Ubuntu image to the fixed version
+      # https://github.com/actions/runner-images/issues/9491
+      # https://github.com/phoenix-rtos/phoenix-rtos-project/issues/1032
+      - name: Decrease ASLR entropy due to temporary issue on gh-hosted runners
+        run: sudo sysctl vm.mmap_rnd_bits=28
+
       # step 3: use our custom action to build the project
       - name: Build
         id: build
@@ -123,6 +130,13 @@ jobs:
 
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      # Issue caused by incompability between the amount of entropy bits in the specific linux kernel version (32) and ASAN (28)
+      # To be removed after updating Actions Runner Ubuntu image to the fixed version
+      # https://github.com/actions/runner-images/issues/9491
+      # https://github.com/phoenix-rtos/phoenix-rtos-project/issues/1032
+      - name: Decrease ASLR entropy due to temporary issue on gh-hosted runners
+        run: sudo sysctl vm.mmap_rnd_bits=28
 
       - name: Test runner
         id: runner
