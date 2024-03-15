@@ -119,30 +119,28 @@ __attribute__((noreturn)) static void server_msgLoop(oid_t *oid)
 			 * sys/msg.h header. In this example we will handle
 			 * only selected types. */
 			case mtOpen:
-				msg.o.io.err = server_handleOpen(&msg.i.openclose.oid);
+				msg.o.err = server_handleOpen(&msg.oid);
 				break;
 
 			case mtClose:
-				msg.o.io.err = server_handleClose(&msg.i.openclose.oid);
+				msg.o.err = server_handleClose(&msg.oid);
 				break;
 
 			case mtRead:
 				/* Buffer in msg.o.data is provided by the user and
 				 * was allocated in the server memory space by the kernel. */
-				msg.o.io.err = server_handleRead(&msg.i.io.oid,
-					msg.o.data, msg.o.size, msg.i.io.offs);
+				msg.o.err = server_handleRead(&msg.oid, msg.o.data, msg.o.size, msg.i.io.offs);
 				break;
 
 			case mtWrite:
 				/* Buffer in msg.i.data is provided by the user and
 				 * was allocated in the server memory space by the kernel. */
-				msg.o.io.err = server_handleWrite(&msg.i.io.oid,
-					msg.i.data, msg.i.size, msg.i.io.offs);
+				msg.o.err = server_handleWrite(&msg.oid, msg.i.data, msg.i.size, msg.i.io.offs);
 				break;
 
 			default:
 				/* All other types are not supported. */
-				msg.o.io.err = -ENOSYS;
+				msg.o.err = -ENOSYS;
 				break;
 		}
 
