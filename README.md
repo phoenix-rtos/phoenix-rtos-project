@@ -1,4 +1,4 @@
-# phoenix-rtos-project
+# phoenix-rtos-project test
 
 [![ci](https://github.com/phoenix-rtos/phoenix-rtos-project/actions/workflows/ci.yml/badge.svg)](https://github.com/phoenix-rtos/phoenix-rtos-project/actions/workflows/ci.yml)
 [![nightly](https://github.com/phoenix-rtos/phoenix-rtos-project/actions/workflows/nightly.yml/badge.svg)](https://github.com/phoenix-rtos/phoenix-rtos-project/actions/workflows/nightly.yml)
