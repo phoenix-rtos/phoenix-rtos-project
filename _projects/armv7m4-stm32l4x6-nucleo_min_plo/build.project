@@ -12,6 +12,9 @@ export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
+export PLO_COMMANDS="alias app bankswitch call go kernelimg map phfs"
+export PLO_DEVICES="flash-stm32"
+
 #
 # Ports configuration
 #
@@ -38,9 +41,7 @@ PREINIT_SCRIPT=(
 	"map flash1 0x08080000 0x08100000 rx"
 	"map ram 0x20000000 0x20050000 rwx"
 	"phfs flash0 2.0 raw"
-	"phfs flash1 2.1 raw"
-	"phfs ramdev 4.0 raw"
-	"console 0.1")
+	"phfs flash1 2.1 raw")
 
 
 # Production user script contains applications to run Phoenix-RTOS
@@ -48,7 +49,6 @@ USER_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram"
 	"app ${BOOT_DEVICE} -x psh flash0 ram"
-	"wait 2000"
 	"go!")
 
 
@@ -63,6 +63,7 @@ REMOTE_USER_SCRIPT=("5a5aa5a5")
 
 : "${WATCHDOG:=0}"
 export WATCHDOG
+
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
