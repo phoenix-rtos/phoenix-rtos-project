@@ -28,7 +28,7 @@ runs:
       # HACK: We can't pass an empty argument to the runner due to strict arg parsing.
       # Additionally, there is no conditional arg in github actions. If this is not a nightly run
       # then repeating the target flag is acceptable, the runner is OK with that.
-      - ${{ inputs.nightly == 'true' && '--nightly' || format('-T{0}', inputs.target) }}
+      - '--nightly'
       - '-Oresults.csv'
 
 # branding

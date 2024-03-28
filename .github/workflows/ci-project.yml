@@ -13,11 +13,11 @@ on:
       build_params:
         type: string
         description: "parameters to build.sh script"
-        default: 'host core fs test project image'  # by default don't build ports
+        default: 'all tests'  # by default don't build ports
         required: false
       nightly:
         type: boolean
-        default: false
+        default: True
         required: false
 
 
@@ -159,7 +159,7 @@ jobs:
       - name: Test runner
         id: runner
         run: |
-          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} --nightly -Oresults.csv
 
       - name: Upload runner results
         if: always()
