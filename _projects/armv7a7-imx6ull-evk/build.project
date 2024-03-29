@@ -27,7 +27,7 @@ export PLO_NOR_BOOT=y
 #
 # PLO configuration
 #
-export PLO_NOR=y
+export PLO_DEVICES="flash-imx6ull uart-imx6ull usbc-cdc"
 
 #
 # Project specific build
