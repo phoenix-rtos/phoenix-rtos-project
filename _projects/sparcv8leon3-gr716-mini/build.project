@@ -8,6 +8,7 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+export PLO_DEVICES="gpio-gr716 uart-grlib flash-gr716"
 
 b_convert_project() {
 	./phoenix-rtos-build/scripts/gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"

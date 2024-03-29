@@ -8,6 +8,7 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+export PLO_DEVICES="ram-storage uart-16550"
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
