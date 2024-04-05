@@ -38,7 +38,6 @@ export PORTS_AZURE_SDK=n
 #
 SIZE_PAGE=$((0x200))
 PAGE_MASK=$((0xfffffe00))
-KERNEL_OFFS=$((0x12000))
 
 
 #
@@ -49,6 +48,13 @@ BOOT_DEVICE="flash1"
 NAME_USER_SCRIPT="user.plo"
 OFFS_USER_SCRIPT=$((0x11000))
 MAGIC_USER_SCRIPT=$((0xdabaabad))
+KERNEL_OFFS=$((0x12000))
+
+
+# Physical kernel address
+KERNEL_PHBASE=$((0x0)) # itcm start address
+KERNEL_PHOFFS=$((0x0))
+export KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
 
 
 # Pre-init script is launched before user script

@@ -32,12 +32,19 @@ export PORTS_CURL=n
 #
 SIZE_PAGE=$((0x200))
 PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0xF000))
 
 BOOT_DEVICE="flash0"              # Default boot device
 NAME_USER_SCRIPT="user.plo"       # User script name
 OFFS_USER_SCRIPT=$((0xE000))
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+KERNEL_OFFS=$((0xF000))
+
+
+# Physical kernel address
+KERNEL_PHBASE=$((0x31000000)) # iram start address
+KERNEL_PHOFFS=$((0x0))
+export KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+
 
 PREINIT_SCRIPT=(
 	"map dram 0x30000000 0x3000FFFF rw"
