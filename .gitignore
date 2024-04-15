@@ -1,5 +1,5 @@
-.gitignore
 _fs/*
+!_fs/root-skel/
 _build/*
 _boot/*
 .DS_Store
