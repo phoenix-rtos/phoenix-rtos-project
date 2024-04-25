@@ -1,0 +1,19 @@
+# vim:sw=2:ts=2
+name: ci-release
+# every commit/PR on release branch should pass FULL CI check
+
+on:
+  push:
+    branches:
+      - 'release/*'
+  pull_request:
+    branches:
+      - 'release/*'
+
+jobs:
+  call-ci:
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@master
+    with:
+      build_params: all tests
+      nightly: true
+    secrets: inherit
