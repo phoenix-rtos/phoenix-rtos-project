@@ -10,9 +10,10 @@ on:
     branches:
       - 'release/*'
 
+#TODO: this uses `latest` docker image instead of the release one
 jobs:
   call-ci:
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-project.yml@master
+    uses: ./.github/workflows/ci-project.yml
     with:
       build_params: all tests
       nightly: true
