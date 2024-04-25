@@ -1,0 +1,20 @@
+# vim:sw=2:ts=2
+name: ci-release
+# every commit/PR on release branch should pass FULL CI check
+
+on:
+  push:
+    branches:
+      - 'release/*'
+  pull_request:
+    branches:
+      - 'release/*'
+
+#TODO: this uses `latest` docker image instead of the release one
+jobs:
+  call-ci:
+    uses: ./.github/workflows/ci-project.yml
+    with:
+      build_params: all tests
+      nightly: true
+    secrets: inherit
