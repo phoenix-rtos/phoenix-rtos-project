@@ -9,6 +9,9 @@
 
 KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 
+# TODO: use same convention for all bool-like variables such as: BANKSWITCH and IMAGE_PAD_FF
+# TODO: set default values for optional variables in separate dedicated function invoked before usage
+
 # Function gets the following argument:
 # - $1 - array contains user's commands
 #
@@ -25,6 +28,10 @@ b_mkscript_user() {
 	: "${KERNEL_OFFS:?variable unset}"       # offset on flash memory where kernel is located
 	: "${SIZE_PAGE:?variable unset}"
 	: "${PAGE_MASK:?variable unset}"
+
+	# Optional variables used for remote firmware upgrade:
+	local -r OPT_NAME_USER2_SCRIPT=${NAME_USER2_SCRIPT:-} # name of the secondary user script
+	local -r OPT_BANK2_BASE=${BANK2_BASE:-}               # offset of the secondary user script
 
 	# Find out if we need a .elf or a .bin kernel.
 	# We need to know the kernel size in the image before first app cmd (which might be before kernel cmd)
@@ -43,7 +50,7 @@ b_mkscript_user() {
 	done
 
 	local RELATIVE_ALIAS=""
-	if [ -n "${NAME_USER2_SCRIPT}" ] && [ -n "${BANK2_BASE}" ]; then
+	if [ -n "${OPT_NAME_USER2_SCRIPT}" ] && [ -n "${OPT_BANK2_BASE}" ]; then
 		RELATIVE_ALIAS=" -r"
 	fi
 
@@ -95,11 +102,6 @@ b_mkscript_user() {
 }
 
 
-# Optional variables used for remote firmware upgrade:
-# - NAME_USER2_SCRIPT - name of the secondary user script
-# - OFFS_USER2_SCRIPT - offset of the secondary user script
-# - BANKSWITCH - indicates if bankswitch command should be emitted
-# - BANK2_BASE - address of secondary firmware image
 b_mkscript_preinit() {
 	mkdir -p "$PLO_SCRIPT_DIR"
 
@@ -109,6 +111,12 @@ b_mkscript_preinit() {
 	: "${MAGIC_USER_SCRIPT:?variable unset}"  # number which is assigned to user script
 	: "${BOOT_DEVICE:?variable unset}"        # name of the device from which script is called
 	: "${OFFS_USER_SCRIPT:?variable unset}"   # offset on flash memory where user script is located
+
+	# Optional variables used for remote firmware upgrade:
+	local -r OPT_NAME_USER2_SCRIPT=${NAME_USER2_SCRIPT:-} # name of the secondary user script
+	local -r OPT_OFFS_USER2_SCRIPT=${OFFS_USER2_SCRIPT:-} # offset of the secondary user script
+	local -r OPT_BANKSWITCH=${BANKSWITCH:-}               # indicates if bankswitch command should be emitted
+	local -r OPT_BANK2_BASE=${BANK2_BASE:-}               # offset of the secondary user script
 
 	{
 		printf "%s\n" "${PREINIT_SCRIPT[@]}"
@@ -120,18 +128,18 @@ b_mkscript_preinit() {
 
 		printf "alias %s 0x%x 0x%x\n" "$NAME_USER_SCRIPT" "$OFFS_USER_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
 		printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER_SCRIPT" "$MAGIC_USER_SCRIPT"
-		if [ -n "${BANKSWITCH}" ]; then
+		if [ -n "${OPT_BANKSWITCH}" ]; then
 			printf "bankswitch\n"
 		fi
 
 		local RELATIVE_ALIAS=""
-		if [ -n "${NAME_USER2_SCRIPT}" ]; then
-			if [ -n "${BANK2_BASE}" ]; then
-				printf "alias -b 0x%x\n" "$BANK2_BASE"
+		if [ -n "${OPT_NAME_USER2_SCRIPT}" ]; then
+			if [ -n "${OPT_BANK2_BASE}" ]; then
+				printf "alias -b 0x%x\n" "$OPT_BANK2_BASE"
 				RELATIVE_ALIAS=" -r"
 			fi
-			printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "$NAME_USER2_SCRIPT" "$OFFS_USER2_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
-			printf "call %s %s %08x\n" "$BOOT_DEVICE" "$NAME_USER2_SCRIPT" "$MAGIC_USER_SCRIPT"
+			printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "$OPT_NAME_USER2_SCRIPT" "$OPT_OFFS_USER2_SCRIPT" "$((KERNEL_OFFS - OFFS_USER_SCRIPT))"
+			printf "call %s %s %08x\n" "$BOOT_DEVICE" "$OPT_NAME_USER2_SCRIPT" "$MAGIC_USER_SCRIPT"
 		fi
 		printf "\0"
 	} > "$PLO_SCRIPT_DIR/script.plo"
@@ -144,8 +152,11 @@ b_mkscript_preinit() {
 # When variable IMAGE_PAD_FF is set to "y" parts of the images get padded with 0xff.
 b_pad()
 {
+	# Optional external variables
+	local -r OPT_IMAGE_PAD_FF=${IMAGE_PAD_FF:-}
+
 	if [ "$2" -ne 0 ]; then
-		if [ "$IMAGE_PAD_FF" = 'y' ]; then
+		if [ "${OPT_IMAGE_PAD_FF}" = 'y' ]; then
 			dd if=/dev/zero bs="$2" count=1 2>/dev/null | tr "\000" "\377" > padding.img
 			dd if="$1" of=padding.img conv=notrunc 2>/dev/null
 			mv padding.img "$1"
@@ -166,7 +177,10 @@ b_add2img() {
 	: "${SIZE_PAGE:?variable unset}"
 	: "${PAGE_MASK:?variable unset}"
 
-	if [ "$IMAGE_PAD_FF" = "y" ]; then
+	# Optional external variables
+	local -r OPT_IMAGE_PAD_FF=${IMAGE_PAD_FF:-}
+
+	if [ "${OPT_IMAGE_PAD_FF}" = "y" ]; then
 		dd_pad_str=", pad=0xff"
 	else
 		dd_pad_str=""
