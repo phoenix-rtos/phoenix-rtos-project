@@ -28,6 +28,7 @@ export PORTS_LZO=n
 export PORTS_OPENVPN=n
 export PORTS_JANSSON=n
 export PORTS_CURL=n
+export PORTS_COREMARK=y
 
 
 

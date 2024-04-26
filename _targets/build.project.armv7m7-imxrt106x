@@ -31,6 +31,7 @@ export PORTS_CURL=n
 export PORTS_MICROPYTHON=n
 export PORTS_MBEDTLS=n
 export PORTS_AZURE_SDK=n
+export PORTS_COREMARK=y
 
 
 #
