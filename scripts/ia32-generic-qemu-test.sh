@@ -11,4 +11,5 @@ exec qemu-system-i386 \
 	-drive "file=$(dirname "${BASH_SOURCE[0]}")/../_boot/ia32-generic-qemu/phoenix.disk,format=raw,media=disk,index=0" \
 	-nographic \
 	-monitor none \
-	-netdev user,id=net0 -device rtl8139,netdev=net0 "$@"
+	-netdev user,id=net0 -device rtl8139,netdev=net0 "$@" \
+	-d cpu_reset
