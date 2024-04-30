@@ -8,6 +8,15 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+#
+# lwIP configuration
+#
+export LWIPOPTS_DIR="$(pwd)/_projects/ia32-generic-qemu/lwip"
+
+#
+# Busybox configuration
+#
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
 #
 # Ports configuration - additional to the one from _targets
