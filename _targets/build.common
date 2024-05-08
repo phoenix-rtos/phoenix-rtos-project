@@ -191,6 +191,15 @@ b_add2img() {
 }
 
 
+b_signelf() {
+	# use metaelf to embed integrity checksum only when metaelf is available
+	if [ -f "$PREFIX_BUILD_HOST/prog.stripped/metaelf" ] && [[ "$1" != *.bin ]]; then
+		printf "Signing %s " "$1"
+		"$PREFIX_BUILD_HOST/prog.stripped/metaelf" -w "$1"
+	fi
+}
+
+
 b_prod_image() {
 	b_log "Creating production images"
 
@@ -217,10 +226,12 @@ b_prod_image() {
 
 	# Kernel
 	OFFSET="$KERNEL_OFFS"
+	b_signelf "${PREFIX_PROG_STRIPPED}$KERNEL_FILE"
 	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$PHOENIX_DISK"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
+		b_signelf "${PREFIX_PROG_STRIPPED}$prog"
 		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$PHOENIX_DISK"
 	done
 
@@ -237,10 +248,12 @@ b_kernel_image() {
 	rm -f "$IMG"
 
 	OFFSET="$KERNEL_OFFS"
+	b_signelf "${PREFIX_PROG_STRIPPED}/$KERNEL_FILE"
 	b_add2img "${PREFIX_PROG_STRIPPED}/$KERNEL_FILE" "$IMG"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
+		b_signelf "${PREFIX_PROG_STRIPPED}$prog"
 		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
 	done
 }
@@ -286,10 +299,12 @@ b_dev_image() {
 	# Kernel
 	KERNEL_OFFS=$((KERNEL_OFFS - OFFS_USER_SCRIPT))
 	OFFSET="$KERNEL_OFFS"
+	b_signelf "${PREFIX_PROG_STRIPPED}/$KERNEL_FILE"
 	b_add2img "${PREFIX_PROG_STRIPPED}$KERNEL_FILE" "$PHOENIX_DEV_IMG"
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
+		b_signelf "${PREFIX_PROG_STRIPPED}$prog"
 		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$PHOENIX_DEV_IMG"
 	done
 }
