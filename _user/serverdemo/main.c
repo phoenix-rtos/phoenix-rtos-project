@@ -13,6 +13,7 @@
  * %LICENSE%
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,9 +22,15 @@
 
 /* Message handling */
 #include <sys/msg.h>
+#include <sys/mman.h>
 
 /* create_dev() */
 #include <posix/utils.h>
+
+#include <sys/debug.h>
+
+
+void *buff;
 
 
 static int server_handleOpen(oid_t *oid)
@@ -62,19 +69,19 @@ static ssize_t server_handleRead(oid_t *oid, void *data, size_t len, off_t offse
 
 static ssize_t server_handleWrite(oid_t *oid, const void *data, size_t len, off_t offset)
 {
+	char buf[256];
 	/* This is where we handle write request (i.e. user is writing to the server). */
-	printf("serverdemo: Write to oid %u:%u of %zu bytes @offset %lld\n",
-		(unsigned)oid->port, (unsigned)oid->id, len, (long long)offset);
+	// sprintf(buf, "serverdemo: Write to oid %u:%u of %zu bytes @offset %lld\n",
+	// 	(unsigned)oid->port, (unsigned)oid->id, len, (long long)offset);
 
-	/* Print out received data. */
-	printf("Data:");
-	for (size_t i = 0; i < len; i += 16) {
-		printf("\n%08x: ", (unsigned int)i);
-		for (size_t j = 0; (j < 16) && ((i + j) < len); ++j) {
-			printf("%02x ", ((unsigned char *)data)[i + j]);
+	// debug(buf);
+
+	for (size_t i = 0; i < len; i++) {
+		if (((unsigned char *)data)[i] != 'a') {
+			debug("serverdemo: Invalid data received\n");
+			return -EINVAL;
 		}
 	}
-	printf("\n");
 
 	/* Actual write length or error (negative value). */
 	return (ssize_t)len;
@@ -98,6 +105,7 @@ __attribute__((noreturn)) static void server_msgLoop(oid_t *oid)
 	for (;;) {
 		/* Receive the next message. This call will block until a message
 		 * becomes available. It can be interrupted by a posix signal. */
+		msg.i.data = buff;
 		int err = msgRecv(oid->port, &msg, &rid);
 		if (err < 0) {
 			if (err == -EINTR) {
@@ -165,6 +173,11 @@ int main(void)
 	/* Assign id to zero, we only have one special file, so it doesn't matter. */
 	oid.id = 0;
 
+	buff = mmap(NULL, 450 * _PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	if (buff == MAP_FAILED) {
+		debug("serverdemo: mmap failed\n");
+		return EXIT_FAILURE;
+	}
 	/* Create the port */
 	if (portCreate(&oid.port) < 0) {
 		fprintf(stderr, "serverdemo: portCreate failed\n");
@@ -176,10 +189,10 @@ int main(void)
 	 * We use create_dev() to do this. This function creates a special
 	 * file in the /dev directory and registers oid to it. This file can
 	 * be later used by the user to communicate with the server. */
-	if (create_dev(&oid, "serverdemo") < 0) {
-		fprintf(stderr, "serverdemo: create_dev failed\n");
-		return EXIT_FAILURE;
-	}
+	// if (create_dev(&oid, "serverdemo") < 0) {
+	// 	fprintf(stderr, "serverdemo: create_dev failed\n");
+	// 	return EXIT_FAILURE;
+	// }
 
 	/* We're ready, start receiving and handling messages. */
 	server_msgLoop(&oid);

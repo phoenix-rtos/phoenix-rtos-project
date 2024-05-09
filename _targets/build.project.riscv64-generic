@@ -50,8 +50,8 @@ OFFS_ROOTFS=$((0x10))             # Disk image rootfs offset (in 512 byte sector
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
-	"map kddr 0x80200000 0x8025ffff rwx"
-	"map ddr 0x80260000 0x87ffffff rwx"
+	"map kddr 0x80200000 0x87ffffff rwx"
+	"map ddr 0x88000000 0x8fffffff rwx"
 	"phfs ram0 4.0 raw"
 	"console 0.0"
 )
@@ -59,10 +59,8 @@ PREINIT_SCRIPT=(
 
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
-	"app ${BOOT_DEVICE} -x uart16550 ddr ddr"
-	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x virtio-blk;-r;0:0 ddr ddr"
+	"app ${BOOT_DEVICE} -x serverdemo ddr ddr"
+	"app ${BOOT_DEVICE} -x hello ddr ddr"
 	"wait 500"
 	"go!"
 )
