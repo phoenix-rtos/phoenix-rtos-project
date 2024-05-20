@@ -28,6 +28,7 @@
 #define RAM_ADDR      0x20000000u
 #define RAM_BANK_SIZE 0x10000000u
 
+#define PLIC_BASE     0xc000000
 #define PLIC_IRQ_SIZE 54
 
 #endif
