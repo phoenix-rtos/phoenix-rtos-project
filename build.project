@@ -63,6 +63,15 @@ b_build() {
 #
 b_image() {
 	b_image_target
+	echo "md5 prog"
+	pushd ${PREFIX_PROG} > /dev/null
+	md5sum *
+	popd > /dev/null
+	echo "md5 prog.stripped"
+	pushd ${PREFIX_PROG_STRIPPED} > /dev/null
+	md5sum *
+	popd > /dev/null
+
 	declare -F b_image_project >/dev/null && b_image_project
 
 	# Always return 0 to prevent CI from failing
