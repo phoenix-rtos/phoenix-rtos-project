@@ -53,12 +53,14 @@ KERNEL_PHBASE=$((0x08000000)) # flash0 start address
 KERNEL_PHOFFS=$KERNEL_OFFS
 export KERNEL_PHADDR=$(printf "%08x" $(($KERNEL_PHBASE + KERNEL_PHOFFS)))
 
+# All data/code maps need to be cacheable to allow unaligned accesses
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
-	"map flash0 0x08000000 0x08080000 rx"
-	"map flash1 0x08080000 0x08100000 rx"
-	"map ram 0x20000000 0x20050000 rwx"
+	"map flash0 0x08000000 0x08080000 rxcb"
+	"map flash1 0x08080000 0x08100000 rxcb"
+	"map ram 0x20000000 0x20050000 rwxcb"
+	"map io 0x40000000 0x60000000 rw"
 	"phfs flash0 2.0 raw"
 	"phfs flash1 2.1 raw"
 	"phfs ramdev 4.0 raw"
@@ -68,7 +70,7 @@ PREINIT_SCRIPT=(
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram"
+	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram;io"
 	"app ${BOOT_DEVICE} -x psh flash0 ram"
 	"wait 2000"
 	"go!")

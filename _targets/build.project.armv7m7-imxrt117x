@@ -54,13 +54,16 @@ KERNEL_PHBASE=$((0x0)) # itcm start address
 KERNEL_PHOFFS=$((0x0))
 export KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
 
+# All data/code maps need to be cacheable to allow unaligned accesses
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
-	"map itcm 0x0 0x40000 rwx"
-	"map dtcm 0x20000000 0x20028000 rwx"
-	"map ocram2 0x202c0000 0x20340000 rwxc"
-	"map xip1 0x30000000 0x30400000 rx"
+	"map itcm 0x0 0x40000 rwxcb"
+	"map dtcm 0x20000000 0x20028000 rwcb"
+	"map ocram2 0x202c0000 0x20340000 rwxcb"
+	"map aips14 0x40000000 0x41000000 rws"
+	"map aips5 0x42000000 0x42100000 rws"
+	"map xip1 0x30000000 0x30400000 rxcb"
 	"phfs usb0 1.2 phoenixd"
 	"phfs flash0 2.0 raw"
 	"console 0.0")
@@ -70,7 +73,7 @@ PREINIT_SCRIPT=(
 USER_SCRIPT=(
 	"kernel ${BOOT_DEVICE}"
 	"app ${BOOT_DEVICE} -x dummyfs xip1 ocram2"
-	"app ${BOOT_DEVICE} -x imxrt-multi xip1 ocram2"
+	"app ${BOOT_DEVICE} -x imxrt-multi xip1 ocram2;aips14;aips5"
 	"app ${BOOT_DEVICE} -x psh xip1 ocram2"
 	"wait 2000"
 	"go!")
