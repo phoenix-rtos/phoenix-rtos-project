@@ -95,3 +95,7 @@
 #define MEMP_STATS         1
 #define PBUF_STATS         1
 #define SYS_STATS          1
+
+#define LWIP_DEBUG 1
+#define TCP_DEBUG LWIP_DBG_ON
+#define TCP_INPUT_DEBUG LWIP_DBG_ON
