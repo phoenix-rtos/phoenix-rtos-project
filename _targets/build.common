@@ -16,7 +16,7 @@ KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 # - $1 - array contains user's commands
 #
 # Output variables:
-# - PROGS - names of the applications defined in the script
+# - PROGS - absolute paths of the applications/blobs defined in the script
 b_mkscript_user() {
 	PROGS=()
 	local cmds=("$@")
@@ -63,18 +63,31 @@ b_mkscript_user() {
 			args=($cmd)
 			case "${args[0]}"
 			in
-				app)
-					if [ "${args[2]:0:1}" = "-" ]; then
-						name=${args[3]%%;*}
+				app|blob)
+					if [ "${args[0]}" = "app" ] && [ "${args[2]:0:1}" = "-" ]; then
+						local pathargnum=3
 					else
-						name=${args[2]%%;*}
+						local pathargnum=2
 					fi
 
-					PROGS+=("$name")
-					psz=$(wc -c < "${PREFIX_PROG_STRIPPED}$name")
+					# Replace "/path/prog;flags" with "prog;flags"
+					local path="${args[$pathargnum]%%;*}"
+					local pathflags="${args[$pathargnum]#$path}"
+					local name="$(basename "$path")"
+					args[$pathargnum]="$name$pathflags"
+
+					if [[ "$path" =~ ^/.* ]]; then
+						# No need for a separator - $path is absolute
+						local abspath="${PREFIX_ROOTFS}$path"
+					else
+						local abspath="${PREFIX_PROG_STRIPPED}/$path"
+					fi
+
+					PROGS+=("$abspath")
+					psz=$(wc -c < "$abspath")
 					printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "$name" "$poffs" "$psz"
 					((poffs+=(psz + SIZE_PAGE - 1) & PAGE_MASK))
-					printf "%s\n" "$cmd";;
+					printf "%s\n" "${args[*]}";;
 
 				kernel)
 					printf "alias%s %s 0x%x 0x%x\n" "$RELATIVE_ALIAS" "${KERNEL_FILE}" "$KERNEL_OFFS" "$ksz"
@@ -235,7 +248,7 @@ b_prod_image() {
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
-		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$PHOENIX_DISK"
+		b_add2img "$prog" "$PHOENIX_DISK"
 	done
 
 	# System image (without plo)
@@ -255,7 +268,7 @@ b_kernel_image() {
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
-		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$IMG"
+		b_add2img "$prog" "$IMG"
 	done
 }
 
@@ -304,6 +317,6 @@ b_dev_image() {
 
 	# Programs
 	for prog in "${PROGS[@]}"; do
-		b_add2img "${PREFIX_PROG_STRIPPED}$prog" "$PHOENIX_DEV_IMG"
+		b_add2img "$prog" "$PHOENIX_DEV_IMG"
 	done
 }
