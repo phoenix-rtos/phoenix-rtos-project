@@ -13,15 +13,15 @@ This repository contains sample Phoenix-RTOS project. It aggregates all system c
 
 ## Building
 
-The building process was described in [phoenix-rtos-doc/building/](https://github.com/phoenix-rtos/phoenix-rtos-doc/blob/master/building/README.md).
+The building process was described in [docs.phoenix-rtos.com/building](https://docs.phoenix-rtos.com/building/index.html).
 
 ## Running
 
-To launch the created image on target architecture please see [phoenix-rtos-doc/quickstart/](https://github.com/phoenix-rtos/phoenix-rtos-doc/blob/master/quickstart/README.md).
+To launch the created image on target architecture please see [docs.phoenix-rtos.com/quickstart](https://docs.phoenix-rtos.com/quickstart/index.html).
 
 ## Documentation
 
-Phoenix-RTOS philosophy, architecture and internals are described in [phoenix-rtos-doc/](https://github.com/phoenix-rtos/phoenix-rtos-doc/blob/master/README.md).
+Phoenix-RTOS philosophy, architecture and internals are described in [docs.phoenix-rtos.com](https://docs.phoenix-rtos.com).
 
 ## Product website
 
