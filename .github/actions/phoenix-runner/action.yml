@@ -13,7 +13,7 @@ inputs:
 
   nightly:
     description: 'Run nightly mode'
-    default: false
+    default: true
     required: false
 
 

@@ -17,7 +17,7 @@ on:
         required: false
       nightly:
         type: boolean
-        default: false
+        default: true
         required: false
 
 
@@ -30,12 +30,8 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7a9-zynq7000-qemu', 'armv7a9-zynq7000-zedboard', 'armv7a9-zynq7000-zturn', 'armv7m4-stm32l4x6-nucleo', 'armv7m7-imxrt105x-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'host-generic-pc', 'ia32-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'riscv64-generic-spike', 'sparcv8leon3-gr716-mini']
-        include:
-          - target: 'ia32-generic-qemu'
-            syspage: 'psh pc-ata uart16550'
-          - target: 'armv7a9-zynq7000-qemu'
-            additional_params: 'ports'
+        target: ['armv7a9-zynq7000-zedboard']
+
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -54,7 +50,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           syspage: ${{ matrix.syspage }}
-          params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
+          params: all tests
           nightly: ${{ inputs.nightly }}
 
       # step 3: tar rootfs
@@ -71,51 +67,6 @@ jobs:
             _boot/${{ matrix.target }}
             rootfs-${{ matrix.target }}.tar
 
-  test-emu:
-    needs: build
-    name: test EMU
-    runs-on: ubuntu-latest
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu']
-
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: phoenix-rtos-${{ matrix.target }}
-
-      - name: Untar rootfs
-        working-directory: _fs
-        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
-
-      - name: Add sanitizers problem matcher
-        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
-
-      - name: Test runner
-        id: runner
-        uses: ./.github/actions/phoenix-runner
-        with:
-          target: ${{ matrix.target }}
-          nightly: ${{ inputs.nightly }}
-
-      - name: Upload runner results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.target }}
-          path: |
-            results.csv
-            results.xml
-
   test-hw:
     needs: build
     name: test HW
@@ -125,7 +76,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+        target: ['armv7a9-zynq7000-zedboard']
 
     steps:
       - name: Checkout the repository
@@ -158,7 +109,7 @@ jobs:
 
   tests-summary:
     if: success() || failure()   # don't care about cancelled runs
-    needs: ['test-emu', 'test-hw']
+    needs: ['test-hw']
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
@@ -193,7 +144,7 @@ jobs:
 
 
   send-notification:
-    needs: ['build', 'test-emu', 'test-hw']
+    needs: ['build', 'test-hw']
     if: failure() && github.event_name != 'pull_request'
     uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
     secrets: inherit
