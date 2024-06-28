@@ -1,0 +1,104 @@
+#!/bin/bash
+#
+# Shell script for building riscv64-generic project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=riscv64-phoenix-
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+export PORTS_COREMARK=n
+
+
+#
+# Platform dependent parameters
+#
+SIZE_PAGE=$((0x1000))
+PAGE_MASK=$((~(SIZE_PAGE - 1)))
+
+#
+# Project specific build
+#
+
+BOOT_DEVICE="ram0"                # Default boot device
+NAME_USER_SCRIPT="user.plo"       # User script name
+MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+OFFS_USER_SCRIPT=$((0x10000))     # Disk image user script offset (in bytes)
+KERNEL_OFFS=$((0x11000))          # Disk image kernel offset (in bytes)
+
+
+# Pre-init script is launched before user script
+PREINIT_SCRIPT=(
+	"map kddr 0x200000 0x2fffff rwx"
+	"map ddr 0x300000 0x7ffffff rwx"
+	"phfs ram0 4.0 raw"
+	"console 0.0"
+)
+
+
+USER_SCRIPT=(
+	"kernel ${BOOT_DEVICE}"
+	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
+	"app ${BOOT_DEVICE} -x grlib-uart ddr ddr"
+	"app ${BOOT_DEVICE} -x psh ddr ddr"
+	"wait 500"
+	"go!"
+)
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+	b_log "Building phoenix-rtos-loader"
+
+	b_mkscript_preinit
+	make -C plo all
+
+	${CROSS}objcopy -O binary "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo.img"
+
+	b_log "Adding PLO to Phoenix SBI"
+	make -C plo/riscv-sbi all FDT_PATH="$PREFIX_PROJECT/_projects/$TARGET/$TARGET.dtb" \
+		PAYLOAD_PATH="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" PAYLOAD_ADDR=0x200000
+
+	mv "${PREFIX_PROG}sbi-${TARGET_SUBFAMILY}.elf" "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+}
+
+
+b_image_target() {
+	b_mkscript_user "${USER_SCRIPT[@]}"
+	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
+
+	b_prod_image
+}
+
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
