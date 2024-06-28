@@ -31,4 +31,7 @@
 #define PLIC_BASE     0xc000000
 #define PLIC_IRQ_SIZE 54
 
+#define SBI_AREA_START 0x80000000UL
+#define SBI_AREA_END   0x80200000UL
+
 #endif
