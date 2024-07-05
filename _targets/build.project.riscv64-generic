@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Shell script for building riscv64-generic project
 #
-# Copyright 2018, 2019, 2020 Phoenix Systems
-# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+# Copyright 2018-2020, 2024 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski, Lukasz Leczkowski
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
@@ -82,14 +82,6 @@ b_build_target() {
 	make -C plo all
 
 	${CROSS}objcopy -O binary "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo.img"
-
-	# Add plo to boot loader
-	b_log "Adding PLO to boot loader"
-
-	OSBI_BUILD_DIR="$PREFIX_BUILD/opensbi"
-
-	(cd "$PREFIX_PROJECT/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/plo.img")
-	cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix.osbi"
 }
 
 

@@ -6,4 +6,4 @@
 # Author: Lukasz Leczkowski
 #
 
-exec spike -m0x80000000:0x10000000 --real-time-clint "$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-spike/phoenix.osbi"
+exec spike -m0x80000000:0x10000000 --real-time-clint "$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-spike/sbi-generic.elf"
