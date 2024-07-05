@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Shell script for building riscv64-generic-spike project
 #
-# Copyright 2022 Phoenix Systems
-# Author: Lukasz Kosinski
+# Copyright 2022, 2024 Phoenix Systems
+# Author: Lukasz Kosinski, Lukasz Leczkowski
 #
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
@@ -25,8 +25,9 @@ USER_SCRIPT=(
 
 
 b_image_project () {
-	(cd "$PREFIX_PROJECT/riscv/opensbi/" && make O="$OSBI_BUILD_DIR" CROSS_COMPILE="$CROSS" PLATFORM=generic FW_PAYLOAD_PATH="$PREFIX_BOOT/phoenix.disk")
-	cp "$OSBI_BUILD_DIR/platform/generic/firmware/fw_payload.elf" "$PREFIX_BOOT/phoenix.osbi"
+	b_log "Adding PLO to Phoenix SBI"
+	make -C plo/riscv-sbi all PAYLOAD_PATH="$PREFIX_BOOT/phoenix.disk" PAYLOAD_ADDR=0x80200000
+	cp "${PREFIX_PROG}sbi-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
 
 	b_log "The images have been built for the ${TARGET} platform"
 }
