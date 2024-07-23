@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Shell script for building armv8r52-mps3an536-qemu project
+#
+# Copyright 2022, 2024 Phoenix Systems
+# Author: Lukasz Kosinski
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+
+export PLO_DEVICES="flash-mps3an536 uart-cmsdk-apb"
+
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}
