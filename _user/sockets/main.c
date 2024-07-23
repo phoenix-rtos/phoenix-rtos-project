@@ -94,28 +94,35 @@ int main(void)
 		  }
 	  }
 
-	  int timeout_msecs = 500;
-	  struct pollfd pfd[1];
+	  if (nonblocking_client) {
+		  int timeout_msecs = 500;
+		  struct pollfd pfd[1];
 
-	  pfd[0].fd = datasock;
-	  pfd[0].events = POLLOUT;
+		  pfd[0].fd = datasock;
+		  pfd[0].events = POLLOUT;
 
-	  printf("client is now polling\n");
-	  while (true) {
-		  CHECK_ERRNO(poll(pfd, 1, timeout_msecs));
-		  if (pfd[0].revents & POLLOUT) {
-			  printf("client POLLOUT: socket ready to write\n");
-			  char *msg = "i am a message";
-			  CHECK_ERRNO(send(datasock, msg, BUF_SIZE, 0));
-			  printf("client sent message\n");
-			  break;
+		  printf("client is now polling\n");
+		  while (true) {
+			  CHECK_ERRNO(poll(pfd, 1, timeout_msecs));
+			  if (pfd[0].revents & POLLOUT) {
+				  printf("client POLLOUT: socket ready to write\n");
+				  char *msg = "i am a message";
+				  CHECK_ERRNO(send(datasock, msg, BUF_SIZE, 0));
+				  printf("client sent message\n");
+				  break;
+			  }
+			  else if (pfd[0].revents & POLLHUP) {
+				  printf("client POLLHUP\n");
+			  }
+			  else {
+				  printf("client poll timeouted\n");
+			  }
 		  }
-		  else if (pfd[0].revents & POLLHUP) {
-			  printf("client POLLHUP\n");
-		  }
-		  else {
-			  printf("client poll timeouted\n");
-		  }
+	  }
+	  else {
+		  char *msg = "i am a message";
+		  CHECK_ERRNO(send(datasock, msg, BUF_SIZE, 0));
+		  printf("client sent message\n");
 	  }
 	  printf("client exited\n");
 
@@ -141,32 +148,39 @@ int main(void)
 		  }
 		  else {
 			  int timeout_msecs = 500;
-			  struct pollfd pfd[1];
+			  struct pollfd pfd[2];
+
+			  int n = 1;
 
 			  pfd[0].fd = sock;
 			  pfd[0].events = POLLIN;
 
 			  printf("server is now polling\n");
 			  while (true) {
-				  CHECK_ERRNO(poll(pfd, 1, timeout_msecs));
+				  CHECK_ERRNO(poll(pfd, n, timeout_msecs));
 
-				  if ((pfd[0].revents & POLLIN)) {
-					  printf("server POLLIN!");
+				  if (pfd[0].revents & POLLIN) {
+					  printf("server POLLIN on 0\n");
 					  CHECK_ERRNO(datasock = accept(sock, NULL, NULL));
 					  if (datasock > 0) {
 						  printf("server has accepted connection!\n");
-
-						  CHECK_ERRNO(read(datasock, buf, BUF_SIZE));
-						  buf[BUF_SIZE - 1] = 0;
-						  printf("read(): got '%s'\n", buf);
+						  pfd[1].fd = datasock;
+						  pfd[1].events = POLLIN;
+						  n++;
 					  }
 					  else {
 						  printf("server failed to accept()\n");
 					  }
-					  break;
 				  }
 				  else if (pfd[0].revents & POLLHUP) {
-					  printf("server POLLHUP");
+					  printf("server POLLHUP\n");
+				  }
+				  else if (n == 2 && (pfd[1].revents & POLLIN)) {
+					  printf("server POLLIN on 1\n");
+					  CHECK_ERRNO(read(pfd[1].fd, buf, BUF_SIZE));
+					  buf[BUF_SIZE - 1] = 0;
+					  printf("read(): got '%s'\n", buf);
+					  break;
 				  }
 				  else {
 					  printf("server poll timeouted\n");
