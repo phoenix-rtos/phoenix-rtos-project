@@ -22,17 +22,17 @@ export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 #
 # Ports configuration
 #
-export PORTS_BUSYBOX=y
-export PORTS_PCRE=y
-export PORTS_OPENSSL=y
-export PORTS_LIGHTTPD=y
-export PORTS_DROPBEAR=y
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
 export PORTS_LUA=n
-export PORTS_LZO=y
-export PORTS_OPENVPN=y
-export PORTS_JANSSON=y
-export PORTS_CURL=y
-export PORTS_MICROPYTHON=y
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+export PORTS_MICROPYTHON=n
 
 #
 # Platform dependent parameters
@@ -100,6 +100,37 @@ b_build_target() {
 	b_log "Building phoenix-rtos-loader"
 	b_mkscript_preinit
 	make -C plo base
+
+	# mkdir -p "$PREFIX_BUILD/cfs"
+	# mkdir -p "$PREFIX_FS/root/cfs"
+
+	# # set variables for make
+	# export SIMULATION=phoenix
+	# export O="$PREFIX_BUILD/cfs"
+	# export INSTALLPREFIX="/cfs"
+	# export DESTDIR="$PREFIX_FS/root"
+
+# b_log "Building cFS (into $PREFIX_BUILD/cfs)"
+
+# export EXPORT_CC="$CC" EXPORT_LD="$LD" EXPORT_AS="$AS" EXPORT_AR="$AR"
+
+# cd "$PREFIX_BUILD/cfs" && \
+# cmake -DOSAL_SYSTEM_BSPTYPE=generic-phoenix -DINSTALL_TARGET_LIST=. -DOSAL_CONFIG_DEBUG_PRINTF=TRUE \
+# 	-DOSAL_CONFIG_INCLUDE_DYNAMIC_LOADER=FALSE -DOSAL_CONFIG_INCLUDE_STATIC_LOADER=FALSE \
+# 	-DCMAKE_TOOLCHAIN_FILE="$PREFIX_PROJECT/cFS/cfe/cmake/sample_defs/toolchain-phoenix.cmake" \
+# 	-DCMAKE_INSTALL_PREFIX="$PREFIX_FS/root/cfs" -DENABLE_UNIT_TESTS=true \
+# 	-DCMAKE_BUILD_TYPE=Debug \
+# 	-DOSAL_CONFIG_DEBUG_PERMISSIVE_MODE=TRUE "$PREFIX_PROJECT/cFS/osal" && \
+# 	make && \
+# 	make install
+
+	# env -u CC -u LD -u AS -u AR \
+	# 	EXPORT_CC="$CC" EXPORT_LD="$LD" EXPORT_AS="$AS" EXPORT_AR="$AR" \
+	# 	make -C cFS prep
+
+	# make -C cFS
+	# make -C cFS install
+
 }
 
 
