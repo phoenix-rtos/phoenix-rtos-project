@@ -11,5 +11,6 @@
 export PLO_DEVICES="ram-storage uart-grlib"
 
 b_image_project () {
+	cp "${PREFIX_PROG_STRIPPED}sbi-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
 	b_log "The images have been built for the ${TARGET} platform"
 }
