@@ -6,6 +6,9 @@
 # Author: Lukasz Leczkowski
 #
 
+IMG_PLO_ARMv8r52="$(dirname "${BASH_SOURCE[0]}")/../_build/armv8r52-mps3an536-qemu/prog.stripped/plo-armv8r52-mps3an536.elf"
+IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv8r52-mps3an536-qemu/phoenix.disk"
+
 # uses UART2 for output
 exec qemu-system-arm \
 	-smp 1 \
@@ -13,5 +16,5 @@ exec qemu-system-arm \
 	-serial null \
 	-serial null \
 	-serial mon:stdio \
-	-kernel _build/armv8r52-mps3an536-qemu/prog.stripped/plo-armv8r52-mps3an536.elf \
-	-device loader,file=_boot/armv8r52-mps3an536-qemu/phoenix.disk,addr=0x08000000,force-raw=on
+	-kernel "$IMG_PLO_ARMv8r52" \
+	-device loader,file="$IMG_FLASH_QEMU",addr=0x08000000,force-raw=on
