@@ -6,7 +6,7 @@
 # Author: Lukasz Leczkowski
 #
 
-IMG_PLO_ARMv8r52="$(dirname "${BASH_SOURCE[0]}")/../_build/armv8r52-mps3an536-qemu/prog.stripped/plo-armv8r52-mps3an536.elf"
+IMG_PLO_ARMv8r52="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv8r52-mps3an536-qemu/plo.elf"
 IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv8r52-mps3an536-qemu/phoenix.disk"
 
 # uses UART2 for output
