@@ -85,6 +85,8 @@ b_build_target() {
 	b_mkscript_preinit
 
 	make -C plo all
+
+	cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "${PREFIX_BOOT}/plo.elf"
 }
 
 
