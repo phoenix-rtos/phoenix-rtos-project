@@ -1,0 +1,135 @@
+BorderWidth	1
+NoGrabServer
+NoBackingStore
+NoSaveUnders
+Zoom
+RandomPlacement
+WarpUnmapped
+ShowIconManager
+
+TitleFont	"fixed"
+MenuFont	"fixed"
+IconFont	"fixed"
+ResizeFont	"fixed"
+
+Color
+{
+BorderColor         "Black"
+DefaultBackground   "White"
+DefaultForeground   "Black"
+
+TitleBackground     "LightSteelBlue"
+TitleForeground     "Black"
+
+MenuTitleBackground "White"
+MenuTitleForeground "Black"
+
+MenuBackground      "LightSteelBlue"
+MenuForeground      "Black"
+
+MenuShadowColor     "Black"
+MenuBorderColor     "Black"
+}
+
+#
+# Key bindings
+#
+
+"Tab" = m : all : f.warpring "next"
+"Tab" = s : all : f.warpring "prev"
+"F11" = m : all : f.fullzoom
+
+MoveDelta 3                 # need to move this much before takes effect
+Function "move-or-raise"    # simulate uwm action
+{
+    f.move
+    f.deltastop
+    f.raise
+}
+
+DefaultFunction f.nop       # ignore extraneous events
+
+Button1 =       : root                          : f.menu "twmops"
+Button2 =       : root                          : f.menu "windowops"
+Button3 =       : root                          : f.menu "TwmWindows"
+Button1 =       : title                         : f.function "move-or-raise"
+Button1 =       : icon                          : f.iconify
+Button1 =       : iconmgr                       : f.iconify
+Button1 = m     : window|icon|frame|title       : f.function "move-or-raise"
+Button3 = m     : window|icon|frame|title       : f.resize
+
+#
+# Window Ring
+#
+
+WindowRing                      # f.warpring acts along these windows
+{
+    "xterm"
+    "emacs"
+    "Minefield"
+    "Iceweasel"
+    "Evince"
+    "xpdf"
+    "xdvi"
+}
+
+#
+# Menus
+#
+
+menu "twmops"
+{
+    "System"        f.title
+    "Restart Twm"   f.restart
+    "Exit Twm"      f.quit
+    ""              f.nop
+    "xeyes"         !"xeyes -display :0 &"
+    "xclock"        !"xclock -display :0 &"
+    "ico"           !"ico -display :0 -sleep 30 &"
+    "xterm"         !"xterm &"
+    ""              f.nop
+    "emacsclient"   !"emacsclient -c &"
+    "firefox"       !"/opt/firefox/firefox &"
+    ""              f.nop
+    "Kill"          f.menu "kill"
+    ""              f.nop
+    "Logout"        f.warpto "xlogout"
+}
+
+menu "windowops"
+{
+    "Windows"           f.title
+    "Kill"              f.menu "kill"
+    "Save"              f.saveyourself
+    "Refresh"           f.refresh
+    ""                  f.nop
+    "Iconify"           f.iconify
+    "Resize"            f.resize
+    "Move"              f.move
+    "Raise"             f.raise
+    "Lower"             f.lower
+    "Info"              f.identify
+    "Focus"             f.focus
+    "Unfocus"           f.unfocus
+    ""                  f.nop
+    "Show Iconmgr"      f.showiconmgr
+    "Hide Iconmgr"      f.hideiconmgr
+    "Prev Iconmgr"      f.previconmgr
+    "Next Iconmgr"      f.nexticonmgr
+}
+
+menu "windowmenu"
+{
+    "Iconify"           f.iconify
+    "RaiseLower"        f.raiselower
+    "Refresh"           f.winrefresh
+    "Focus"             f.focus
+    ""                  f.nop
+    "Kill"              f.menu "kill"
+}
+
+menu "kill"
+{
+    "Send Delete"       f.delete
+    "Kill Window"       f.destroy
+}
