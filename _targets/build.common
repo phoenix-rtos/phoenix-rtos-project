@@ -229,6 +229,12 @@ b_prod_image() {
 	PHOENIX_DISK="$PREFIX_BOOT/phoenix.disk" # plo + PHOENIX_IMG
 	rm -f "$PHOENIX_IMG" "$PHOENIX_DISK"
 
+	local loadersz
+	loadersz=$(wc -c < "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img")
+	if [ "$loadersz" -ge "$OFFS_USER_SCRIPT" ]; then
+		b_die "User script offset to small: $OFFS_USER_SCRIPT, loader size: $loadersz."
+	fi
+
 	sz=$(wc -c < "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
 		b_die "User script size too large. Please, change kernel offset or user script offset."
@@ -289,6 +295,12 @@ b_dev_image() {
 
 	b_mkscript_user "${DEV_USER_SCRIPT[@]}"
 	printf "%s\n" "${REMOTE_USER_SCRIPT[@]}" > "$REMOTE_SCRIPT_PATH"
+
+	local loadersz
+	loadersz=$(wc -c < "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img")
+	if [ "$loadersz" -ge "$OFFS_USER_SCRIPT" ]; then
+		b_die "User script offset to small: $OFFS_USER_SCRIPT, loader size: $loadersz."
+	fi
 
 	sz=$(wc -c < "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT")
 	if [ "$sz" -ge "$((KERNEL_OFFS - OFFS_USER_SCRIPT))" ]; then
