@@ -14,7 +14,7 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
-#define SYSCLK_FREQ (48 * 1000 * 1000) /* MHz */
+#define SYSCLK_FREQ (20 * 1000 * 1000) /* MHz */
 
 #define UART_MAX_CNT 6
 
@@ -53,7 +53,7 @@
 #define UART5_RX 229
 
 #define UART0_ACTIVE 1
-#define UART1_ACTIVE 1
+#define UART1_ACTIVE 0
 #define UART2_ACTIVE 0
 #define UART3_ACTIVE 0
 #define UART4_ACTIVE 0
@@ -125,6 +125,10 @@
 /* DMA */
 
 #define DMA_MAX_CNT 0
+
+/* CGU */
+
+#define CGU_BASE ((void *)0x80000d00)
 
 
 #endif
