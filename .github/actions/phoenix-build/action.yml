@@ -27,7 +27,7 @@ inputs:
     required: false
   nightly:
     description: 'Build additional tests'
-    default: false
+    default: true
     required: false
 
 # action runner
