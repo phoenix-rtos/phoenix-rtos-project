@@ -1,0 +1,2 @@
+ifconfig en1 192.168.122.2
+xinit /bin/sh /root/.xinitrc -- /bin/Xfbdev :0 -tcp -ac
