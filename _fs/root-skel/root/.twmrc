@@ -2,6 +2,7 @@ BorderWidth	1
 NoGrabServer
 NoBackingStore
 NoSaveUnders
+FramePadding 1
 Zoom
 RandomPlacement
 WarpUnmapped
@@ -15,13 +16,13 @@ ResizeFont	"fixed"
 Color
 {
 BorderColor         "Black"
-DefaultBackground   "White"
+DefaultBackground   "Gray90"
 DefaultForeground   "Black"
 
 TitleBackground     "LightSteelBlue"
 TitleForeground     "Black"
 
-MenuTitleBackground "White"
+MenuTitleBackground "Gray90"
 MenuTitleForeground "Black"
 
 MenuBackground      "LightSteelBlue"
@@ -30,6 +31,20 @@ MenuForeground      "Black"
 MenuShadowColor     "Black"
 MenuBorderColor     "Black"
 }
+
+NoTitle				# little programs that look like icons
+{
+  "TWM Icon Manager"
+  "xeyes"
+  "xclock"
+}
+
+# Title bar buttons
+
+IconDirectory "/root/.twm/icons" # Directory for non default icons
+RightTitleButton "minimize.xbm"=f.iconify
+RightTitleButton "maximize.xbm"=f.fullzoom
+RightTitleButton "close.xbm"=f.delete
 
 #
 # Key bindings
@@ -59,21 +74,6 @@ Button1 = m     : window|icon|frame|title       : f.function "move-or-raise"
 Button3 = m     : window|icon|frame|title       : f.resize
 
 #
-# Window Ring
-#
-
-WindowRing                      # f.warpring acts along these windows
-{
-    "xterm"
-    "emacs"
-    "Minefield"
-    "Iceweasel"
-    "Evince"
-    "xpdf"
-    "xdvi"
-}
-
-#
 # Menus
 #
 
@@ -83,13 +83,12 @@ menu "twmops"
     "Restart Twm"   f.restart
     "Exit Twm"      f.quit
     ""              f.nop
-    "xeyes"         !"xeyes -display :0 &"
-    "xclock"        !"xclock -display :0 &"
-    "ico"           !"ico -display :0 -sleep 30 &"
-    "xterm"         !"xterm &"
-    ""              f.nop
-    "emacsclient"   !"emacsclient -c &"
-    "firefox"       !"/opt/firefox/firefox &"
+    "xeyes"         !"xeyes &"
+    "xclock"        !"xclock &"
+    "ico"           !"ico -sleep 30 &"
+    "st (terminal)" !"st &"
+    "xgc"           !"xgc &"
+    "xbill"         !"xbill &"
     ""              f.nop
     "Kill"          f.menu "kill"
     ""              f.nop

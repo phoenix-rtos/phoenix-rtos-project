@@ -16,6 +16,9 @@ int main(void)
 
 	while (1) {
 		if ((rv = read(fd, &c, 1)) > 0) {
+			if (c & (1 << 8)) {
+				printf("(shift) ");
+			}
 			if (c & 0x80) {
 				c &= 0x7f;
 				printf("%u - released\n", c);

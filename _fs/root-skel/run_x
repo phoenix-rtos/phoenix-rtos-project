@@ -1,5 +1,1 @@
-Xfbdev :0 &
-
-sleep 1
-
-DISPLAY=:0 twm -f .twmrc
+xinit /bin/sh /root/.xinitrc -- /usr/bin/Xfbdev :0 > x.log

@@ -1,0 +1,9 @@
+Xfbdev :0 &
+
+sleep 1
+
+DISPLAY=:0 twm -f .twmrc &
+
+sleep 1
+
+DISPLAY=:0 st

@@ -1,0 +1,4 @@
+XClock*foreground: white
+XClock*highlight: white
+XClock*background: gray20
+XClock*update: 1
