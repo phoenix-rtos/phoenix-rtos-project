@@ -50,8 +50,7 @@ KERNEL_OFFS=$((0x11000))          # Disk image kernel offset (in bytes)
 
 # Pre-init script is launched before user script
 PREINIT_SCRIPT=(
-	"map kddr 0x200000 0x2fffff rwx"
-	"map ddr 0x300000 0x7ffffff rwx"
+	"map ddr 0x200000 0x7ffffff rwx"
 	"phfs ram0 4.0 raw"
 	"console 0.0"
 )

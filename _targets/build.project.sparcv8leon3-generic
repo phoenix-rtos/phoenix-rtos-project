@@ -41,8 +41,7 @@ MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
 
 
 PREINIT_SCRIPT=(
-	"map ksram 0x40000000 0x4003ffff rwx"
-	"map sram 0x40040000 0x47ffffff rwx"
+	"map sram 0x40000000 0x47ffffff rwx"
 	"console 0.0"
 	"phfs ram0 4.0 raw"
 )
