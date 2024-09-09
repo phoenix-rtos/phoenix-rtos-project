@@ -43,8 +43,7 @@ FS_OFFS=$((0xc0000))
 
 
 PREINIT_SCRIPT=(
-	"map ksram 0x40000000 0x4003ffff rwx"
-	"map sram 0x40040000 0x80000000 rwx"
+	"map sram 0x40000000 0x80000000 rwx"
 	"console 0.0"
 	"phfs uart1 0.1 phoenixd"
 	"phfs flash0 2.0 raw"
