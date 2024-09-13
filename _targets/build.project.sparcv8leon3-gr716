@@ -35,9 +35,9 @@ PAGE_MASK=$((~(SIZE_PAGE - 1)))
 
 BOOT_DEVICE="flash0"              # Default boot device
 NAME_USER_SCRIPT="user.plo"       # User script name
-OFFS_USER_SCRIPT=$((0xE000))
+OFFS_USER_SCRIPT=$((0xE400))
 MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
-KERNEL_OFFS=$((0xF000))
+KERNEL_OFFS=$((0xF400))
 
 
 # Physical kernel address
