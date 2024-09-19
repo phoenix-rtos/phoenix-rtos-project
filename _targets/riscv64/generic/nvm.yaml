@@ -1,0 +1,24 @@
+loader:
+  size: 0x400000 # 4 MB
+  block_size: 512
+  partitions:
+    # WARN: the plo embedded in SBI is being run, not the one in loader.disk
+    - name: plo
+      offs: 0x0
+      size: 0x10000
+    - name: kernel
+      # offs/size will be set based on the offset of the prev/next partition
+
+# separate block device for rootfs
+vblk0:
+  size: 0x4000000 # 64 MB
+  block_size: 512
+  partitions:
+    - name: mbr
+      offs: 0x1be
+      size: 66      # bytes - until the end of the sector
+      virtual: True # don't expect to be aligned to the sector
+    - name: rootfs
+      offs: 0x1400
+      # TODO: add type: ext2
+

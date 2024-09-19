@@ -1,0 +1,23 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  - map ram 0x0 0xffffffff rwx
+  - phfs com2 0.1 phoenixd
+  - phfs floppy 2.0 raw
+  - phfs hd0 2.1 raw
+  - phfs hd1 2.2 raw
+  - phfs hd2 2.3 raw
+  - phfs hd3 2.4 raw
+  - if: '{{ env.CONSOLE == "serial" }}'
+    str: console 0.0
+  - if: '{{ env.CONSOLE != "serial" }}'
+    str: console 3.0
+  - wait 1000
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.hd0.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'

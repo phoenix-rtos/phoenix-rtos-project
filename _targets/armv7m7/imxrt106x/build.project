@@ -36,70 +36,21 @@ export PORTS_AZURE_SDK=n
 #
 # Platform dependent parameters
 #
-SIZE_PAGE=$((0x200))
-PAGE_MASK=$((0xfffffe00))
-
+export SIZE_PAGE=$((0x200))
 
 #
 # Project specific build
 #
 
-BOOT_DEVICE="flash1"
-NAME_USER_SCRIPT="user.plo"
-OFFS_USER_SCRIPT=$((0x11000))
-MAGIC_USER_SCRIPT=$((0xdabaabad))
-KERNEL_OFFS=$((0x12000))
+export BOOT_DEVICE="flash1"
+export MAGIC_USER_SCRIPT=dabaabad
 
 
 # Physical kernel address
 KERNEL_PHBASE=$((0x0)) # itcm start address
 KERNEL_PHOFFS=$((0x0))
-export KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
-
-# All data/code maps need to be cacheable to allow unaligned accesses
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map itcm 0x0 0x28000 rwxcb"
-	"map dtcm 0x20000000 0x20058000 rwcb"
-	"map ocram2 0x20200000 0x20280000 rwxcb"
-	"map aips14 0x40000000 0x40400000 rws"
-	"map aips5 0x42000000 0x42100000 rws"
-	"map xip2 0x60000000 0x64000000 rxcb"
-	"map xip1 0x70000000 0x70400000 rxcb"
-	"phfs usb0 1.2 phoenixd"
-	"phfs flash0 2.0 raw"
-	"phfs flash1 2.1 raw"
-	"console 0.0")
-
-
-# Production user script contains applications to run Phoenix-RTOS
-USER_SCRIPT=(
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs xip1 ocram2"
-	"app ${BOOT_DEVICE} -x imxrt-multi xip1 ocram2;aips14;aips5"
-	"app ${BOOT_DEVICE} -x psh xip1 ocram2"
-	"app ${BOOT_DEVICE} imxrt-flash ocram2 ocram2;aips14"
-	"wait 2000"
-	"go!")
-
-
-# Example of user dev script which call remotely script
-DEV_USER_SCRIPT=(
-	"echo on"
-	"wait 3000"
-	"call usb0 script-${TARGET_FAMILY}-${TARGET_SUBFAMILY}-dev.plo 5a5aa5a5")
-
-
-REMOTE_USER_SCRIPT=(
-	"5a5aa5a5"
-	"kernel usb0"
-	"app usb0 -x dummyfs ocram2 ocram2"
-	"app usb0 -x imxrt-multi itcm dtcm"
-	"app usb0 -x psh ocram2 ocram2"
-	"copy usb0 imxrt-flash flash1 0x15000 0"
-	"app flash1 imxrt-flash ocram2 dtcm"
-	"go!")
+KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+export KERNEL_PHADDR
 
 
 b_build_project() {
@@ -112,23 +63,19 @@ b_build_target() {
 	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
-	b_mkscript_preinit
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 
 	make -C plo all
 
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
-	cp "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" "$PREFIX_BOOT/plo-ram.sdp"
+	cp -a "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	cp -a "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" "$PREFIX_BOOT/plo-ram.sdp"
 }
 
 
 b_image_target() {
-	b_mkscript_user "${USER_SCRIPT[@]}"
-	b_prod_image
-
-	# TODO: Fix b_dev_image overwriting user.plo created by b_prod_image
-	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
-
-	b_dev_image
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name user --script "$PLO_SCRIPT_USER"
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --name flash1 --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" --out "phoenix.disk"
 }
 
 

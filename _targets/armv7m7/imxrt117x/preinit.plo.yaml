@@ -1,0 +1,23 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  # NOTE: All data/code maps need to be cacheable to allow unaligned accesses
+  - map itcm 0x0 0x40000 rwxcb
+  - map dtcm 0x20000000 0x20028000 rwcb
+  - map ocram2 0x202c0000 0x20340000 rwxcb
+  - map aips14 0x40000000 0x41000000 rws
+  - map aips5 0x42000000 0x42100000 rws
+  - map xip1 0x30000000 0x30400000 rxcb
+  - phfs usb0 1.2 phoenixd
+  - phfs flash0 2.0 raw
+  - console 0.0
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm[env.BOOT_DEVICE].user.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
+

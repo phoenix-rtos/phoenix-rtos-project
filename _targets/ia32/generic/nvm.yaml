@@ -1,0 +1,17 @@
+hd0:
+  size: 0x4000000 # 64 MB
+  block_size: 512
+  partitions:
+    - name: plo
+      offs: 0x0
+      size: 0x12000
+    - name: mbr  # place for MBR is reserved inside PLO image
+      offs: 0x1be
+      size: 16  # bytes
+      virtual: True  # virtual partitions can overlap with others
+    - name: kernel
+      # offs/size will be set based on the offset of the prev/next partition
+    - name: rootfs
+      offs: 0x200000
+      size: 0x2000000
+      # TODO: add type: ext2

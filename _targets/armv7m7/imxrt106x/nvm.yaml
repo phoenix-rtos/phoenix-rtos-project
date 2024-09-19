@@ -1,0 +1,19 @@
+# example NVM config - based on EVK board
+flash0:
+  # internal flash - W25Q32JV (32Mbit)
+  # not used currently
+  size: 0x400000 # 4 MB
+  block_size: 0x1000
+  padding_byte: 0xff
+
+flash1:
+  # external qspi flash - is25wp064a (64Mbit)
+  size: 0x800000 # 8 MB
+  block_size: 0x1000
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: user
+      offs: 0x11000
+      # if size not set - last non-virtual partition will be extnded to the end of flash

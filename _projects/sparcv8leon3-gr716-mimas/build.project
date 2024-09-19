@@ -8,31 +8,16 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-BOOT_DEVICE="uart0"
+# no NVM storage, all programs are being loaded via UART
+export BOOT_DEVICE="uart0"
 
 export PLO_DEVICES="gpio-gr716 uart-grlib"
 
-PREINIT_SCRIPT=(
-	"map ocram 0x31000000 0x3101FFFF rwx"
-	"map extram 0x40000000 0x401FFFFF rwx"
-	"phfs uart0 0.0 phoenixd"
-	"console 0.1"
-)
-
-
-USER_SCRIPT=(
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs extram extram"
-	"app ${BOOT_DEVICE} -x grlib-multi extram extram"
-	"app ${BOOT_DEVICE} -x psh extram extram"
-	"wait 500"
-	"go!"
-)
-
-
-b_convert_project() {
+prepare_plo_img() {
+	#TODO: consider using nvm.yaml for merging header with plo
 	local f="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
 	local sz=$(stat -c%s "$f")
+	#TODO: why "- 4" ?
 	sz=$(((sz - 4)/4))
 	printf "\xde\xad\xbe\xef" > "$PREFIX_BOOT/plo.img"
 	printf "%08X" $sz | xxd -r -p >> "$PREFIX_BOOT/plo.img"
@@ -42,10 +27,15 @@ b_convert_project() {
 
 
 b_image_project () {
-	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
-	cp "${PREFIX_PROG_STRIPPED}dummyfs" "$PREFIX_BOOT/"
-	cp "${PREFIX_PROG_STRIPPED}grlib-multi" "$PREFIX_BOOT/"
-	cp "${PREFIX_PROG_STRIPPED}psh" "$PREFIX_BOOT/"
+	prepare_plo_img;
+
+	# no NVM storage, all programs are being loaded via UART - prepare user.plo and all binaries in "PREFIX_BOOT"
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_USER" --out "${PREFIX_BOOT}/user.plo"
+
+	cp -a "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
+	cp -a "${PREFIX_PROG_STRIPPED}dummyfs" "$PREFIX_BOOT/"
+	cp -a "${PREFIX_PROG_STRIPPED}grlib-multi" "$PREFIX_BOOT/"
+	cp -a "${PREFIX_PROG_STRIPPED}psh" "$PREFIX_BOOT/"
 
 	b_log "The images have been built for the ${TARGET} platform"
 }

@@ -33,38 +33,14 @@ export PORTS_CURL=n
 #
 # Platform dependent parameters
 #
-SIZE_PAGE=$((0x1000))
-PAGE_MASK=$((~(SIZE_PAGE - 1)))
+export SIZE_PAGE=$((0x1000))
 
 #
 # Project specific build
 #
 
-BOOT_DEVICE="ram0"                # Default boot device
-NAME_USER_SCRIPT="user.plo"       # User script name
-MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
-OFFS_USER_SCRIPT=$((0x10000))     # Disk image user script offset (in bytes)
-KERNEL_OFFS=$((0x11000))          # Disk image kernel offset (in bytes)
-OFFS_ROOTFS=$((0x10))             # Disk image rootfs offset (in 512 byte sectors)
-
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map ddr 0x80200000 0x87ffffff rwx"
-	"phfs ram0 4.0 raw"
-	"console 0.0"
-)
-
-
-USER_SCRIPT=(
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
-	"app ${BOOT_DEVICE} -x uart16550 ddr ddr"
-	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x virtio-blk;-r;0:0 ddr ddr"
-	"wait 500"
-	"go!"
-)
+export BOOT_DEVICE="ram0"           # Default boot device
+export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
 
 
 b_build_project() {
@@ -77,19 +53,11 @@ b_build_target() {
 	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
-	b_mkscript_preinit
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 	make -C plo all
 
-	${CROSS}objcopy -O binary "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo.img"
-}
-
-
-b_le32hex() {
-	local n=$1
-	for ((i=0; i<4; i++)); do
-		printf "%s%02x" "\x" $((n & 0xff))
-		n=$((n >> 8))
-	done
+	cp -a "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
 }
 
 
@@ -97,39 +65,41 @@ b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
 	b_log "Creating rootfs"
-	ROOTFS="$PREFIX_BOOT/rootfs.ext2"
-	rm -f "$ROOTFS"
-	SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
-	SIZE_ROOTFS=$((3 * SIZE_ROOTFS))
-	echo "rootfs size: ${SIZE_ROOTFS}KB"
-	genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
+	ROOTFS="$PREFIX_BOOT/part_rootfs.img"
+	SIZE_PARTITION=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.vblk0.rootfs.size if "vblk0" in nvm else 0 }}')
 
-	# Generate MBR partition table
-	PTABLE="$PREFIX_BOOT/disk.ptable"
-	{
-		printf "$(b_le32hex $((0x80)))"
-		printf "$(b_le32hex $((0x83)))"
-		printf "$(b_le32hex $((OFFS_ROOTFS)))"
-		printf "$(b_le32hex $((2 * SIZE_ROOTFS)))"
-		for ((i=0; i<48; i++)); do
-			printf "\x00"
-		done
-		# add MBR magic
-		printf "\x55\xaa"
-	} > "$PTABLE"
+	if [ "$SIZE_PARTITION" -gt 0 ]; then
 
-	# Generate disk image
-	DISK="$PREFIX_BOOT/rootfs.disk"
-	rm -f "$DISK"
-	OFFSET=$((0x1be))
-	b_add2img "$PTABLE" "$DISK"
-	printf "Copying %s (offs=%s blocks)\n" "$ROOTFS" "$OFFS_ROOTFS"
-	dd if="$ROOTFS" of="$DISK" seek="$OFFS_ROOTFS" conv=notrunc 2>/dev/null
+		rm -f "$ROOTFS"
+		SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
+		SIZE_ROOTFS=$((3 * SIZE_ROOTFS))
+		echo "rootfs size: ${SIZE_ROOTFS} kB / $((SIZE_PARTITION / 1024)) kB"
+		[ "$SIZE_ROOTFS" -gt "$SIZE_PARTITION" ] && b_die "rootfs size exceeds the target partition!"
+		genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
 
-	b_mkscript_user "${USER_SCRIPT[@]}"
-	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
+		# Disk image rootfs offset (in 512 byte sectors)
+		OFFS_ROOTFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.vblk0.rootfs.offs // nvm.vblk0._meta.block_size }}')
 
-	b_prod_image
+		# Generate MBR partition table
+		PTABLE="$PREFIX_BOOT/part_vblk0_mbr.img"
+		{
+			printf "$(b_le32hex $((0x80)))"
+			printf "$(b_le32hex $((0x83)))"
+			printf "$(b_le32hex $((OFFS_ROOTFS)))"
+			printf "$(b_le32hex $((2 * SIZE_ROOTFS)))"
+			for ((i=0; i<48; i++)); do
+				printf "\x00"
+			done
+			# add MBR magic
+			printf "\x55\xaa"
+		} > "$PTABLE"
+	fi
+
+	# create all partition images
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+
+	# create full disk images
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "plo=$PREFIX_BOOT/plo.img"
 }
 
 

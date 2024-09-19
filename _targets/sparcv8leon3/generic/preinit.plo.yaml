@@ -1,0 +1,16 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  - map sram 0x40000000 0x47ffffff rwx
+  - console 0.0
+  - phfs ram0 4.0 raw
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.flash0.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
+

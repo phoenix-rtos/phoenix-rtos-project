@@ -18,48 +18,15 @@ export PORTS_BUSYBOX=y
 #
 # Default platform dependent parameters
 #
-SIZE_PAGE=$((0x1000))
-PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0x11000))
-FS_OFFS=$((0x800000))
-BS_OFFS=$((0x400000))
-if [ -f "${PROJECT_PATH}/bitstream.bin" ]; then
-	BS_SZ=$(wc -c "${PROJECT_PATH}/bitstream.bin" | cut -f1 -d" ")
-else
-	BS_SZ=0
-fi
+export SIZE_PAGE=$((0x1000))
 
 #
 # Project specific build
 #
 
-BOOT_DEVICE="flash0"
-NAME_USER_SCRIPT="user.plo"
-OFFS_USER_SCRIPT=$((0x10a00))
-MAGIC_USER_SCRIPT=$((0xdabaabad))
+export BOOT_DEVICE="flash0"
+export MAGIC_USER_SCRIPT="dabaabad"
 
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map kddr 0x100000 0x12ffff rwx"
-	"map ddr 0x130000 0x900000 rwx"
-	"map ocram1 0x00000000 0x00030000 rwx"
-	"phfs usb0 1.2 phoenixd"
-	"phfs uart0 0.0 phoenixd"
-	"phfs uart1 0.1 raw"
-	"phfs flash0 2.0 raw"
-	"console 0.1")
-
-
-# Production user script contains applications to run basic version of Phoenix-RTOS
-USER_SCRIPT=(
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash ddr ddr"
-	"wait 500"
-	"go!")
 
 
 b_build_project() {
@@ -72,7 +39,8 @@ b_build_target() {
 	b_log "Building $TARGET project"
 
 	b_log "Building phoenix-rtos-loader"
-	b_mkscript_preinit
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 	make -C plo base ram
 
 	# plo image is reused only in loading system via qemu
@@ -80,10 +48,6 @@ b_build_target() {
 		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
 	fi
 
-	phoenix-rtos-build/scripts/mkimg-boot-zynq7000.sh \
-		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
-		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
-		0
 
 	# Copy plo.elf with symbols to provide loading plo using gdb
 	cp "${PREFIX_PROG}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
@@ -96,6 +60,7 @@ b_build_target() {
 }
 
 
+#TODO: move the functionality to the image_builder?
 b_write_cleanmarkers() {
 	local rootfs_file="$1"
 	local erase_sz="$2"
@@ -126,45 +91,42 @@ b_write_cleanmarkers() {
 
 
 b_image_target() {
-	b_mkscript_user "${USER_SCRIPT[@]}"
-	b_prod_image
-	# FIXME: DEV_USER_SCRIPT is unset here - can't build dev image
-	#b_dev_image
+	# prepare necessary BootROM flash header
+	mkimg-boot-zynq7000.sh \
+		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
+		"${PREFIX_BOOT}/part_plo.img" \
+		0
 
-	# Function needs external variables to be defined in a project file:
-	: "${FS_SZ:?variable unset}"                   # root filesystem size
-	: "${FS_WRITE_CLEANMARKERS:?variable unset}"   # define writing cleanmarkers to final image
+	# kernel / syspage
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
 
 	b_log "Creating rootfs"
 	# !!! NOTE: For non-standard NOR flash memories, erase_sz should be changed.
 	local erase_sz=$((0x10000))
 
-	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
-	mtd-utils/build.sh
-	OLD_PATH="$PATH"
-	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
 	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
 	# Create jffs2 image with padding at the end of the final erase block
 	mkfs.jffs2 -U -c 12 -m none -e $erase_sz -s $SIZE_PAGE -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS" -p
 
+	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
-	echo "rootfs size: ${sz}KB"
+	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
+	[ "$sz" -gt "$FS_SZ" ] && b_die "rootfs size exceeds the target partition!"
+	#TODO: add summary nodes and check performance?
 
 	# Write cleanmarkers to the rootfs partition
+	: "${FS_WRITE_CLEANMARKERS:?variable unset}"   # define writing cleanmarkers to final image
 	[ "${FS_WRITE_CLEANMARKERS}" = "y" ] && b_write_cleanmarkers "$ROOTFS" "$erase_sz" "$FS_SZ"
 
-	PATH="$OLD_PATH"
+	BITSTREAM_PART=none
+	[ -f "${PREFIX_BOOT}/bitstream.bin" ] && BITSTREAM_PART="${PREFIX_BOOT}/bitstream.bin"
 
-	# Add bitstream to PHOENIX_DISK
-	if [ -f "${PREFIX_BOOT}/bitstream.bin" ]; then
-		printf "Copying "${PREFIX_BOOT}/bitstream.bin" (offs="$((BS_OFFS/4096))" blocks)\n"
-		dd if="${PREFIX_BOOT}/bitstream.bin" of="$PHOENIX_DISK" bs=4096 seek=$((BS_OFFS/4096)) conv=notrunc 2>/dev/null
-	fi
+	# create full disk image
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "bitstr=$BITSTREAM_PART" --part "rootfs=$ROOTFS"
 
-	# Add rootfs to PHOENIX_DISK
-	printf "Copying "$ROOTFS" (offs="$((FS_OFFS/4096))" blocks)\n"
-	dd if="$ROOTFS" of="$PHOENIX_DISK" bs=4096 seek=$((FS_OFFS/4096)) conv=notrunc 2>/dev/null
+    # TODO: remove? CI currently has the disk filename hardcoded - maybe it should use nvm.yaml?
+    cp -a "${PREFIX_BOOT}/flash0.disk" "${PREFIX_BOOT}/phoenix.disk"
 }
 
 

@@ -10,12 +10,19 @@
 
 export PLO_DEVICES="gpio-gr716 uart-grlib flash-gr716"
 
-b_convert_project() {
-	./phoenix-rtos-build/scripts/gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
-	./phoenix-rtos-build/scripts/gr716-bch.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.bch"
+prepare_plo_img() {
+	#FIXME: img file already produced by the plo make, change the output filename
+	FLASH_SIZE=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0._meta.size }}')
+	gr716-convert.py "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" -o "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	gr716-bch.py -s "$FLASH_SIZE" "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.bch"
 }
 
 
 b_image_project () {
+	prepare_plo_img;
+
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --name flash0 --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" --out "phoenix.disk"
+
 	b_log "The images have been built for the ${TARGET} platform"
 }

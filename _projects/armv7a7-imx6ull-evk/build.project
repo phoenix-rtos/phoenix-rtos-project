@@ -19,7 +19,7 @@ export LWIP_IPSEC_BUILD=no
 export LWIP_WIFI_BUILD=no
 
 #
-# Setup model of KSZ8081 On-Board Chip 
+# Setup model of KSZ8081 On-Board Chip
 #
 export EPHY_KSZ8081=RNA
 
@@ -37,56 +37,11 @@ export PLO_DEVICES="flash-imx6ull uart-imx6ull usbc-cdc"
 #
 # Project specific build
 #
-BOOT_DEVICE="nor0"                # Default boot device
-OFFS_USER_SCRIPT=$((0x20000))     # Disk image user script offset (in bytes)
-
-KERNEL_OFFS=$((0x21000))          # Disk image kernel offset (in bytes)
+export BOOT_DEVICE="nor0"         # Default boot device
 ERASE_SIZE=$((16 * 4096))         # Rootfs disk erase block size (in bytes)
-SECTOR_SIZE=$((0x100))            # Rootfs write sector size (in bytes)
 CLEANMARKER_SIZE=$((0x10))        # JFFS2 cleanmarker size (in bytes)
-IMAGE_PAD_FF=y
-
-#
-# Fs data
-#
-FS_OFFS=$((0x100000))
-FS_SZ=$((0x2000000 - FS_OFFS))
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map ddr 0x80000000 0x87ffffff rwx"
-	"phfs usb0 1.2 phoenixd"
-	"phfs ${BOOT_DEVICE} 2.0 raw"
-	"console 0.0"
-)
-
-
-#TODO: if flash driver for imx6ull-evk implementation is introduced, psh should be replaced by imx6ull-flash and psd
-# This is temporary solution for running a system image in RAM
-UPLOAD_SCRIPT=(
-	"wait 2000"
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
-	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x psh ddr ddr"
-	"go!"
-)
-
-
-PRIMARY_SCRIPT=(
-	"wait 2000"
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
-	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x imx6ull-flashnor;-q;1;-r;0;${FS_OFFS};${FS_SZ};jffs2 ddr ddr"
-	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"go!"
-)
 
 
 b_image_project () {
-	OFFSET="$FS_OFFS"
-	b_add2img "$(b_rootfs_path_get_target)" "$PHOENIX_DISK"
-
 	b_log "The images have been built for the ${TARGET} platform"
 }

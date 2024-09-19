@@ -1,0 +1,18 @@
+size: 0x1000
+is_relative: False
+
+contents:
+   #FIXME: map should end at 0x7fffffff
+  - map sram 0x40000000 0x80000000 rwx
+  - console 0.0
+  - phfs uart1 0.1 phoenixd
+  - phfs flash0 2.0 raw
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.flash0.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
+

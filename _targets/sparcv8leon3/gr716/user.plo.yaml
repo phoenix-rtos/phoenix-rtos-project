@@ -1,0 +1,13 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - kernel {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -x dummyfs extram extram
+  - app {{ env.BOOT_DEVICE }} -x grlib-multi extram extram
+  - app {{ env.BOOT_DEVICE }} -x psh extram extram
+  - app {{ env.BOOT_DEVICE }} -x gr716-flash extram extram
+  - wait 2000
+  - go!

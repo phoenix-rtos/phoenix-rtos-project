@@ -1,0 +1,11 @@
+loader:
+  size: 0x2000000 # 32 MB
+  block_size: 512
+  partitions:
+    - name: plo
+      offs: 0x0
+      # NOTE: we need enough free space in "plo" to also copy the kernel from `kernel` partition
+      size: 0x200000  # 2 MB
+
+    - name: kernel
+      # offs/size will be set based on the offset of the prev/next partition
