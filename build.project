@@ -7,6 +7,8 @@
 #
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+# extend path with build scripts dir
+PATH="$PATH:$(realpath phoenix-rtos-build/scripts/)"
 
 # optional args will be printed in red
 b_list_available_targets() {
