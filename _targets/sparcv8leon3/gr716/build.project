@@ -30,40 +30,21 @@ export PORTS_CURL=n
 #
 # Platform dependent parameters
 #
-SIZE_PAGE=$((0x200))
-PAGE_MASK=$((~(SIZE_PAGE - 1)))
+export SIZE_PAGE=$((0x200))
 
-BOOT_DEVICE="flash0"              # Default boot device
-NAME_USER_SCRIPT="user.plo"       # User script name
-OFFS_USER_SCRIPT=$((0xE400))
-MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
-KERNEL_OFFS=$((0xF400))
+#
+# Project specific build
+#
+export BOOT_DEVICE="flash0"         # Default boot device
+export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
 
 
 # Physical kernel address
 KERNEL_PHBASE=$((0x31000000)) # iram start address
 KERNEL_PHOFFS=$((0x0))
-export KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+export KERNEL_PHADDR
 
-
-PREINIT_SCRIPT=(
-	"map dram 0x30000000 0x3000FFFF rw"
-	"map iram 0x31000000 0x3101FFFF rx"
-	"map extram 0x40000000 0x401FFFFF rwx"
-	"phfs uart3 0.3 phoenixd"
-	"phfs flash0 2.0 raw"
-	"console 0.2"
-)
-
-USER_SCRIPT=(
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs extram extram"
-	"app ${BOOT_DEVICE} -x grlib-multi extram extram"
-	"app ${BOOT_DEVICE} -x psh extram extram"
-	"app ${BOOT_DEVICE} -x gr716-flash extram extram"
-	"wait 2000"
-	"go!"
-)
 
 b_build_project() {
 	b_log "Building user applications"
@@ -75,22 +56,18 @@ b_build_target() {
 	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
-	b_mkscript_preinit
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 
 	make -C plo all
 
-	declare -F b_convert_project >/dev/null && b_convert_project
-
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	cp -a "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 }
 
 
 
 b_image_target() {
-	b_mkscript_user "${USER_SCRIPT[@]}"
-	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
-
-	b_prod_image
+	:;
 }
 
 

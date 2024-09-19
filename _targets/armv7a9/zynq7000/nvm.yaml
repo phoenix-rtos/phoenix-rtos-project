@@ -1,0 +1,15 @@
+flash0:
+  size: 0x1000000 # 16 MB
+  block_size: 512
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: kernel
+      offs: 0x10000
+    - name: bitstr
+      offs: 0x400000
+    - name: rootfs
+      offs: 0x800000
+      size: 0x800000
+      type: jffs2

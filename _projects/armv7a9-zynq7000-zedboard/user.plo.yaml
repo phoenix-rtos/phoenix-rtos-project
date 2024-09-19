@@ -1,0 +1,22 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - wait 500
+  - kernel {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x zynq7000-uart ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
+  # WARN: for mounting partitions in mtd1 region we need to subtract mtd1 base offset
+  - name: app
+    device: '{{ env.BOOT_DEVICE }}'
+    flags: EXEC
+    filename: zynq7000-flash
+    args:
+       - '-r;/dev/mtd1:{{ nvm.flash0.rootfs.offs - nvm.flash0.mtd1.offs }}:{{ nvm.flash0.rootfs.size }}:jffs2'
+       - '-p;/dev/mtd1:{{ nvm.flash0.data.offs   - nvm.flash0.mtd1.offs }}:{{ nvm.flash0.data.size }}'
+    text_map: ddr
+    data_maps: ddr
+  - go!

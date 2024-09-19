@@ -32,53 +32,18 @@ export PORTS_CURL=y
 #
 # Platform dependent parameters
 #
-SIZE_PAGE=$((0x1000))
-PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0x0))              # Disk image kernel offset (in bytes)
+export SIZE_PAGE=$((0x1000))
 ADDR_DDR=$((0x80000000))
 
 
 #
 # Project specific build
 #
-BOOT_DEVICE="flash0"              # Default boot device
-NAME_USER_SCRIPT="user.plo"       # User script name
-MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
-OFFS_USER_SCRIPT=$((0x0))         # Disk image user script offset (in bytes)
-OFFS_ROOTFS=$((0x1000))           # Disk image rootfs offset (in 512 byte sectors)
+export BOOT_DEVICE="flash0"
+export MAGIC_USER_SCRIPT="dabaabad"
+
+# TODO: move to nvm.yaml
 ERASE_SIZE=$((64 * 4096))         # Rootfs disk erase block size (in bytes)
-CLEANMARKER_SIZE=$((0))           # JFFS2 cleanmarker size (in bytes)
-
-
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map ddr 0x80000000 0x87ffffff rwx"
-	"phfs usb0 1.2 phoenixd"
-	"console 0.0"
-)
-
-
-#TODO: if flash driver for imx6ull-evk implementation is introduced, psh should be replaced by imx6ul-flash and psd
-# This is temporary solution for running a system image in RAM
-UPLOAD_SCRIPT=(
-	"wait 2000"
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
-	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x psh ddr ddr"
-	"go!"
-)
-
-
-PRIMARY_SCRIPT=(
-	"wait 2000"
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs ddr ddr"
-	"app ${BOOT_DEVICE} -x imx6ull-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x psh ddr ddr"
-	"go!"
-)
 
 
 b_build_project() {
@@ -89,10 +54,12 @@ b_build_project() {
 
 b_build_target() {
 	b_log "Building $TARGET project"
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+
 	if [ "$KERNEL_PLO_BOOT" = "y" ]; then
 		b_log "Building PLO"
 
-		b_mkscript_preinit
+		RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 		make -C plo all
 
 		cp -a "phoenix-rtos-hostutils/psu/plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.sdp" "$PREFIX_BOOT/plo-ram.sdp"
@@ -114,6 +81,7 @@ b_syspage_gen() {
 	addr=$((syspage-vectors))
 	sz=$((plugin-syspage))
 
+	# TODO: move the functionality to the image_builder?
 	"$PREFIX_BOOT/syspagen" \
 		-a 32\
 		-s "$ADDR_DDR:$addr:$sz" \
@@ -123,29 +91,24 @@ b_syspage_gen() {
 }
 
 
-# Defined as a function instead of a constant as $PREFIX_BOOT is not set at top level.
-b_rootfs_path_get_target() {
-	echo "$PREFIX_BOOT/rootfs.jffs2"
-}
-
-
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
-
-	b_mkscript_user "${UPLOAD_SCRIPT[@]}"
 
 	if [ "$KERNEL_PLO_BOOT" = "y" ]; then
 		b_log "Image will boot from PLO."
 
 		b_log "FLASH image"
-		b_mkscript_user "${PRIMARY_SCRIPT[@]}"
-		b_prod_image
+		image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
 	else
+		#FIXME: this code path hasn't yet been moved to image_builder
+
 		# Parsed by syspagen for map and console commands.
 		b_mkscript_preinit
 
 		# Build production image
 		b_log "RAM Image"
+
+		#TODO: create `kernel` partition image without the script using image_builder
 		b_kernel_image "$PREFIX_BOOT/phoenix.img"
 		b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
 
@@ -154,19 +117,18 @@ b_image_target() {
 		# As plo is not used user script is used only to:
 		#    - upload executable binary file instead of elf to the board(kernelimg),
 		#    - upload required apps(app).
+		#TODO: create `kernel` partition image without the script using image_builder
 		b_mkscript_user "${PRIMARY_SCRIPT[@]}"
 		b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
 		b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
+		cp -a "$PREFIX_BOOT/phoenix-kernel.img" "$PREFIX_BOOT/part_kernel.img"
 	fi
 
 	b_log "Creating rootfs"
-	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
-	mtd-utils/build.sh
-	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
 
-	ROOTFS=$(b_rootfs_path_get_target)
+	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
-	if [ $CLEANMARKER_SIZE -eq 0 ]; then
+	if [ "$CLEANMARKER_SIZE" -eq 0 ]; then
 		CLEANMARKER_ARG=("-n")
 	else
 		CLEANMARKER_ARG=("-c" "$CLEANMARKER_SIZE")
@@ -179,8 +141,15 @@ b_image_target() {
 		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi
 
+	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
-	echo "rootfs size: ${sz}KB"
+	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
+	[ "$sz" -gt "$FS_SZ" ] && b_die "rootfs size exceeds the target partition!"
+
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "rootfs=$ROOTFS" --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+
+	# TODO: remove? CI currently has the disk filename hardcoded - maybe it should use nvm.yaml?
+	cp -a "${PREFIX_BOOT}/flash0.disk" "${PREFIX_BOOT}/phoenix.disk"
 }
 
 

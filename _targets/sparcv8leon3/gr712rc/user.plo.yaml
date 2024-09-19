@@ -1,0 +1,13 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - kernel {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D sram sram
+  - app {{ env.BOOT_DEVICE }} -x grlib-multi sram sram
+  - app {{ env.BOOT_DEVICE }} -x gr712rc-flash;-r;root:jffs2 sram sram
+  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh sram sram
+  - wait 500
+  - go!

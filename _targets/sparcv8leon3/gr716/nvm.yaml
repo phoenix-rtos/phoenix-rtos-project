@@ -1,0 +1,11 @@
+flash0:
+  size: 0x1000000 # 16 MB
+  block_size: 0x100 # program page size
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: kernel
+      offs: 0xe400
+      # if size not set - last non-virtual partition will be extnded to the end of flash
+      # TODO: add explicit/virtual partition for BCH

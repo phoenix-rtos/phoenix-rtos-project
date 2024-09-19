@@ -1,0 +1,17 @@
+flash0:
+  size: 0x1000000 # 16 MB
+  block_size: 512
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: kernel
+      offs: 0x10000
+    # bitstream is not used in qemu, make larger rootfs instead
+    - name: rootfs
+      offs: 0x400000
+      size: 0xc00000
+      type: jffs2
+    # provide empty virtual bitstr region for _target generic approach  to work
+    - name: bitstr
+      virtual: True

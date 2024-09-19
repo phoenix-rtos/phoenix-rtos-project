@@ -1,0 +1,18 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  #TODO: add SRAM
+  - map ddr 0x80000000 0x87ffffff rwx
+  - phfs usb0 1.2 phoenixd
+  - phfs {{ env.BOOT_DEVICE }} 2.0 raw
+  - console 0.0
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.flash0.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
+

@@ -12,6 +12,7 @@ export PLO_DEVICES="ram-storage uart-16550"
 
 b_image_project () {
 	b_log "Adding PLO to Phoenix SBI"
+	# WARN: the plo embedded in SBI is being run, not the one in loader.disk
 	make -C plo/riscv-sbi all PAYLOAD_PATH="$PREFIX_BOOT/plo.img" PAYLOAD_ADDR=0x80200000
 	cp "${PREFIX_PROG}sbi-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
 

@@ -1,0 +1,12 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - kernel {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -x dummyfs xip1 ocram2
+  - app {{ env.BOOT_DEVICE }} -x imxrt-multi xip1 ocram2;aips14;aips5
+  - app {{ env.BOOT_DEVICE }} -x psh xip1 ocram2
+  - wait 2000
+  - go!

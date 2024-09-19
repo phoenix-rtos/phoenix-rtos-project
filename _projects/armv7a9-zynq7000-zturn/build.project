@@ -8,34 +8,10 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-export FS_SZ=$((0x800000))
 export FS_WRITE_CLEANMARKERS=n
 
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
-
-# Pre-init script is launched before user script
-PREINIT_SCRIPT=(
-	"map kddr 0x100000 0x12ffff rwx"
-	"map ddr 0x130000 0x900000 rwx"
-	"map ocram1 0x00000000 0x00030000 rwx"
-	"phfs usb0 1.2 phoenixd"
-	"phfs uart0 0.0 phoenixd"
-	"phfs uart1 0.1 raw"
-	"phfs flash0 2.0 raw"
-	"console 0.1")
-
-
-# Production user script contains applications to run Phoenix-RTOS
-USER_SCRIPT=(
-	"wait 500"
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-uart ddr ddr"
-	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh ddr ddr"
-	"app ${BOOT_DEVICE} -x zynq7000-flash;-r;/dev/mtd0:${FS_OFFS}:${FS_SZ}:jffs2; ddr ddr"
-	"go!")
-
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"

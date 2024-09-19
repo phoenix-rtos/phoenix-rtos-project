@@ -30,34 +30,12 @@ export PORTS_CURL=n
 #
 # Platform dependent parameters
 #
-SIZE_PAGE=$((0x1000))
-PAGE_MASK=$((~(SIZE_PAGE - 1)))
-KERNEL_OFFS=$((0x10000))
+export SIZE_PAGE=$((0x1000))
 
-BOOT_DEVICE="flash0"              # Default boot device
-NAME_USER_SCRIPT="user.plo"       # User script name
-OFFS_USER_SCRIPT=$((0xf000))
-MAGIC_USER_SCRIPT=$((0xdabaabad)) # User script magic value
+export BOOT_DEVICE="flash0"              # Default boot device
+export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
+#TODO: move to nvm.yaml
 ERASE_SIZE=$((0x20000))           # Rootfs disk erase block size (in bytes)
-FS_OFFS=$((0xc0000))
-
-
-PREINIT_SCRIPT=(
-	"map sram 0x40000000 0x80000000 rwx"
-	"console 0.0"
-	"phfs uart1 0.1 phoenixd"
-	"phfs flash0 2.0 raw"
-)
-
-USER_SCRIPT=(
-	"kernel ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x dummyfs;-N;devfs;-D sram sram"
-	"app ${BOOT_DEVICE} -x grlib-multi sram sram"
-	"app ${BOOT_DEVICE} -x gr712rc-flash;-r;root:jffs2 sram sram"
-	"app ${BOOT_DEVICE} -x psh;-i;/etc/rc.psh sram sram"
-	"wait 500"
-	"go!"
-)
 
 
 b_build_project() {
@@ -70,25 +48,18 @@ b_build_target() {
 	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
-	b_mkscript_preinit
-
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
 	make -C plo all
 
-	cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
-	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	cp -a "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
+	cp -a "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 }
 
 
 b_image_target() {
-	b_mkscript_user "${USER_SCRIPT[@]}"
-	cp "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT" "${PREFIX_BOOT}"
-
-	b_prod_image
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
 
 	b_log "Creating rootfs"
-	# FIXME: does work only on macOS, for now hackish solution based on extending PATH
-	mtd-utils/build.sh
-	PATH="$(pwd)/_build/host-generic-pc/prog/:$PATH"
 
 	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
 
@@ -100,29 +71,18 @@ b_image_target() {
 		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi
 
-	sz=$(du -b "$ROOTFS" | awk '{ print $1 }')
-	echo "rootfs size: $((sz/1024))KB"
+	local FS_OFFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.offs }}')
+	local FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
+	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
+	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
+	[ "$sz" -gt "$FS_SZ" ] && b_die "rootfs size exceeds the target partition!"
 
-	local start=$(((FS_OFFS+sz+ERASE_SIZE-1)/ERASE_SIZE)) # Start clean block after rootfs
-	local end=$((FLASH_SZ/ERASE_SIZE))                    # Number of blocks in flash
-	local nblocks=$((end-start-1))                        # Clean blocks
+	# cmd for creating cleanmarkers in plo
+	echo "Format jffs2 partition in plo:"
+	echo "jffs2 -d 2.0 -c $((FS_OFFS / ERASE_SIZE)):$((FS_SZ / ERASE_SIZE)):${ERASE_SIZE}:16"
 
-	# cmd for creating cleanmarkers in plo on clean system
-	echo "Create cleanmarkers in plo:"
-	echo "jffs2 -d 2.0 -c ${start}:${nblocks}:${ERASE_SIZE}:16"
-
-	# set rootfs offset in image
-	OFFSET=$FS_OFFS
-	b_add2img "$ROOTFS" "$PHOENIX_DISK"
-
-	if [[ -f "$PREFIX_BOOT"/ptable.img ]]; then
-		rm "$PREFIX_BOOT"/ptable.img
-	fi
-
-	"$PREFIX_BOOT"/psdisk "$PREFIX_BOOT"/ptable.img -m "$FLASH_SZ",0x20000 \
-		-p boot0,0,$((FS_OFFS)),0x51 \
-		-p root,$((FS_OFFS)),$((FLASH_SZ-FS_OFFS-ERASE_SIZE)),0x72 \
-		-p ptable,$((FLASH_SZ-ERASE_SIZE)),$((ERASE_SIZE)),0x51
+	image_builder.py ptable --nvm "$NVM_CONFIG"
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "rootfs=$ROOTFS" --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
 }
 
 

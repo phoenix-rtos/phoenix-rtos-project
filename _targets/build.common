@@ -9,6 +9,41 @@
 
 KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 
+# If path variable $1 is unset - set it to project-specific or target-specific path based on the existence of file $2
+# Function gets the following argument:
+# - $1 - Variable name as string
+# - $2 - File name
+b_set_default_path() {
+	local varname="$1"
+	local fname="$2"
+
+	if [ -z "${!varname}" ]; then
+		local projpath="_projects/$TARGET/$fname"
+		if [ -e "$projpath" ]; then
+			# indirect assignment to the variable with varname
+			printf -v "$varname" "%s" "$projpath"
+		else
+			printf -v "$varname" "%s" "_targets/$TARGET_FAMILY/$TARGET_SUBFAMILY/$fname"
+		fi
+	fi
+}
+
+b_set_default_path "NVM_CONFIG" "nvm.yaml"
+b_set_default_path "PLO_SCRIPT_PREINIT" "preinit.plo.yaml"
+b_set_default_path "PLO_SCRIPT_USER" "user.plo.yaml"
+
+
+b_le32hex() {
+	local n=$1
+	for ((i=0; i<4; i++)); do
+		printf "%s%02x" "\x" $((n & 0xff))
+		n=$((n >> 8))
+	done
+}
+
+# TODO: remove obsolete functions below this line
+
+
 # TODO: use same convention for all bool-like variables such as: BANKSWITCH and IMAGE_PAD_FF
 # TODO: set default values for optional variables in separate dedicated function invoked before usage
 
