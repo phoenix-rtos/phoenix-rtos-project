@@ -61,6 +61,7 @@ PREINIT_SCRIPT=(
 	"map flash1 0x08080000 0x08100000 rxcb"
 	"map ram 0x20000000 0x20050000 rwxcb"
 	"map io 0x40000000 0x60000000 rw"
+	"map otp 0x1fff0000 0x20000000 rw"
 	"phfs flash0 2.0 raw"
 	"phfs flash1 2.1 raw"
 	"phfs ramdev 4.0 raw"
@@ -70,7 +71,7 @@ PREINIT_SCRIPT=(
 # Production user script contains applications to run Phoenix-RTOS
 USER_SCRIPT=(
 	"kernelimg ${BOOT_DEVICE}"
-	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram;io"
+	"app ${BOOT_DEVICE} -x stm32l4-multi flash0 ram;io;otp"
 	"app ${BOOT_DEVICE} -x psh flash0 ram"
 	"wait 2000"
 	"go!")
