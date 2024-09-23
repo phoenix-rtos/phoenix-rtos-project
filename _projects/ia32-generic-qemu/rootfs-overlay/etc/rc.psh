@@ -6,3 +6,4 @@ X /bin/posixsrv
 X /sbin/lwip rtl:0x18:11
 T /dev/console
 X /bin/psh
+X /usr/bin/hello

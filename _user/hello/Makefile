@@ -5,6 +5,6 @@
 #
 
 NAME := hello
-LOCAL_SRCS := main.c
+LOCAL_SRCS := main.c audio.c
 
 include $(binary.mk)
