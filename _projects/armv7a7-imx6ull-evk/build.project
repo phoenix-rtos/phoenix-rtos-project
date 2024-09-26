@@ -21,7 +21,7 @@ export LWIP_WIFI_BUILD=no
 #
 # Setup model of KSZ8081 On-Board Chip
 #
-export EPHY_KSZ8081=RNA
+export EPHY_KSZ8081=RNB
 
 #
 # Boot configuration
