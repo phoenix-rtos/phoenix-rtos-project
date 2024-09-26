@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMG_NAME=phoenixrtos/build
+DOCKER_IMG_NAME=docker://phoenixrtosbadochov/build:gcc-14.2
 if [ -e .docker_build_img ]; then
     DOCKER_IMG_NAME="$(cat  .docker_build_img)"
 fi
