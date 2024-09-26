@@ -45,6 +45,19 @@
 #define SOCKETS_DEBUG      LWIP_DBG_ON
 #endif
 
+// debugging LWIP ENET
+#define ENET_ENABLE_DEBUG 0
+#define ENET_DEBUG        (1 && ENET_ENABLE_DEBUG)
+#define EPHY_DEBUG        (1 && ENET_ENABLE_DEBUG)
+#define MDIO_DEBUG        (0 && ENET_ENABLE_DEBUG)
+#define GPIO_DEBUG        (0 && ENET_ENABLE_DEBUG)
+#define ENET_SELFTEST     (1 && ENET_ENABLE_DEBUG)
+
+// Ethernet opts
+#define ENET_ENABLE_FLOW_CONTROL    1
+#define ENET_PROMISC_MODE           0
+#define ENET_INTERNAL_LOOPBACK_MODE 0
+
 #define TCP_MSS                       1460
 #define TCP_WND                       (32 * TCP_MSS)
 #define TCP_SND_BUF                   TCP_WND
