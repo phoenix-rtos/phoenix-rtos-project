@@ -224,8 +224,8 @@ jobs:
           files: "junit.xml"
 
 
-  send-notification:
-    needs: ['build', 'test-emu', 'test-hw']
-    if: failure() && github.event_name != 'pull_request'
-    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
-    secrets: inherit
+  # send-notification:
+  #   needs: ['build', 'test-emu', 'test-hw']
+  #   if: failure() && github.event_name != 'pull_request'
+  #   uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
+  #   secrets: inherit

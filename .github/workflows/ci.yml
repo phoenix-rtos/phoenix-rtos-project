@@ -10,6 +10,7 @@ on:
     branches:
       - master
       - 'feature/*'
+      - maska989/leon3_test
 
 jobs:
   call-ci:
