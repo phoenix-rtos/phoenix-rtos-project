@@ -40,6 +40,7 @@ jobs:
           - 'armv7m7-imxrt106x-evk'
           - 'armv7m7-imxrt117x-evk'
           - 'armv8r52-mps3an536-qemu'
+          - 'armv8m33-mcxn94x-frdm'
           - 'host-generic-pc'
           - 'ia32-generic-pc'
           - 'ia32-generic-qemu'
