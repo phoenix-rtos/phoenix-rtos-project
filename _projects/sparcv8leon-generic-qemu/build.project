@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building sparcv8leon3-generic-qemu project
+# Shell script for building sparcv8leon-generic-qemu project
 #
 # Copyright 2023 Phoenix Systems
 # Author: Lukasz Leczkowski
