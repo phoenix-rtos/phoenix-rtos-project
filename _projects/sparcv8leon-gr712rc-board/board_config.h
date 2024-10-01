@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for sparcv8leon3-gr712-rc
+ * Board config for sparcv8leon-gr712-rc
  *
  * Copyright 2023 Phoenix Systems
  * Author: Lukasz Leczkowski
