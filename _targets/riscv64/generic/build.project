@@ -66,16 +66,15 @@ b_image_target() {
 
 	b_log "Creating rootfs"
 	ROOTFS="$PREFIX_BOOT/part_rootfs.img"
-	SIZE_PARTITION=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.vblk0.rootfs.size if "vblk0" in nvm else 0 }}')
+	SIZE_PARTITION_KB=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.vblk0.rootfs.size // 1024 if "vblk0" in nvm else 0 }}')
 
-	if [ "$SIZE_PARTITION" -gt 0 ]; then
+	if [ "$SIZE_PARTITION_KB" -gt 0 ]; then
 
 		rm -f "$ROOTFS"
-		SIZE_ROOTFS=$(find "$PREFIX_ROOTFS" -type f -exec du -k {} \; | awk 'BEGIN { sum=0 }; { sum+=$1; }; END { print sum }')
-		SIZE_ROOTFS=$((3 * SIZE_ROOTFS))
-		echo "rootfs size: ${SIZE_ROOTFS} kB / $((SIZE_PARTITION / 1024)) kB"
-		[ "$SIZE_ROOTFS" -gt "$SIZE_PARTITION" ] && b_die "rootfs size exceeds the target partition!"
-		genext2fs -b $SIZE_ROOTFS -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
+		SIZE_ROOTFS=$(du -ks "$PREFIX_ROOTFS" | cut -f 1)
+		echo "rootfs size: ${SIZE_ROOTFS} kB / $((SIZE_PARTITION_KB)) kB"
+		[ "$SIZE_ROOTFS" -gt "$SIZE_PARTITION_KB" ] && b_die "rootfs size exceeds the target partition!"
+		genext2fs -b "$SIZE_PARTITION_KB" -i 2048 -d "$PREFIX_ROOTFS" "$ROOTFS"
 
 		# Disk image rootfs offset (in 512 byte sectors)
 		OFFS_ROOTFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.vblk0.rootfs.offs // nvm.vblk0._meta.block_size }}')
@@ -86,7 +85,7 @@ b_image_target() {
 			printf "$(b_le32hex $((0x80)))"
 			printf "$(b_le32hex $((0x83)))"
 			printf "$(b_le32hex $((OFFS_ROOTFS)))"
-			printf "$(b_le32hex $((2 * SIZE_ROOTFS)))"
+			printf "$(b_le32hex $((2 * SIZE_PARTITION_KB)))"
 			for ((i=0; i<48; i++)); do
 				printf "\x00"
 			done
