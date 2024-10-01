@@ -20,5 +20,6 @@ vblk0:
       virtual: True # don't expect to be aligned to the sector
     - name: rootfs
       offs: 0x1400
+      # size will be extended to the end of the disk
       # TODO: add type: ext2
 

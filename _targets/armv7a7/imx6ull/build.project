@@ -144,7 +144,7 @@ b_image_target() {
 	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
 	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
-	[ "$sz" -gt "$FS_SZ" ] && b_die "rootfs size exceeds the target partition!"
+	[ "$sz" -gt "$((FS_SZ / 1024))" ] && b_die "rootfs size exceeds the target partition!"
 
 	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "rootfs=$ROOTFS" --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
 
