@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building sparcv8leon3-gr716-mini project
+# Shell script for building sparcv8leon-gr716-mini project
 #
 # Copyright 2022 Phoenix Systems
 # Author: Lukasz Leczkowski

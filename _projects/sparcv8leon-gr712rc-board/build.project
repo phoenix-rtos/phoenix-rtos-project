@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building sparcv8leon3-gr712rc-board project
+# Shell script for building sparcv8leon-gr712rc-board project
 #
 # Copyright 2023 Phoenix Systems
 # Author: Lukasz Leczkowski

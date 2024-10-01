@@ -6,8 +6,8 @@
 # Author: Lukasz Leczkowski, Damian Modzelewski
 #
 
-IMG_PLO_LEON3="$(dirname "${BASH_SOURCE[0]}")/../_boot/sparcv8leon3-generic-qemu/plo.elf"
-IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/sparcv8leon3-generic-qemu/phoenix.disk"
+IMG_PLO_LEON3="$(dirname "${BASH_SOURCE[0]}")/../_boot/sparcv8leon-generic-qemu/plo.elf"
+IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/sparcv8leon-generic-qemu/phoenix.disk"
 
 exec qemu-system-sparc \
 	-smp 1 \

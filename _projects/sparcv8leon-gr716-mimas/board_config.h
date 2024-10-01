@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for sparcv8leon3-gr716-mimas
+ * Board config for sparcv8leon-gr716-mimas
  *
  * Copyright 2023 Phoenix Systems
  * Author: Lukasz Leczkowski
