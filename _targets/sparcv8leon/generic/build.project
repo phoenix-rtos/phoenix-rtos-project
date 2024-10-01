@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building sparcv8leon3-generic project
+# Shell script for building sparcv8leon-generic project
 #
 # Copyright 2023, 2024 Phoenix Systems
 # Author: Lukasz Leczkowski

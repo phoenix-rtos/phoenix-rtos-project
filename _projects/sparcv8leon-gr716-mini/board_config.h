@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for sparcv8leon3-gr716-mini
+ * Board config for sparcv8leon-gr716-mini
  *
  * Copyright 2022 Phoenix Systems
  * Author: Lukasz Leczkowski

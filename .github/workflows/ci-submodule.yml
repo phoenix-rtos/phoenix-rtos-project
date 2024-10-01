@@ -45,9 +45,9 @@ jobs:
           - 'ia32-generic-qemu'
           - 'riscv64-generic-qemu'
           - 'riscv64-generic-spike'
-          - 'sparcv8leon3-gr712rc-board'
-          - 'sparcv8leon3-gr716-mimas'
-          - 'sparcv8leon3-gr716-mini'
+          - 'sparcv8leon-gr712rc-board'
+          - 'sparcv8leon-gr716-mimas'
+          - 'sparcv8leon-gr716-mini'
         include:
           - target: 'ia32-generic-qemu'
             syspage: 'psh pc-ata uart16550'
