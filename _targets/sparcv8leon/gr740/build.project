@@ -1,0 +1,97 @@
+#!/bin/bash
+#
+# Shell script for building sparcv8leon-gr740 project
+#
+# Copyright 2024 Phoenix Systems
+# Author: Lukasz Leczkowski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=sparc-phoenix-
+
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+
+#
+# Platform dependent parameters
+#
+export SIZE_PAGE=$((0x1000))
+
+export BOOT_DEVICE="flash0"         # Default boot device
+export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+	b_log "Building phoenix-rtos-loader"
+
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
+
+	make -C plo all
+
+	cp -a "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
+	cp -a "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+}
+
+
+b_image_target() {
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+
+	b_log "Creating rootfs"
+
+	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
+
+	local erase_sz=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0._meta.block_size }}')
+	# Create jffs2 image with padding at the end of the final erase block, no cleanmarkers (are written by PLO)
+	mkfs.jffs2 -U -b -m none -e "$erase_sz" -s "$SIZE_PAGE" -r "$PREFIX_ROOTFS/" -o "$ROOTFS" -p -n
+
+	if sumtool -n -e "$erase_sz" -b -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
+		echo "JFFS2 Summary nodes created"
+		mv "$ROOTFS.tmp" "$ROOTFS"
+	fi
+
+	local FS_OFFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.offs }}')
+	local FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
+	sz=$(du -b "$ROOTFS" | awk '{ print $1 }')
+	echo "rootfs size: $((sz / 1024)) kB / $((FS_SZ / 1024)) kB"
+	[ "$sz" -gt "$FS_SZ" ] && b_die "rootfs size exceeds the target partition!"
+
+	local start=$(((FS_OFFS+sz+erase_sz-1)/erase_sz))  # Start clean block after rootfs
+	local end=$(((FS_OFFS+FS_SZ+erase_sz-1)/erase_sz)) # Number of blocks up to rootfs end
+	local nblocks=$((end-start-1))                     # Clean blocks
+
+	# cmd for creating cleanmarkers in plo
+	echo "Format jffs2 partition in plo:"
+	echo "jffs2 -d 2.0 -c ${start}:${nblocks}:${erase_sz}:16"
+
+	image_builder.py ptable --nvm "$NVM_CONFIG"
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "rootfs=$ROOTFS" --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+}
+
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
