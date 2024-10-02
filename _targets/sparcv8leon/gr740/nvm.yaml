@@ -1,0 +1,15 @@
+flash0:
+  size: 0x8000000 # 128 MB
+  block_size: 0x20000
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: kernel
+      offs: 0x20000
+    - name: rootfs
+      offs: 0x100000
+      size: 0x200000
+    - name: ptable
+      offs: 0x7fe0000
+      size: 0x20000

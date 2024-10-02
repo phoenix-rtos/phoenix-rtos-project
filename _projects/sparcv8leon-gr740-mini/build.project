@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Shell script for building sparcv8leon-gr740-mini project
+#
+# Copyright 2024 Phoenix Systems
+# Author: Lukasz Leczkowski
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+
+FLASH_SZ=$((0x8000000))
+ROOTFS_SZ=$((0x800000))
+
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}
