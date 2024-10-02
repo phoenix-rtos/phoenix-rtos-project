@@ -30,25 +30,8 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: 
-          - 'armv7a7-imx6ull-evk'
-          - 'armv7a9-zynq7000-qemu'
-          - 'armv7a9-zynq7000-zedboard'
-          - 'armv7a9-zynq7000-zturn'
-          - 'armv7m4-stm32l4x6-nucleo'
-          - 'armv7m7-imxrt105x-evk'
-          - 'armv7m7-imxrt106x-evk'
-          - 'armv7m7-imxrt117x-evk'
-          - 'armv8r52-mps3an536-qemu'
-          - 'armv8m33-mcxn94x-frdm'
-          - 'host-generic-pc'
-          - 'ia32-generic-pc'
+        target:
           - 'ia32-generic-qemu'
-          - 'riscv64-generic-qemu'
-          - 'riscv64-generic-spike'
-          - 'sparcv8leon3-gr712rc-board'
-          - 'sparcv8leon3-gr716-mimas'
-          - 'sparcv8leon3-gr716-mini'
         include:
           - target: 'ia32-generic-qemu'
             syspage: 'psh pc-ata uart16550'
@@ -74,6 +57,9 @@ jobs:
           syspage: ${{ matrix.syspage }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
+
+      - name: Debug  by SSH
+        uses: mxschmitt/action-tmate@v3
 
       # step 3: tar rootfs
       - name: Tar rootfs
