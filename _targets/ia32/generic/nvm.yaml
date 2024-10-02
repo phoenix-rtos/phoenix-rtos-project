@@ -4,7 +4,7 @@ hd0:
   partitions:
     - name: plo
       offs: 0x0
-      size: 0x12000
+      size: 0x20000
     - name: mbr  # place for MBR is reserved inside PLO image
       offs: 0x1be
       size: 16  # bytes
