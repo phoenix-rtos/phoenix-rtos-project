@@ -15,8 +15,8 @@ contents:
     flags: EXEC
     filename: zynq7000-flash
     args:
-       - '-r;/dev/mtd1:{{ nvm.flash0.rootfs.offs - nvm.flash0.mtd1.offs }}:{{ nvm.flash0.rootfs.size }}:jffs2'
-       - '-p;/dev/mtd1:{{ nvm.flash0.data.offs   - nvm.flash0.mtd1.offs }}:{{ nvm.flash0.data.size }}'
+       - '-r;/dev/mtd1:{{ "%#x" % (nvm.flash0.rootfs.offs - nvm.flash0.mtd1.offs) }}:{{ "%#x" % nvm.flash0.rootfs.size }}:jffs2'
+       - '-p;/dev/mtd1:{{ "%#x" % (nvm.flash0.data.offs   - nvm.flash0.mtd1.offs) }}:{{ "%#x" % nvm.flash0.data.size }}'
     text_map: ddr
     data_maps: ddr
   - go!

@@ -10,7 +10,7 @@ flash0:
     - name: bitstr
       offs: 0x400000
     - name: rootfs
-      offs: 0x900000
+      offs: 0x800000
       size: 0x1000000
       type: jffs2
     - name: data
