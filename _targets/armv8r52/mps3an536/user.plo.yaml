@@ -7,6 +7,33 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
   - app {{ env.BOOT_DEVICE }} -x cmsdk-apbuart ddr ddr
+  # - app {{ env.BOOT_DEVICE }} -x h ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
+  # - app {{ env.BOOT_DEVICE }} hello ddr ddr
+  - app {{ env.BOOT_DEVICE }} sharedlib ddr ddr
+  - app {{ env.BOOT_DEVICE }} ld.elf_so ddr ddr
+  # - app {{ env.BOOT_DEVICE }} h ddr ddr
+  # - app {{ env.BOOT_DEVICE }} libdyn.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libphoenix.so.3 ddr ddr
+  # - app {{ env.BOOT_DEVICE }} t_dlerror-cleared ddr ddr
+  - app {{ env.BOOT_DEVICE }} libhello.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} dlopen ddr ddr
+  # - app {{ env.BOOT_DEVICE }} t_dlerror-false ddr ddr
+  # - app {{ env.BOOT_DEVICE }} t_dlinfo ddr ddr
+  # - app {{ env.BOOT_DEVICE }} t_rtld_r_debug ddr ddr
+  - app {{ env.BOOT_DEVICE }} librtld_stubs.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_def_dynamic.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_use_dynamic.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_onlyuse_static.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_onlyuse_dynamic.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_onlydef.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_def_static.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_use_static.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_abuse_static.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_abuse_dynamic.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} libh_onlyctor_dynamic.so ddr ddr
+  - app {{ env.BOOT_DEVICE }} t_tls_extern ddr ddr
+  #         libh_abuse_dynamic t_tls_extern
+
   - wait 500
   - go!

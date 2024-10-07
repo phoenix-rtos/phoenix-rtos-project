@@ -70,6 +70,10 @@ b_build_target() {
 
 b_image_target() {
 	b_log "Building image of $TARGET"
+	cp "$PREFIX_BUILD/lib/"* "$PREFIX_PROG_STRIPPED"
+	find "$PREFIX_PROG_STRIPPED" -name "*.so*" -exec arm-phoenix-strip {} ';'
+	cp "$PREFIX_PROG_STRIPPED"/libphoenix.so.3.* "$PREFIX_PROG_STRIPPED"/libphoenix.so.3
+
 	image_builder.py -v partition --nvm "$NVM_CONFIG" --name user --script "$PLO_SCRIPT_USER"
 	image_builder.py -v disk --nvm "$NVM_CONFIG" --name flash0 --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" --out "phoenix.disk"
 }
