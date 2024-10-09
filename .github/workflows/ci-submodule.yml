@@ -221,8 +221,9 @@ jobs:
         run: ls -R
 
       - name: Merge Test Results
+        # NOTE: --break-system-packages is ok as we're running on emphemeral GH VMs
         run: |
-          pip3 install junitparser junit2html
+          pip3 install junitparser junit2html --break-system-packages
           junitparser merge artifacts/test-results-*/results.xml junit.xml
           junit2html junit.xml junit.html
 

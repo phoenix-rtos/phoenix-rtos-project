@@ -30,7 +30,7 @@ jobs:
       build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
-        target: 
+        target:
           - 'armv7a7-imx6ull-evk'
           - 'armv7a9-zynq7000-qemu'
           - 'armv7a9-zynq7000-zedboard'
@@ -189,8 +189,9 @@ jobs:
         run: ls -R
 
       - name: Merge Test Results
+        # NOTE: --break-system-packages is ok as we're running on emphemeral GH VMs
         run: |
-          pip3 install junitparser junit2html
+          pip3 install junitparser junit2html --break-system-packages
           junitparser merge artifacts/test-results-*/results.xml junit.xml
           junit2html junit.xml junit.html
 
