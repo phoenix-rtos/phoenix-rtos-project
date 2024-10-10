@@ -14,10 +14,6 @@ inputs:
     description: 'Target env variable'
     default: 'ia32-generic-qemu'
     required: false
-  syspage:
-    description: 'Syspage env variable'
-    default: ''
-    required: false
   params:
     description: 'All parameters to the main build script - as string'
     required: true
@@ -27,7 +23,7 @@ inputs:
     required: false
   nightly:
     description: 'Build additional tests'
-    default: false
+    default: 'false'
     required: false
 
 # action runner
@@ -38,7 +34,6 @@ runs:
     CONSOLE: 'serial'
     DEBUG: '1'
     TARGET: ${{ inputs.target }}
-    SYSPAGE: ${{ inputs.syspage }}
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
     LONG_TEST: ${{ inputs.nightly == 'true' && 'y' || 'n' }}
   args:
