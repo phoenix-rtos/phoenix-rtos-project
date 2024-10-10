@@ -23,10 +23,10 @@
 #define LWIP_DNS_API_DECLARE_STRUCTS 0
 #define LWIP_DNS_API_DECLARE_H_ERRNO 0
 #define MEMP_NUM_NETCONN             1024
-#define PPP_SUPPORT                  0
-#define PPPOS_SUPPORT                0
-#define PAP_SUPPORT                  0
-#define CHAP_SUPPORT                 0
+#define PPP_SUPPORT                  1
+#define PPPOS_SUPPORT                1
+#define PAP_SUPPORT                  1
+#define CHAP_SUPPORT                 1
 #define MSCHAP_SUPPORT               0
 #define LWIP_TIMEVAL_PRIVATE         0
 
@@ -35,13 +35,16 @@
 #define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON  LWIP_DBG_ON
 #define PPP_DEBUG          LWIP_DBG_ON
+#define HAVE_DRIVER_pppos  1  // register and start PPPoS driver
+#define HAVE_DRIVER_pppou  1  // register and start PPPoU driver
 #endif
 
 #if 0
 #define LWIP_DEBUG         1
 #define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON  LWIP_DBG_ON
-#define PBUF_DEBUG         LWIP_DBG_OFF
+#define PBUF_DEBUG         LWIP_DBG_ON
+#define ETHARP_DEBUG       LWIP_DBG_ON
 #define SOCKETS_DEBUG      LWIP_DBG_ON
 #endif
 

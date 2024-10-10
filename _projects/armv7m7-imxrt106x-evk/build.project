@@ -11,6 +11,24 @@
 : "${WATCHDOG:=0}"
 export WATCHDOG
 
+#
+# lwIP configuration
+#
+export LWIPOPTS_DIR="$(pwd)/_projects/$TARGET/lwip"
+export LWIP_IPSEC_BUILD=no
+export LWIP_WIFI_BUILD=no
+
+#
+# Setup model of KSZ8081 On-Board Chip
+#
+export EPHY_KSZ8081=RNB
+
+PRIMARY_SCRIPT=(
+	"wait 2000"
+	"kernel ${BOOT_DEVICE}"
+	"go!"
+)
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
