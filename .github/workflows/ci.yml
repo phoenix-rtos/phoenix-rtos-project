@@ -15,3 +15,6 @@ jobs:
   call-ci:
     uses: ./.github/workflows/ci-project.yml
     secrets: inherit
+    with:
+      build_params: all tests
+      nightly: true
