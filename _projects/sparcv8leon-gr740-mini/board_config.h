@@ -84,8 +84,6 @@
 
 /* Timers */
 
-#define TIMER0_CNT    5
-#define TIMER1_CNT    4
 #define TIMER_IRQ     1
 #define GPTIMER0_BASE ((void *)0xff908000)
 #define GPTIMER1_BASE ((void *)0xff909000)
