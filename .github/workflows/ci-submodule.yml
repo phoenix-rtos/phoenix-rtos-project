@@ -45,6 +45,7 @@ jobs:
           - 'ia32-generic-qemu'
           - 'riscv64-generic-qemu'
           - 'riscv64-generic-spike'
+          - 'sparcv8leon3-generic-qemu'
           - 'sparcv8leon3-gr712rc-board'
           - 'sparcv8leon3-gr716-mimas'
           - 'sparcv8leon3-gr716-mini'
