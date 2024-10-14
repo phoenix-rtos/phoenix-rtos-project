@@ -4,7 +4,7 @@
 # Copyright 2021 Phoenix Systems
 #
 
-NAME := hello
+NAME := spwdemo
 LOCAL_SRCS := main.c
 
 include $(binary.mk)

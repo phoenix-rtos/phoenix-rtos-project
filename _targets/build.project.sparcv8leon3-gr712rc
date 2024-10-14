@@ -54,7 +54,7 @@ USER_SCRIPT=(
 	"app ${BOOT_DEVICE} -x dummyfs sram sram"
 	"app ${BOOT_DEVICE} -x grlib-multi sram sram"
 	"app ${BOOT_DEVICE} -x psh sram sram"
-	"app ${BOOT_DEVICE} hello sram sram"
+	"app ${BOOT_DEVICE} spwdemo sram sram"
 	"wait 500"
 	"go!"
 )
