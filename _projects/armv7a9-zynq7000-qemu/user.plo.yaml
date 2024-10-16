@@ -17,4 +17,11 @@ contents:
     args: '-r;/dev/mtd0:{{ nvm.flash0.rootfs.offs }}:{{ nvm.flash0.rootfs.size }}:jffs2'
     text_map: ddr
     data_maps: ddr
+
+  # NOTE: these blob objects are not needed, just serve as an example/image_builder test
+  - name: blob
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: /etc/logo
+    data_maps: ddr
+  - blob {{ env.BOOT_DEVICE }} /etc/hostid ddr
   - go!
