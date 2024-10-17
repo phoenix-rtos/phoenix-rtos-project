@@ -187,11 +187,12 @@ jobs:
         run: ls -R
 
       - name: Merge Test Results
-        # NOTE: --break-system-packages is ok as we're running on emphemeral GH VMs
         run: |
-          pip3 install junitparser junit2html --break-system-packages
+          pip3 install junitparser junit2html
           junitparser merge artifacts/test-results-*/results.xml junit.xml
           junit2html junit.xml junit.html
+        env:
+          PIP_BREAK_SYSTEM_PACKAGES: 1  # NOTE: we're running on emphemeral GH VMs, install packages globally
 
       - name: Upload Merged Unit Test Results in HTML
         uses: actions/upload-artifact@v4
