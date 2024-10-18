@@ -12,7 +12,5 @@ contents:
     set_base: True
     device: '{{ env.BOOT_DEVICE }}'
     filename: user.plo
-    offset: 0 # BOOT_DEVICE is UART, offset doesn't matter?
+    offset: '0' # BOOT_DEVICE is UART, offset doesn't matter?
     target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
-
-
