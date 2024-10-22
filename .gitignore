@@ -4,3 +4,4 @@ _build/*
 _boot/*
 .DS_Store
 .vscode/*
+compile_commands.json
