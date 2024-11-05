@@ -1,10 +1,18 @@
-loader:
-  size: 0x400000 # 4 MB
-  block_size: 512
+flash0:
+  # Spansion S25FL128S
+  size: 0x1000000 # 16 MB
+  block_size: 0x10000
+  padding_byte: 0xff
+  ptable_blocks: 1
   partitions:
-    # WARN: the plo embedded in SBI is being run, not the one in loader.disk
-    - name: plo
+    - name: bitstr
       offs: 0x0
+      empty: True
+    - name: plo
+      offs: 0x400000
+      size: 0x40000
     - name: kernel
-      offs: 0x10000
-      # offs/size will be set based on the offset of the prev/next partition
+    - name: rootfs
+      type: jffs2
+      offs: 0x500000
+      size: 0x500000
