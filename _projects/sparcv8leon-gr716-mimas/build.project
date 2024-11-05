@@ -15,14 +15,20 @@ export PLO_DEVICES="gpio-gr716 uart-grlib"
 
 prepare_plo_img() {
 	#TODO: consider using nvm.yaml for merging header with plo
-	local f="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
-	local sz=$(stat -c%s "$f")
+	local f
+	f="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+
+	local sz
+	sz=$(stat -c%s "$f")
 	#TODO: why "- 4" ?
 	sz=$(((sz - 4)/4))
-	printf "\xde\xad\xbe\xef" > "$PREFIX_BOOT/plo.img"
-	printf "%08X" $sz | xxd -r -p >> "$PREFIX_BOOT/plo.img"
-	printf "\x40\x10\x00\x00" >> "$PREFIX_BOOT/plo.img"
-	cat "$f" >> "$PREFIX_BOOT/plo.img"
+
+	{
+		printf "\xde\xad\xbe\xef"
+		printf "%08X" $sz | xxd -r -p
+		printf "\x40\x10\x00\x00"
+		cat "$f"
+	} > "$PREFIX_BOOT/plo.img"
 }
 
 
