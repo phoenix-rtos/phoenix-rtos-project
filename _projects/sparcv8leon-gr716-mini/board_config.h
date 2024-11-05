@@ -126,4 +126,11 @@
 #define DMA_MAX_CNT 0
 
 
+/* Flash */
+
+#define FLASH_CNT 1
+
+#define SPIMCTRL0_BASE ((void *)0xfff00100)
+#define FLASH0_ADDR    0x02000000
+
 #endif
