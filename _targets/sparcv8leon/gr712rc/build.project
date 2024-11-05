@@ -71,8 +71,11 @@ b_image_target() {
 		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi
 
-	local FS_OFFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.offs }}')
-	local FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
+	local FS_OFFS
+	FS_OFFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.offs }}')
+
+	local FS_SZ
+	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
 	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
 	[ "$sz" -gt "$FS_SZ" ] && b_die "rootfs size exceeds the target partition!"
