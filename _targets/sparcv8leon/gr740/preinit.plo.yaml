@@ -5,7 +5,7 @@ contents:
   - map sdram 0x00000000 0x07ffffff rwx
   - map flash 0xc0000000 0xcfffffff rwx
   - console 0.0
-  - phfs flash0 2.0 raw
+  - phfs ram0 4.0 raw
 
   - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
     action: call

@@ -5,9 +5,8 @@ is_relative: True
 
 contents:
   - kernel {{ env.BOOT_DEVICE }}
-  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D sdram sdram
-  - app {{ env.BOOT_DEVICE }} -x grlib-multi sdram sdram
-  - app {{ env.BOOT_DEVICE }} -x ftmctrl-flash;-r;rootfs:jffs2 sdram sdram
-  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh sdram sdram
+  - app {{ env.BOOT_DEVICE }} -x dummyfs sdram sdram
+  - app {{ env.BOOT_DEVICE }} -x grlib-uart sdram sdram
+  - app {{ env.BOOT_DEVICE }} -x psh sdram sdram
   - wait 500
   - go!

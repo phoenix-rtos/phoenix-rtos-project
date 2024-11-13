@@ -155,4 +155,8 @@
 
 #define FTMCTRL_BASE 0xff903000
 
+
+#define RAM_ADDR 0x07000000
+#define RAM_BANK_SIZE 0x01000000
+
 #endif

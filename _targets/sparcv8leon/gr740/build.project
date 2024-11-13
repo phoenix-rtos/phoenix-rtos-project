@@ -32,7 +32,7 @@ export PORTS_CURL=n
 #
 export SIZE_PAGE=$((0x1000))
 
-export BOOT_DEVICE="flash0"         # Default boot device
+export BOOT_DEVICE="ram0"         # Default boot device
 export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
 
 
