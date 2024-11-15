@@ -11,4 +11,5 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x {{ env.CONSOLE_APP }} ram ram
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ram ram
   - app {{ env.BOOT_DEVICE }} -x pc-ata ram ram
+  - vbe -p 1280x800x32 -f 800x600x32
   - go!

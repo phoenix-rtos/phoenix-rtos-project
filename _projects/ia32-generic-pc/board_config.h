@@ -19,8 +19,8 @@
 #define UART16550_BAUDRATE     115200
 
 /* pc-tty configuration */
-#define PC_TTY_CREATE_PS2_VDEVS  0
-#define PC_TTY_MOUSE_ENABLE      0
+#define PC_TTY_CREATE_PS2_VDEVS  1
+#define PC_TTY_MOUSE_ENABLE      1
 #define PC_TTY_MOUSE_SKIP_CONFIG 1
 
 #endif
