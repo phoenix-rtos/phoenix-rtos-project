@@ -19,11 +19,6 @@ export LWIP_IPSEC_BUILD=no
 export LWIP_WIFI_BUILD=no
 
 #
-# Setup model of KSZ8081 On-Board Chip
-#
-export EPHY_KSZ8081=RNB
-
-#
 # Boot configuration
 #
 export KERNEL_PLO_BOOT=y
