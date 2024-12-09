@@ -20,11 +20,6 @@ export LWIP_IPSEC_BUILD=no
 export LWIP_WIFI_BUILD=no
 
 #
-# Setup model of KSZ8081 On-Board Chip
-#
-export EPHY_KSZ8081=RNB
-
-#
 # Ports configuration - additional to the one from _targets
 #
 if [ "$LONG_TEST" = "y" ]; then
