@@ -11,6 +11,9 @@
 : "${WATCHDOG:=0}"
 export WATCHDOG
 
+# Use CPU1
+export MCX_USE_CPU1=n
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
