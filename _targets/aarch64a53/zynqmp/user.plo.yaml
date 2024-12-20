@@ -6,8 +6,7 @@ is_relative: True
 contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x zynq-flash ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
   - wait 500
   - go!

@@ -19,7 +19,7 @@ flash0:
 
 
 # Spansion s25fl256s1 has 2 regions with 4kB / 64kB erase blocks
-# currently zynq7000-flash creates separate device for every region
+# currently zynq-flash creates separate device for every region
     - name: mtd0
       virtual: True
       offs: 0x0
