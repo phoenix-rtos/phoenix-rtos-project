@@ -7,13 +7,13 @@ contents:
   - wait 500
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x zynq7000-uart ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
   # WARN: for mounting partitions in mtd1 region we need to subtract mtd1 base offset
   - name: app
     device: '{{ env.BOOT_DEVICE }}'
     flags: EXEC
-    filename: zynq7000-flash
+    filename: zynq-flash
     args:
        - '-r;/dev/mtd1:{{ "%#x" % (nvm.flash0.rootfs.offs - nvm.flash0.mtd1.offs) }}:{{ "%#x" % nvm.flash0.rootfs.size }}:jffs2'
        - '-p;/dev/mtd1:{{ "%#x" % (nvm.flash0.data.offs   - nvm.flash0.mtd1.offs) }}:{{ "%#x" % nvm.flash0.data.size }}'

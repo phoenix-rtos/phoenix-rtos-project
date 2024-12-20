@@ -9,11 +9,9 @@
 
 . "_targets/build.common"
 
-CROSS=arm-phoenix-
-
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
-export PORTS_BUSYBOX=y
+#export PORTS_BUSYBOX=y
 
 #
 # Default platform dependent parameters
@@ -43,19 +41,17 @@ b_build_target() {
 	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 	make -C plo base ram
 
-	# plo image is reused only in loading system via qemu
+	# plo.elf is used for QEMU only - running it from .img is possible but more difficult
 	if [ "${TARGET_PROJECT}" = "qemu" ]; then
-		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo.img"
+		cp -a "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "${PREFIX_BOOT}/plo.elf"
 	fi
-
 
 	# Copy plo.elf with symbols to provide loading plo using gdb
 	cp "${PREFIX_PROG}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
 
 	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
-	cp "${PREFIX_PROG_STRIPPED}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/phoenix-kernel.elf"
 	if [ -f "${PROJECT_PATH}/bitstream.bin" ]; then
-		cp "${PROJECT_PATH}/bitstream.bin" "${PREFIX_BOOT}/"
+		cp "${PROJECT_PATH}/bitstream.bin" "${PREFIX_BOOT}/part_bitstr.img"
 	fi
 }
 
@@ -93,10 +89,10 @@ b_write_cleanmarkers() {
 
 b_image_target() {
 	# prepare necessary BootROM flash header
-	mkimg-boot-zynq7000.sh \
+	mkimg-boot-zynqmp.sh \
 		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
 		"${PREFIX_BOOT}/part_plo.img" \
-		0
+		0xfffc0000
 
 	# kernel / syspage
 	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
@@ -105,7 +101,7 @@ b_image_target() {
 	# !!! NOTE: For non-standard NOR flash memories, erase_sz should be changed.
 	local erase_sz=$((0x10000))
 
-	ROOTFS="$PREFIX_BOOT/rootfs.jffs2"
+	ROOTFS="$PREFIX_BOOT/part_rootfs.img"
 
 	# Create jffs2 image with padding at the end of the final erase block
 	mkfs.jffs2 -U -c 12 -m none -e $erase_sz -s $SIZE_PAGE -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS" -p
@@ -121,13 +117,10 @@ b_image_target() {
 	[ "${FS_WRITE_CLEANMARKERS}" = "y" ] && b_write_cleanmarkers "$ROOTFS" "$erase_sz" "$FS_SZ"
 
 	BITSTREAM_PART=none
-	[ -f "${PREFIX_BOOT}/bitstream.bin" ] && BITSTREAM_PART="${PREFIX_BOOT}/bitstream.bin"
+	[ -f "${PREFIX_BOOT}/part_bitstr.img" ] && BITSTREAM_PART="${PREFIX_BOOT}/part_bitstr.img"
 
 	# create full disk image
 	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "bitstr=$BITSTREAM_PART" --part "rootfs=$ROOTFS"
-
-    # TODO: remove? CI currently has the disk filename hardcoded - maybe it should use nvm.yaml?
-    cp -a "${PREFIX_BOOT}/flash0.disk" "${PREFIX_BOOT}/phoenix.disk"
 }
 
 
