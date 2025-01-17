@@ -1,5 +1,5 @@
 hd0:
-  size: 0x4000000 # 64 MB
+  size: 0x8000000 # 128 MB
   block_size: 512
   partitions:
     - name: plo
