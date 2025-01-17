@@ -33,6 +33,7 @@ export PORTS_OPENVPN=y
 export PORTS_JANSSON=y
 export PORTS_CURL=y
 export PORTS_MICROPYTHON=y
+export PORTS_LSB_VSX=y
 
 #
 # Platform dependent parameters
