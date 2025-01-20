@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for sparcv8leon-gr712-rc
+ * Board config for sparcv8leon-gr712rc-board
  *
  * Copyright 2023 Phoenix Systems
  * Author: Lukasz Leczkowski
@@ -80,8 +80,6 @@
 
 /* Timers */
 
-#define TIMER0_CNT    4
-#define TIMER1_CNT    2
 #define TIMER0_1_IRQ  8
 #define TIMER0_2_IRQ  9
 #define GPTIMER0_BASE ((void *)0x80000300)
@@ -126,6 +124,12 @@
 /* DMA */
 
 #define DMA_MAX_CNT 0
+
+/* Flash */
+
+#define ADDR_FLASH 0x00000000
+
+#define FTMCTRL_BASE 0x80000000
 
 
 #endif
