@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for sparcv8leon-gr712-rc
+ * Board config for sparcv8leon-gr712rc-board
  *
  * Copyright 2023 Phoenix Systems
  * Author: Lukasz Leczkowski
@@ -126,6 +126,12 @@
 /* DMA */
 
 #define DMA_MAX_CNT 0
+
+/* Flash */
+
+#define ADDR_FLASH 0x00000000
+
+#define FTMCTRL_BASE 0x80000000
 
 
 #endif
