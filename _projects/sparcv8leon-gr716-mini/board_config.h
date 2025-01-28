@@ -77,6 +77,7 @@
 
 /* Interrupts */
 
+#define TLB_IRQ       0
 #define INT_CTRL_BASE ((void *)0x80002000)
 #define EXTENDED_IRQN 1
 
