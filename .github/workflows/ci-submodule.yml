@@ -49,6 +49,7 @@ jobs:
           - 'sparcv8leon-gr712rc-board'
           - 'sparcv8leon-gr716-mimas'
           - 'sparcv8leon-gr716-mini'
+          - 'sparcv8leon-gr740-mini'
         include:
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
