@@ -6,6 +6,8 @@ is_relative: True
 contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ram ram
+  - if: '{{ env.CONSOLE_APP2 }}'
+    str: app {{ env.BOOT_DEVICE }} -x {{ env.CONSOLE_APP2 }};-n ram ram
   - app {{ env.BOOT_DEVICE }} -x {{ env.CONSOLE_APP }} ram ram
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ram ram
   - app {{ env.BOOT_DEVICE }} -x pc-ata ram ram
