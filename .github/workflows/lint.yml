@@ -98,4 +98,5 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
+          filter_mode: added
           check_all_files_with_shebangs: "true"
