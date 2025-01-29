@@ -48,13 +48,55 @@ export BOOT_DEVICE="hd0"            # Default boot device
 export MAGIC_USER_SCRIPT="baadf00d" # User script magic value
 
 
-if [ "$CONSOLE" = "serial" ]; then
-	CONSOLE_APP="uart16550"
-else
-	CONSOLE_APP="pc-tty"
+# Support setting multiple consoles in CONSOLE by listing them concatenated by a ','.
+export CONSOLE_APP=
+export CONSOLE_APP2=
+export CONSOLE_DEVICES=
+
+CONSOLES=(${CONSOLE//,/ })
+
+if [ "${#CONSOLES[@]}" -eq 0 ]; then
+	echo "At least one console must be set!"
+	exit 1
+elif [ "${#CONSOLES[@]}" -gt 2 ]; then
+	echo "At most 2 consoles may be specified!"
+	exit 1
+elif [ "${CONSOLES[0]}" = "${CONSOLES[1]}" ]; then
+	echo "Consoles cannot be the same!"
+	exit 1
 fi
 
-export CONSOLE_APP
+case "${CONSOLES[0]}" in
+	"serial" )
+		CONSOLE_APP="uart16550"
+		CONSOLE_DEVICES="0.0"
+		;;
+	"vga" )
+		CONSOLE_APP="pc-tty"
+		CONSOLE_DEVICES="3.0"
+		;;
+	* )
+		echo "Invalid console \"${CONSOLES[0]}\"!"
+		exit 1
+		;;
+esac
+
+case "${CONSOLES[1]}" in
+	"serial" )
+		CONSOLE_APP2="uart16550"
+		CONSOLE_DEVICES+=" 0.0"
+		;;
+	"vga" )
+		CONSOLE_APP2="pc-tty"
+		CONSOLE_DEVICES+=" 3.0"
+		;;
+	"" )
+		;;
+	* )
+		echo "Invalid console \"${CONSOLES[1]}\"!"
+		exit 1
+		;;
+esac
 
 
 b_build_project() {
@@ -80,6 +122,18 @@ b_image_target() {
 	SIZE_PARTITION_KB=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.hd0.rootfs.size // 1024 }}')
 
 	rm -f "$ROOTFS"
+
+	# Indicate that there is a secondary psh shell to run.
+	echo ":{}:" > "$PREFIX_ROOTFS/etc/secondary.psh"
+	case "${CONSOLES[1]}" in
+		"serial" )
+			echo -e "T /dev/ttyS0\nX /bin/psh -t /dev/ttyS0" >> "$PREFIX_ROOTFS/etc/secondary.psh"
+			;;
+		"vga" )
+			echo -e "T /dev/tty0\nX /bin/psh -t /dev/tty0" >> "$PREFIX_ROOTFS/etc/secondary.psh"
+			;;
+	esac
+
 	SIZE_ROOTFS=$(du -ks "$PREFIX_ROOTFS" | cut -f 1)
 	echo "rootfs size: ${SIZE_ROOTFS} kB / $((SIZE_PARTITION_KB)) kB"
 	[ "$SIZE_ROOTFS" -gt "$SIZE_PARTITION_KB" ] && b_die "rootfs size exceeds the target partition!"
