@@ -1,0 +1,139 @@
+#!/bin/bash
+#
+# Shell script for building armv7a9-zynq7000 project
+#
+# Copyright 2021 Phoenix Systems
+# Author: Hubert Buczynski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#export PORTS_BUSYBOX=y
+
+#
+# Default platform dependent parameters
+#
+export SIZE_PAGE=$((0x1000))
+
+#
+# Project specific build
+#
+
+# Physical kernel address
+KERNEL_PHBASE=$((0x0)) # Start of ATCM
+KERNEL_PHOFFS=$((0x0))
+KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+export KERNEL_PHADDR
+
+export BOOT_DEVICE="flash0"
+export MAGIC_USER_SCRIPT="dabaabad"
+
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+
+	b_log "Building phoenix-rtos-loader"
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
+	make -C plo base ram
+
+	# plo.elf is used for QEMU only - running it from .img is possible but more difficult
+	if [ "${TARGET_PROJECT}" = "qemu" ]; then
+		cp -a "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "${PREFIX_BOOT}/plo.elf"
+	fi
+
+	# Copy plo.elf with symbols to provide loading plo using gdb
+	cp "${PREFIX_PROG}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
+
+	cp "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
+	if [ -f "${PROJECT_PATH}/bitstream.bin" ]; then
+		cp "${PROJECT_PATH}/bitstream.bin" "${PREFIX_BOOT}/part_bitstr.img"
+	fi
+}
+
+
+#TODO: move the functionality to the image_builder?
+b_write_cleanmarkers() {
+	local rootfs_file="$1"
+	local erase_sz="$2"
+	local part_sz="$3"
+
+	# 2 B : magic
+	# 2 B : node type
+	# 4 B : total len
+	# 4 B : crc
+	local cleanmarker="\x85\x19\x03\x20\x10\x00\x00\x00\x96\x58\xd1\xfe"
+
+	local rootfs_sz
+	rootfs_sz=$(du -b "$rootfs_file" | awk '{ print $1 }')
+
+	[ "$((rootfs_sz % erase_sz))" -ne "0" ] && b_die "ROOT FS size is not aligned to block size!"
+
+	local blocks_cnt=$(((part_sz - rootfs_sz) / erase_sz))
+	local offs_id=$((rootfs_sz / erase_sz))
+
+	# create single erase block
+	dd if=/dev/zero bs="$erase_sz" count=1 2>/dev/null | tr "\000" "\377" > "$PREFIX_BUILD/erase_block.bin"
+	echo -en "$cleanmarker" | dd of="$PREFIX_BUILD/erase_block.bin" conv=notrunc 2>/dev/null
+
+	# write erase blocks with cleanmarkers into rootfs file
+	for block_idx in $(seq 0 $((blocks_cnt - 1))); do
+		dd if="$PREFIX_BUILD/erase_block.bin" bs="$erase_sz" count=1 seek=$((offs_id + block_idx)) of="$rootfs_file" 2>/dev/null
+	done
+}
+
+
+b_image_target() {
+	# prepare necessary BootROM flash header
+	mkimg-boot-zynqmp.sh \
+		"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" \
+		"${PREFIX_BOOT}/part_plo.img" \
+		0xffff0000 r5
+
+	# kernel / syspage
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+
+	b_log "Creating rootfs"
+	# !!! NOTE: For non-standard NOR flash memories, erase_sz should be changed.
+	local erase_sz=$((0x10000))
+
+	ROOTFS="$PREFIX_BOOT/part_rootfs.img"
+
+	# Create jffs2 image with padding at the end of the final erase block
+	mkfs.jffs2 -U -c 12 -m none -e $erase_sz -s $SIZE_PAGE -n -r "$PREFIX_ROOTFS"/ -o "$ROOTFS" -p
+
+	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
+	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
+	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
+	[ "$sz" -gt "$((FS_SZ / 1024))" ] && b_die "rootfs size exceeds the target partition!"
+	#TODO: add summary nodes and check performance?
+
+	# Write cleanmarkers to the rootfs partition
+	: "${FS_WRITE_CLEANMARKERS:?variable unset}"   # define writing cleanmarkers to final image
+	[ "${FS_WRITE_CLEANMARKERS}" = "y" ] && b_write_cleanmarkers "$ROOTFS" "$erase_sz" "$FS_SZ"
+
+	BITSTREAM_PART=none
+	[ -f "${PREFIX_BOOT}/part_bitstr.img" ] && BITSTREAM_PART="${PREFIX_BOOT}/part_bitstr.img"
+
+	# create full disk image
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "bitstr=$BITSTREAM_PART" --part "rootfs=$ROOTFS"
+}
+
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
+
+
+export -f b_build_target

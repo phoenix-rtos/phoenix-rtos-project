@@ -1,0 +1,12 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - kernel {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr;devs
+  - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
+  - wait 1500
+  - go!
