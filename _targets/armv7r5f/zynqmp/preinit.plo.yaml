@@ -1,0 +1,23 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  - map atcm 0x00000 0x20000 rxcb # 0 ~ 128 KB
+  - map btcm 0x20000 0x40000 rwxcb # 128 ~ 256 KB
+  - map kddr 0x100000 0x400000 rwcb # 1 ~ 4 MB
+  - map ddr 0x400000 0x2000000 rwxcb # 4 ~ 32 MB
+  - map devs 0x80000000 0xfffc0000 rwbs # 2 GB ~ -256 KB
+  - map ocram 0xfffc0000 0x00000000 rcb # -256 KB ~ top of memory
+  - phfs uart0 0.0 phoenixd
+  - phfs uart1 0.1 raw
+  - phfs flash0 2.0 raw
+  - phfs ramdisk 4.0 raw
+  - console 0.1
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.flash0.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
