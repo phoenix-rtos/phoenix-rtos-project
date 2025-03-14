@@ -9,10 +9,7 @@ contents:
   - phfs hd1 2.2 raw
   - phfs hd2 2.3 raw
   - phfs hd3 2.4 raw
-  - if: '{{ env.CONSOLE == "serial" }}'
-    str: console 0.0
-  - if: '{{ env.CONSOLE != "serial" }}'
-    str: console 3.0
+  - console {{ env.CONSOLE_DEVICES }}
   - wait 1000
   - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
     action: call
