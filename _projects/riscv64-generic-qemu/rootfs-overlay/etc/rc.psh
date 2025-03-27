@@ -4,4 +4,5 @@ export HOME=/root
 W /bin/bind devfs /dev
 W /sbin/dummyfs -m /tmp -D
 X /bin/posixsrv
+W /bin/ldconfig
 X /bin/psh

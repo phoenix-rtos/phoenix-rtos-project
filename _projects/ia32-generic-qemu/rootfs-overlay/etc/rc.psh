@@ -6,5 +6,6 @@ W /sbin/dummyfs -m /tmp -D
 X /bin/posixsrv
 X /sbin/lwip rtl:0x18:11
 T /dev/console
+W /bin/ldconfig
 X /bin/psh
 X /bin/psh -i /etc/secondary.psh
