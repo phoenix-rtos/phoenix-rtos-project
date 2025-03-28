@@ -20,7 +20,7 @@
 
 int main(void)
 {
-	void *handle = dlopen("/usr/lib/libhello.so", RTLD_LAZY);
+	void *handle = dlopen("libhello.so", RTLD_LAZY);
 	if (handle == NULL) {
 		printf("%s\n", dlerror());
 		return 1;
