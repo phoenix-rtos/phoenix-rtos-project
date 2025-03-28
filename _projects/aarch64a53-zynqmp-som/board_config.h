@@ -48,6 +48,13 @@
 #define UART_CONSOLE_USER   0
 #define UART_CONSOLE_PLO    0
 
+/**
+ * Route console UART option
+ * - 0x0 = route console UART via MIO (standard option)
+ * - 0x1 = do not route console UART via MIO (use proper bitstream to route it via PL)
+ */
+#define UART_CONSOLE_ROUTED_VIA_PL 0
+
 /* CAN bus configuration */
 #define CAN0_RX -1
 #define CAN0_TX -1
@@ -127,6 +134,34 @@
 #define GPIO1_19 -1
 #define GPIO1_20 -1
 #define GPIO1_21 -1
+
+/**
+ * Width of FPD AXI Slave 0
+ * - 0x00 = 32 bit width
+ * - 0x01 = 64 bit width
+ * - 0x10 = 128 bit width
+ */
+#define FPD_AXI_S0_WIDTH 0x00
+
+/**
+ * Width of FPD AXI Slave 1
+ *
+ * Possible values:
+ * - 0x00 = 32 bit width
+ * - 0x01 = 64 bit width
+ * - 0x10 = 128 bit width
+ */
+#define FPD_AXI_S1_WIDTH 0x00
+
+/**
+ * Width of LPD AXI
+ *
+ * Possible values:
+ * - 0x00 = 32 bit width
+ * - 0x01 = 64 bit width
+ * - 0x10 = 128 bit width
+ */
+#define LPD_AXI_WIDTH 0x00
 
 /* DDR controller parameters */
 #define DDRC_DERATEEN_VAL   0x00000200
