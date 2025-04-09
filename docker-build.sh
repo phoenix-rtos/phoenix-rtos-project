@@ -2,7 +2,7 @@
 
 DOCKER_IMG_NAME=phoenixrtos/build
 if [ -e .docker_build_img ]; then
-    DOCKER_IMG_NAME="$(cat  .docker_build_img)"
+    DOCKER_IMG_NAME="$(cat .docker_build_img)"
 fi
 PATH_TO_PROJECT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/"
 DOCKER_USER="$(id -u):$(id -g)"
@@ -16,9 +16,12 @@ fi
 
 if [ "$#" -eq 1 ] && [ "$1" = "bash" ]; then
     # run interactive shell - using ROOT user
-    exec docker run -it --rm -v "${PATH_TO_PROJECT}:/src" -w /src -e TARGET -e SYSPAGE -e CONSOLE -e LONG_TEST -e SIL -e DEBUG --entrypoint bash "$DOCKER_IMG_NAME"
+    exec docker run -it --rm -h "$(hostname)-docker" --env-file .docker_env -v "${PATH_TO_PROJECT}:/src" -w /src --entrypoint bash "$DOCKER_IMG_NAME"
+elif [ "$#" -eq 1 ] && [ "$1" = "pull" ]; then
+    # explicitly pull (update local image)
+    exec docker pull "$DOCKER_IMG_NAME"
 else
     # run build - use our own UID/GID to create files with correct owner
-    exec docker run -it --user "$DOCKER_USER" --rm -v "${PATH_TO_PROJECT}:/src:delegated" -w /src "${TMPFS_OVERLAY[@]}" -e TARGET -e SYSPAGE -e CONSOLE -e LONG_TEST -e SIL -e DEBUG "$DOCKER_IMG_NAME" "$@"
+    exec docker run -it --rm -h "$(hostname)-docker" --env-file .docker_env --user "$DOCKER_USER" -v "${PATH_TO_PROJECT}:/src:delegated" -w /src "${TMPFS_OVERLAY[@]}" "$DOCKER_IMG_NAME" "$@"
 fi
 
