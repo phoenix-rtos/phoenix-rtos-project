@@ -53,9 +53,13 @@
  */
 #define UART_CONSOLE_ROUTED_VIA_PL 0
 
-/* CAN bus configuration */
-#define CAN0_RX 25
-#define CAN0_TX 24
+/* CAN 0 bus configuration (on ZCU104 it is not connected) */
+#define CAN0_RX -1
+#define CAN0_TX -1
+
+/* CAN 1 bus configuration (on ZCU104 CAN is available on the J98 connector) */
+#define CAN1_RX 25
+#define CAN1_TX 24
 
 /* QSPI configuration */
 #define QSPI_CLK  0
