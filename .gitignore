@@ -6,3 +6,4 @@ _boot/*
 .vscode/*
 compile_commands.json
 .cache/*
+.venv/
