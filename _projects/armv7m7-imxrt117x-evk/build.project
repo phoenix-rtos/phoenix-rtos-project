@@ -12,6 +12,14 @@
 export WATCHDOG
 
 #
+# lwIP configuration
+#
+LWIPOPTS_DIR="$(pwd)/_projects/$TARGET/lwip"
+export LWIPOPTS_DIR
+export LWIP_IPSEC_BUILD=no
+export LWIP_WIFI_BUILD=no
+
+#
 # Ports configuration - additional to the one from _targets
 #
 if [ "$LONG_TEST" = "y" ]; then
