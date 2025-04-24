@@ -29,6 +29,7 @@ export PORTS_OPENVPN=n
 export PORTS_JANSSON=n
 export PORTS_CURL=n
 export PORTS_COREMARK=n
+export PORTS_COREMARK_PRO=n
 
 
 #
