@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# Shell script for building armv7r5f-tda4vm project
+#
+# Copyright 2021, 2025 Phoenix Systems
+# Author: Hubert Buczynski, Jacek Maksymowicz
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=arm-phoenix-
+
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Default platform dependent parameters
+#
+export SIZE_PAGE=$((0x1000))
+
+#
+# Project specific build
+#
+
+# Physical kernel address
+KERNEL_PHBASE=$((0x0))
+KERNEL_PHOFFS=$((0x0))
+KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+export KERNEL_PHADDR
+export KERNEL_DATA_PHADDR=0x41c80000
+
+export BOOT_DEVICE="flash1"
+export MAGIC_USER_SCRIPT="dabaabad"
+
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+
+	b_log "Building phoenix-rtos-loader"
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
+	make -C plo base_noimg ram_noimg
+
+	# Copy plo.elf with symbols to provide loading plo using gdb
+	cp "${PREFIX_PROG}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-gdb.elf"
+}
+
+
+b_image_target() {
+	b_log "Building system image"
+	# kernel / syspage
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+
+	# create full disk image
+	image_builder.py -v disk --nvm "$NVM_CONFIG"
+
+	if [[ "$BOOT_DEVICE" = "ramdisk" ]]; then
+		${CROSS}objcopy \
+			--update-section .ramdisk="$PREFIX_BOOT/$BOOT_DEVICE.disk" \
+			--set-section-flags .ramdisk=alloc,readonly \
+			"${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/dm_image.elf"
+	else
+		cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/dm_image.elf"
+	fi
+}
+
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
+
+
+export -f b_build_target

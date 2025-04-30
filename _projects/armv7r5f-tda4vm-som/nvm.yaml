@@ -1,0 +1,7 @@
+flash1:
+  size: 0x4000000 # 64 MB
+  block_size: 512
+  padding_byte: 0xff
+  partitions:
+    - name: kernel
+      offs: 0x0
