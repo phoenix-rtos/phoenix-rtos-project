@@ -59,6 +59,9 @@
 #define CAN0_RX -1
 #define CAN0_TX -1
 
+#define CAN1_RX -1
+#define CAN1_TX -1
+
 /* QSPI configuration */
 #define QSPI_CLK  0
 #define QSPI_IO1  1
