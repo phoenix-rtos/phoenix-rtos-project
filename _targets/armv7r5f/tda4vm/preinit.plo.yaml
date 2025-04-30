@@ -1,0 +1,23 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  # TODO: to make this platform work it is necessary to allow map overlap!
+  #- map devs 0x0 0x80000000 rwbs # first 2 GB, overlayed by other regions
+  - map ktext 0x00000 0x20000 rxcb # 128 KB
+  - map kdata 0x41c00000 0x41ce0000 rcb # 896 KB
+  - map ddr_dma 0xa0000000 0xa0100000 rw # 1 MB
+  - map ddr_plo 0xa0100000 0xa0400000 rwxcb # 3 MB
+  - map ddr_disk 0xa0400000 0xa0800000 rcb # 4 MB
+  - map ddr 0xa0800000 0xa1000000 rwxcb # 8 MB
+  - phfs uart0 0.0 raw
+  - phfs ramdisk 4.0 raw
+  - console 0.0
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.ramdisk.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
