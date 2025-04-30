@@ -1,0 +1,26 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  - map dev1     0x00100000 0x40000000 rw
+  - map dev2     0x40000000 0x41c00000 rw
+  - map ktext    0x00000000 0x00020000 rxcb  # 128 KB
+  - map ocram    0x41c00000 0x41c80000 rwxcb # 512 KB
+  - map kdata    0x41c80000 0x41cf0000 rcb   # 448 KB
+  - map dev3     0x42000000 0x48000000 rw
+  - map flash0   0x50000000 0x58000000 rw    # 128 MB
+  - map flash1   0x58000000 0x60000000 rxc   # 128 MB
+  - map ddr_disk 0xa0400000 0xa0800000 rcb   # 4 MB, temporary
+  - phfs uart0 0.0 raw
+  - phfs ramdisk 4.0 raw
+  - phfs flash0 2.0 raw
+  - phfs flash1 2.1 raw
+  - console 0.0
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.flash1.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
