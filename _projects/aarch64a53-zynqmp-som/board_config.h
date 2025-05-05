@@ -55,6 +55,10 @@
  */
 #define UART_CONSOLE_ROUTED_VIA_PL 0
 
+/* UART16550 configuration */
+#define UART16550_CONSOLE_USER -1
+#define UART16550_BAUDRATE     115200
+
 /* CAN bus configuration */
 #define CAN0_RX -1
 #define CAN0_TX -1
