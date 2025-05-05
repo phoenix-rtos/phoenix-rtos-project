@@ -2,6 +2,9 @@
 #
 # Shell script for running Phoenix-RTOS on aarch64a53-zynqmp-qemu
 #
+# ZynqMP platform requires the forked Qemu version
+# This script was tested with https://github.com/Xilinx/qemu tag xilinx_v2024.2
+#
 # Copyright 2024 Phoenix Systems
 # Author: Jacek Maksymowicz
 #
