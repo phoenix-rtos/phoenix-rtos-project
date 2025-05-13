@@ -30,8 +30,8 @@
 #define SPI1_SS2  -1
 
 /* I2C configuration */
-#define I2C0_SDA -1
-#define I2C0_SCL -1
+#define I2C0_SDA 39
+#define I2C0_SCL 38
 
 #define I2C1_SDA -1
 #define I2C1_SCL -1
