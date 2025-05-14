@@ -133,49 +133,9 @@ jobs:
             results.csv
             results.xml
 
-  test-hw:
-    needs: build
-    name: test HW
-    runs-on: ${{ matrix.target }}
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
-
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: phoenix-rtos-${{ matrix.target }}
-
-      - name: Untar rootfs
-        working-directory: _fs
-        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
-
-      - name: Test runner
-        id: runner
-        run: |
-          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
-
-      - name: Upload runner results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.target }}
-          path: |
-            results.csv
-            results.xml
-
   tests-summary:
     if: success() || failure()   # don't care about cancelled runs
-    needs: ['test-emu', 'test-hw']
+    needs: ['test-emu']
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
@@ -212,7 +172,7 @@ jobs:
 
 
   send-notification:
-    needs: ['build', 'test-emu', 'test-hw']
+    needs: ['build', 'test-emu']
     if: failure() && github.event_name != 'pull_request'
     uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
     secrets: inherit
