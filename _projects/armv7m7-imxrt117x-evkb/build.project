@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building armv7m7-imxrt106x-evk project
+# Shell script for building armv7m7-imxrt117x-evkb project
 #
 # Copyright 2022 Phoenix Systems
 # Author: Lukasz Kosinski
@@ -10,14 +10,6 @@
 
 : "${WATCHDOG:=0}"
 export WATCHDOG
-
-#
-# lwIP configuration
-#
-LWIPOPTS_DIR="$(pwd)/_projects/$TARGET/lwip"
-export LWIPOPTS_DIR
-export LWIP_IPSEC_BUILD=no
-export LWIP_WIFI_BUILD=no
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
