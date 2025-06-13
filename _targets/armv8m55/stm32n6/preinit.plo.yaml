@@ -1,0 +1,26 @@
+size: 0x200
+is_relative: False
+
+contents:
+  # NOTE: All data/code maps need to be cacheable to allow unaligned accesses
+  # env.BOOT_DEVICE should correspond to one of the map names
+  - map itcm       0x10000000 0x10010000 rxcb  # ITCM
+  - map dtcm       0x30000000 0x30020000 rwcb  # DTCM
+  - map axi_kernel 0x34000000 0x34100000 cb    # Kernel data
+  - map ramdisk    0x34100000 0x34180000 rxcb
+  - map axi_plo    0x34180000 0x34200000 rwxcb # PLO - loaded into this range by BootROM
+  - map axi_app    0x34200000 0x343c0000 rwxcb
+  - map per        0x50000000 0x60000000 rw    # Shared peripherals
+  - map flash0     0x70000000 0x80000000 rwxcb # External Flash
+  - map cpu_per    0xe0000000 0xe0100000 rw    # CPU internal peripherals
+  - phfs flash0 2.0
+  - phfs ramdisk 4.0
+  - console 0.0
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm[env.BOOT_DEVICE].user.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
