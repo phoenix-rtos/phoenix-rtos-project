@@ -1,0 +1,11 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: '{{ nvm.ramdisk.kernel.offs - nvm.ramdisk.user.offs }}' # 0x800 but ensure we're consistent with NVM config
+is_relative: True
+
+contents:
+  - kernelimg {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -xn psh {{ env.BOOT_DEVICE }} axi_app
+  - app {{ env.BOOT_DEVICE }} -xn stm32l4-multi {{ env.BOOT_DEVICE }} axi_app;per
+  - wait 1000
+  - go!
