@@ -1,0 +1,89 @@
+#!/bin/bash
+#
+# Shell script for building armv8m33-mcxn94x project
+#
+# Copyright 2018, 2019, 2020, 2024 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=arm-phoenix-
+
+export BUSYBOX_CONFIG=$(realpath "busybox_config")
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+export PORTS_COREMARK=n
+export PORTS_COREMARK_PRO=n
+
+
+#
+# Platform dependent parameters
+#
+export SIZE_PAGE=$((0x200))
+
+
+#
+# Project specific build
+#
+
+export BOOT_DEVICE="ramdisk"
+export MAGIC_USER_SCRIPT=dabaabad
+
+
+# Physical kernel address
+KERNEL_PHBASE=$((0x34100000))
+KERNEL_PHOFFS=$(image_builder.py query --nvm "$NVM_CONFIG" "{{ nvm.$BOOT_DEVICE.kernel.offs }}")
+KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+export KERNEL_PHADDR
+KERNEL_DATA_PHADDR=0x34000000
+export KERNEL_DATA_PHADDR
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+	b_log "Building phoenix-rtos-loader"
+
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
+
+	make -C plo all
+
+	b_log "Creating kernel binary image"
+	KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+	${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_ELF/.elf/.bin}"
+
+	# TODO: add signing and encryption of PLO binary
+}
+
+
+b_image_target() {
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name user --script "$PLO_SCRIPT_USER"
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --name "$BOOT_DEVICE" --out "phoenix.disk"
+}
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
