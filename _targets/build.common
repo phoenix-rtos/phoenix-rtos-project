@@ -9,7 +9,7 @@
 
 KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
 
-# If path variable $1 is unset - set it to project-specific or target-specific path based on the existence of file $2
+# If path variable $1 is unset or empty - set it to project-specific or target-specific path based on the existence of file $2
 # Function gets the following argument:
 # - $1 - Variable name as string
 # - $2 - File name
@@ -17,7 +17,7 @@ b_set_default_path() {
 	local varname="$1"
 	local fname="$2"
 
-	if [ -z "${!varname}" ]; then
+	if [ -z "${!varname:-}" ]; then
 		local projpath="_projects/$TARGET/$fname"
 		if [ -e "$projpath" ]; then
 			# indirect assignment to the variable with varname
