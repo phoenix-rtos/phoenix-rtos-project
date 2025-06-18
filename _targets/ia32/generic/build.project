@@ -63,7 +63,7 @@ if [ "${#CONSOLES[@]}" -eq 0 ]; then
 elif [ "${#CONSOLES[@]}" -gt 2 ]; then
 	echo "At most 2 consoles may be specified!"
 	exit 1
-elif [ "${CONSOLES[0]}" = "${CONSOLES[1]}" ]; then
+elif [ "${CONSOLES[0]}" = "${CONSOLES[1]:-}" ]; then
 	echo "Consoles cannot be the same!"
 	exit 1
 fi
@@ -83,7 +83,7 @@ case "${CONSOLES[0]}" in
 		;;
 esac
 
-case "${CONSOLES[1]}" in
+case "${CONSOLES[1]:-}" in
 	"serial" )
 		CONSOLE_APP2="uart16550"
 		CONSOLE_DEVICES+=" 0.0"
@@ -127,7 +127,7 @@ b_image_target() {
 
 	# Indicate that there is a secondary psh shell to run.
 	echo ":{}:" > "$PREFIX_ROOTFS/etc/secondary.psh"
-	case "${CONSOLES[1]}" in
+	case "${CONSOLES[1]:-}" in
 		"serial" )
 			echo -e "T /dev/ttyS0\nX /bin/psh -t /dev/ttyS0" >> "$PREFIX_ROOTFS/etc/secondary.psh"
 			;;
