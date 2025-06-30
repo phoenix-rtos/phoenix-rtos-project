@@ -36,6 +36,7 @@ export PORTS_MICROPYTHON=y
 export PORTS_LSB_VSX=y
 export PORTS_COREMARK=n
 export PORTS_COREMARK_PRO=n
+export PORTS_HEATSHRINK=y
 
 #
 # Platform dependent parameters
