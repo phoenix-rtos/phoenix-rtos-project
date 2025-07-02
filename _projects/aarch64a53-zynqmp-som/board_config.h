@@ -142,33 +142,26 @@
 #define GPIO1_20 -1
 #define GPIO1_21 -1
 
-/**
- * Width of FPD AXI Slave 0
- * - 0x00 = 32 bit width
- * - 0x01 = 64 bit width
- * - 0x10 = 128 bit width
- */
-#define FPD_AXI_S0_WIDTH 0x00
-
-/**
- * Width of FPD AXI Slave 1
+/*
+ * PS-PL AXI bus width configuration
  *
  * Possible values:
- * - 0x00 = 32 bit width
- * - 0x01 = 64 bit width
- * - 0x10 = 128 bit width
+ * - 0x0 = 32 bit width
+ * - 0x1 = 64 bit width
+ * - 0x2 = 128 bit width
  */
-#define FPD_AXI_S1_WIDTH 0x00
+#define AXI_WIDTH_CFG_32B  0x0
+#define AXI_WIDTH_CFG_64B  0x1
+#define AXI_WIDTH_CFG_128B 0x2
 
-/**
- * Width of LPD AXI
- *
- * Possible values:
- * - 0x00 = 32 bit width
- * - 0x01 = 64 bit width
- * - 0x10 = 128 bit width
- */
-#define LPD_AXI_WIDTH 0x00
+/** Width of FPD AXI Slave 0 */
+#define FPD_AXI_S0_WIDTH AXI_WIDTH_CFG_32B
+
+/** Width of FPD AXI Slave 1 */
+#define FPD_AXI_S1_WIDTH AXI_WIDTH_CFG_32B
+
+/** Width of LPD AXI */
+#define LPD_AXI_WIDTH AXI_WIDTH_CFG_32B
 
 /* DDR controller parameters */
 #define DDRC_DERATEEN_VAL   0x00000200
