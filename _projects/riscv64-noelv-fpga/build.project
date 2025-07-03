@@ -8,6 +8,9 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+export PLO_DEVICES="uart-grlib flash-spimctrl"
+
+
 b_image_project () {
 	cp -a "${PREFIX_PROG_STRIPPED}sbi-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
 	cp -a "${PREFIX_PROG_STRIPPED}sbi-ram-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"
