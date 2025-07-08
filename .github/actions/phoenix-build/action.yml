@@ -35,7 +35,7 @@ runs:
     DEBUG: '1'
     TARGET: ${{ inputs.target }}
     CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
-    LONG_TEST: ${{ inputs.nightly == 'true' && 'y' || 'n' }}
+    LONG_TEST: 'y'
   args:
     - ${{ inputs.params }}  # note: params will be split by build.sh internally
 
