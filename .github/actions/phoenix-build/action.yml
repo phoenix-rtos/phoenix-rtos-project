@@ -58,10 +58,11 @@ runs:
         -e DEBUG=1 \
         -e TARGET="${{ inputs.target }}" \
         -e CI_CUSTOM_BUILDROOT="${{ inputs.buildroot }}" \
-        -e LONG_TEST="${{ inputs.nightly == 'true' && 'y' || 'n' }}" \
+        -e LONG_TEST=y \
         $GH_ENV_ARGS \
         "$IMAGE" \
         "${{ inputs.params }}"
+
 
 # branding
 branding:
