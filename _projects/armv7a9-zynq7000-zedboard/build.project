@@ -15,6 +15,13 @@ export FS_WRITE_CLEANMARKERS=n
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
+#
+# Ports configuration - additional to the one from _targets
+#
+if [ "$LONG_TEST" = "y" ]; then
+	export PORTS_COREMARK_PRO=y
+fi
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
