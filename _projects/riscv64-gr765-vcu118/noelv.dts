@@ -1,0 +1,157 @@
+/dts-v1/;
+
+/ {
+  #address-cells = <1>;
+  #size-cells = <1>;
+  model = "noel-min64-sc";
+  compatible = "gaisler,noelv";
+
+  chosen {
+    bootargs = "earlycon=sbi console=ttyGR0,115200";
+  };
+
+  aliases {
+    serial0 = &uart0;
+  };
+
+  cpus {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    timebase-frequency = <125000000>;
+
+    cpu0: cpu@0 {
+      device_type = "cpu";
+      reg = <0>;
+      status = "okay";
+      compatible = "gaisler,noelv", "riscv";
+      riscv,isa = "rv64imafd";
+      mmu-type = "riscv,sv39";
+      cpu0_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+    cpu1: cpu@1 {
+      device_type = "cpu";
+      reg = <1>;
+      status = "okay";
+      compatible = "gaisler,noelv", "riscv";
+      riscv,isa = "rv64imafd";
+      mmu-type = "riscv,sv39";
+      cpu1_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+    cpu2: cpu@2 {
+      device_type = "cpu";
+      reg = <1>;
+      status = "okay";
+      compatible = "gaisler,noelv", "riscv";
+      riscv,isa = "rv64imafd";
+      mmu-type = "riscv,sv39";
+      cpu2_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+    cpu3: cpu@3 {
+      device_type = "cpu";
+      reg = <1>;
+      status = "okay";
+      compatible = "gaisler,noelv", "riscv";
+      riscv,isa = "rv64imafd";
+      mmu-type = "riscv,sv39";
+      cpu3_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+  };
+
+  memory@0 {
+    device_type = "memory";
+    reg = <0x00000000 0x20000000>;
+  };
+
+  sysclock: sysclock {
+    #clock-cells = <0>;
+    compatible = "fixed-clock";
+    clock-frequency = <125000000>;
+  };
+
+  soc {
+    #address-cells = <1>;
+    #size-cells = <1>;
+    compatible = "simple-bus";
+    ranges;
+
+    clint@e0000000 {
+      compatible = "riscv,clint0";
+      interrupts-extended = <
+        &cpu0_intc 3
+        &cpu0_intc 7
+        &cpu1_intc 3
+        &cpu1_intc 7
+        &cpu2_intc 3
+        &cpu2_intc 7
+        &cpu3_intc 3
+        &cpu3_intc 7
+      >;
+      reg = <0xe0000000 0x100000>;
+      reg-names = "control";
+    };
+
+    plic0: interrupt-controller@f8000000 {
+      #address-cells = <0>;
+      #interrupt-cells = <1>;
+      compatible = "riscv,plic0";
+      reg = <0xf8000000 0x4000000>;
+      interrupt-controller;
+      interrupts-extended = <
+        &cpu0_intc 11
+        &cpu0_intc 9
+        &cpu0_intc 8
+        &cpu0_intc 10
+        &cpu1_intc 11
+        &cpu1_intc 9
+        &cpu1_intc 8
+        &cpu1_intc 10
+        &cpu2_intc 11
+        &cpu2_intc 9
+        &cpu2_intc 8
+        &cpu2_intc 10
+        &cpu3_intc 11
+        &cpu3_intc 9
+        &cpu3_intc 8
+        &cpu3_intc 10
+      >;
+      riscv,max-priority = <7>;
+      riscv,ndev = <31>;
+    };
+
+    greth0: greth@fc084000 {
+      compatible = "gaisler,greth";
+      reg = <0xfc084000 0x100>;
+      interrupt-parent = <&plic0>;
+      interrupts = <5>;
+      preserve-link = <1>;
+      local-mac-address = [00 50 C2 75 a3 52];
+    };
+
+    uart0: uart@fc001000 {
+      #address-cells = <2>;
+      #size-cells = <2>;
+      compatible = "gaisler,apbuart";
+      reg = <0xfc001000 0x100>;
+      clocks = <&sysclock>;
+      current-speed = <115200>;
+      interrupt-parent = <&plic0>;
+      interrupts = <1>;
+    };
+  };
+};
