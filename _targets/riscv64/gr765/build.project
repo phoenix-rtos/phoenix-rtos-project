@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+# Shell script for building riscv64-generic project
+#
+# Copyright 2018, 2019, 2020 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=riscv64-phoenix-
+
+BUSYBOX_CONFIG=$(realpath "busybox_config")
+export BUSYBOX_CONFIG
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+export PORTS_COREMARK=n
+export PORTS_COREMARK_PRO=n
+
+
+#
+# Platform dependent parameters
+#
+export SIZE_PAGE=$((0x1000))
+
+#
+# Project specific build
+#
+
+export BOOT_DEVICE="flash0"         # Default boot device
+export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+
+	# FIXME: add dtc to docker images
+	# dtc -I dts -O dtb -o "${PREFIX_BUILD}/${TARGET}.dtb" "${PROJECT_PATH}/${TARGET}.dts"
+
+	b_log "Building phoenix-rtos-loader"
+
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
+	make -C plo all
+
+	b_log "Adding PLO to Phoenix SBI"
+
+	make -C plo/riscv-sbi ram FDT_PATH="${PROJECT_PATH}/${TARGET}.dtb" \
+		PAYLOAD_PATH="${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" PAYLOAD_ADDR=0x10000
+
+	make -C plo/riscv-sbi base FDT_PATH="${PROJECT_PATH}/${TARGET}.dtb" \
+		PAYLOAD_PATH="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" PAYLOAD_ADDR=0x10000
+
+	cp -a "${PREFIX_PROG_STRIPPED}sbi-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/sbi-${TARGET_SUBFAMILY}.img"
+	cp -a "${PREFIX_PROG_STRIPPED}sbi-ram-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/sbi-ram-${TARGET_SUBFAMILY}.img"
+}
+
+
+b_image_target() {
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+
+	#NOTE: putting SBI with embedded PLO in `plo` partition
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "plo=${PREFIX_PROG_STRIPPED}sbi-${TARGET_SUBFAMILY}.img" --out "phoenix.disk"
+}
+
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}
