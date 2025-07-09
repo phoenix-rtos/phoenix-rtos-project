@@ -59,6 +59,7 @@ jobs:
       - name: Checkout submodule
         uses: actions/checkout@v4
         with:
+          ref: wmlynik/coremark_pro_tests
           submodules: recursive
 
       # step 2: checkout phoenix-rtos-project repository code in .buildroot and symlink submodule name to `workspace`
