@@ -9,6 +9,7 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 export PLO_DEVICES="ram-storage uart-16550"
+export RISCV_ISA_STRING="rv64gch_zicbom_zicboz_zicntr_zihintntl_zihintpause_zihpm_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_sstc"
 
 b_image_project () {
 	b_log "Adding PLO to Phoenix SBI"
