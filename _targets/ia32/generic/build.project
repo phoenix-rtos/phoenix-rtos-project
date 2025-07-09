@@ -18,6 +18,7 @@ export BUSYBOX_CONFIG=$(realpath "busybox_config")
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
+echo 'target LONG_TEST =' $LONG_TEST
 
 #
 # Ports configuration
