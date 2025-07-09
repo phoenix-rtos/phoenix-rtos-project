@@ -55,16 +55,19 @@ b_build_target() {
 	b_log "Building $TARGET project"
 	b_log "Building phoenix-rtos-loader"
 
+	# FIXME: add dtc to docker images
+	# dtc -I dts -O dtb -o "${PREFIX_BUILD}/${TARGET}.dtb" "${PROJECT_PATH}/${TARGET}.dts"
+
 	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
 	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 	make -C plo all
 
 	b_log "Adding PLO to Phoenix SBI"
 
-	make -C plo/riscv-sbi ram FDT_PATH="$PREFIX_PROJECT/_projects/$TARGET/$TARGET.dtb" \
+	make -C plo/riscv-sbi ram FDT_PATH="${PROJECT_PATH}/${TARGET}.dtb" \
 		PAYLOAD_PATH="${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" PAYLOAD_ADDR=0x10000
 
-	make -C plo/riscv-sbi base FDT_PATH="$PREFIX_PROJECT/_projects/$TARGET/$TARGET.dtb" \
+	make -C plo/riscv-sbi base FDT_PATH="${PROJECT_PATH}/${TARGET}.dtb" \
 		PAYLOAD_PATH="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" PAYLOAD_ADDR=0x10000
 
 	cp -a "${PREFIX_PROG_STRIPPED}sbi-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/sbi-${TARGET_SUBFAMILY}.img"

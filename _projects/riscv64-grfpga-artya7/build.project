@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building riscv64-noelv-fpga project
+# Shell script for building riscv64-grfpga-artya7 project
 #
 # Copyright 2024 Phoenix Systems
 # Author: Lukasz Leczkowski
