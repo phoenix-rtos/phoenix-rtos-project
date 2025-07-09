@@ -18,6 +18,8 @@ export LWIPOPTS_DIR="$(pwd)/_projects/ia32-generic-qemu/lwip"
 #
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
+echo 'project LONG_TEST =' $LONG_TEST
+
 #
 # Ports configuration - additional to the one from _targets
 #
