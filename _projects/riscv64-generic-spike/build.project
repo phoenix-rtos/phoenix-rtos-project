@@ -10,7 +10,7 @@
 
 
 export PLO_DEVICES="ram-storage tty-spike"
-
+export RISCV_ISA_STRING="rv64gch_zicbom_zicboz_zicntr_zihintntl_zihintpause_zihpm_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_sstc"
 
 b_image_project () {
 	b_log "Adding PLO to Phoenix SBI"
