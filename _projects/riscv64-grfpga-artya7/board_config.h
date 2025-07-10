@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for riscv64-noelv-fpga
+ * Board config for riscv64-grfpga-artya7
  *
  * Copyright 2024 Phoenix Systems
  * Author: Lukasz Leczkowski

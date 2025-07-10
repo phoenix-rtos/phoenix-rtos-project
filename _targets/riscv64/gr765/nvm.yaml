@@ -1,0 +1,8 @@
+flash0:
+  size: 0x1000000 # 16 MB
+  block_size: 1
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: kernel
