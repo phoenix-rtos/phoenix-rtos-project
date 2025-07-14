@@ -13,6 +13,13 @@ export FS_WRITE_CLEANMARKERS=y
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
+# Use PCI Express PS GTR PHY init code
+export PCI_EXPRESS_INIT_TEBF0808_PHY=n
+# Use Xilinx NWL PCI Express driver (PCI Express located in processing subsystem)
+export PCI_EXPRESS_XILINX_NWL=y
+# Use Xilinx AXI PCI Express driver (PCI Express located in programmable logic)
+export PCI_EXPRESS_XILINX_AXI=n
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }

@@ -6,3 +6,5 @@ W /sbin/dummyfs -m /tmp -D
 X /bin/posixsrv
 T /dev/console
 X /bin/psh
+X /sbin/pcie
+
