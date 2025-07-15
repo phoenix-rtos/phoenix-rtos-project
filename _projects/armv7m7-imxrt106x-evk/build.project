@@ -24,6 +24,13 @@ export LWIP_WIFI_BUILD=no
 #
 export EPHY_KSZ8081=RNB
 
+#
+# Ports configuration - additional to the one from _targets
+#
+if [ "$LONG_TEST" = "y" ]; then
+	export PORTS_COREMARK_PRO=y
+fi
+
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
