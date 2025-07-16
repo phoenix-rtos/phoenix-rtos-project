@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building armv7m7-imxrt106x-evk project
+# Shell script for building armv7m7-imxrt117x-evkb project
 #
 # Copyright 2022 Phoenix Systems
 # Author: Lukasz Kosinski
