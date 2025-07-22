@@ -15,5 +15,5 @@ flash1:
     - name: plo
       offs: 0x0
     - name: user
-      offs: 0x11000
+      offs: 0x12000
       # if size not set - last non-virtual partition will be extnded to the end of flash
