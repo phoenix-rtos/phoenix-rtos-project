@@ -6,6 +6,6 @@
 
 NAME := rotrectangle
 LOCAL_SRCS := main.c
-LIBS := libgraph libvga libvirtio
+LIBS := libgraph libvga libvirtio libm
 
 include $(binary.mk)
