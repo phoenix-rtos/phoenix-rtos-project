@@ -30,6 +30,7 @@ export PORTS_JANSSON=n
 export PORTS_CURL=n
 export PORTS_COREMARK=n
 export PORTS_COREMARK_PRO=n
+export DISABLE_PARSER_BENCHMARK=y
 
 
 #
