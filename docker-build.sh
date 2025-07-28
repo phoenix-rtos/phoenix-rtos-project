@@ -11,7 +11,7 @@ TMPFS_OVERLAY=()
 if [ "$(uname)" = "Darwin" ]; then
     # I/O operations on bind mounts in Darwin are painfully slow - use tmpfs for intermediate build artifacts
     chmod 777 "_build"  # fix against invalid tmpfs permissions
-    TMPFS_OVERLAY=("--tmpfs"  "/src/_build:exec")
+    TMPFS_OVERLAY=("--tmpfs"  "/src/_build:exec,size=2g")
 fi
 
 if [ "$#" -eq 1 ] && [ "$1" = "bash" ]; then
