@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu']
+        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu']
 
     steps:
       - name: Checkout the repository
@@ -134,6 +134,183 @@ jobs:
             results.csv
             results.xml
 
+  test-emu2:
+    needs: build
+    name: test EMU2
+    runs-on: ubuntu-latest
+    outputs:
+      runner_result: ${{ steps.runner.outcome }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['aarch64a53-zynqmp-qemu']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      - name: Test runner
+        id: runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+
+  test-emu3:
+    needs: build
+    name: test EMU3
+    runs-on: ubuntu-latest
+    outputs:
+      runner_result: ${{ steps.runner.outcome }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['aarch64a53-zynqmp-qemu']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      - name: Test runner
+        id: runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+  test-emu4:
+    needs: build
+    name: test EMU4
+    runs-on: ubuntu-latest
+    outputs:
+      runner_result: ${{ steps.runner.outcome }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['aarch64a53-zynqmp-qemu']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      - name: Test runner
+        id: runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+  test-emu5:
+    needs: build
+    name: test EMU5
+    runs-on: ubuntu-latest
+    outputs:
+      runner_result: ${{ steps.runner.outcome }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['aarch64a53-zynqmp-qemu']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      - name: Test runner
+        id: runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
   test-hw:
     needs: build
     name: test HW
