@@ -9,4 +9,5 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x dummyfs {{ env.BOOT_DEVICE }} ocram
   - app {{ env.BOOT_DEVICE }} -x psh {{ env.BOOT_DEVICE }} ocram
   - app {{ env.BOOT_DEVICE }} -x uart16550 ocram ocram;dev2
+  - app {{ env.BOOT_DEVICE }} -xn lwip ocram ocram;dev2;dev3
   - go!
