@@ -8,5 +8,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x dummyfs xip1 ocram2
   - app {{ env.BOOT_DEVICE }} -x imxrt-multi xip1 ocram2;aips14;aips5
   - app {{ env.BOOT_DEVICE }} -x psh xip1 ocram2
+  # lwip in itcm memory because dtcm is too small on imxrt117x
+  - app {{ env.BOOT_DEVICE }} -xn lwip;enet:0x40424000:153:PHY:rtl8201fi-vc-cg:0.3:reset:-12:/dev/gpio12:irq:-11:/dev/gpio9;enet:0x40420000:157:PHY:rtl8211fdi-cg:1.1:reset:-14:/dev/gpio11:irq:-13:/dev/gpio11 xip1 itcm;aips14
   - wait 2000
   - go!
