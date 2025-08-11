@@ -29,7 +29,7 @@ inputs:
 # action runner
 runs:
   using: 'docker'
-  image: 'ghcr.io/phoenix-rtos/build'
+  image: 'ghcr.io/phoenix-rtos/build:v3.3.0'
   env:
     CONSOLE: 'serial'
     DEBUG: '1'
