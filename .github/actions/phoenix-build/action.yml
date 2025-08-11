@@ -33,7 +33,7 @@ inputs:
 # action runner
 runs:
   using: 'docker'
-  image: 'phoenixrtos/build'
+  image: 'phoenixrtos/build:v3.2.1'
   env:
     CONSOLE: 'serial'
     DEBUG: '1'
