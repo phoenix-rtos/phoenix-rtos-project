@@ -8,6 +8,7 @@ contents:
   - blob {{ env.BOOT_DEVICE }} /etc/system.dtb ddr
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x coredump_server ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
   - if: True
     name: app
