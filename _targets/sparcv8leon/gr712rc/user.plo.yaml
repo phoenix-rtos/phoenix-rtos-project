@@ -8,6 +8,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D sram sram
   - app {{ env.BOOT_DEVICE }} -x grlib-multi sram sram
   - app {{ env.BOOT_DEVICE }} -x flashdrv;-r;rootfs:jffs2;-c;0x80000000;-m;0x00000000;-d;ftmctrl sdram sdram
+  - app {{ env.BOOT_DEVICE }} -x coredump_server sram sram
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh sram sram
   - wait 500
   - go!

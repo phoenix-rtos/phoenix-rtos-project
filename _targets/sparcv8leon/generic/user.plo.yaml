@@ -7,6 +7,7 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs sram sram
   - app {{ env.BOOT_DEVICE }} -x grlib-uart sram sram
+  - app {{ env.BOOT_DEVICE }} -x coredump_server sram sram
   - app {{ env.BOOT_DEVICE }} -x psh sram sram
   - wait 500
   - go!

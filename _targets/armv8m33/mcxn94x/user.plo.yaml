@@ -6,6 +6,7 @@ is_relative: True
 contents:
   - kernelimg {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x mcxn94x-multi {{ env.BOOT_DEVICE }} ram;io
+  - app {{ env.BOOT_DEVICE }} -x coredump_server {{ env.BOOT_DEVICE }} ram
   - app {{ env.BOOT_DEVICE }} -x psh {{ env.BOOT_DEVICE }} ram
   - wait 2000
   - go!
