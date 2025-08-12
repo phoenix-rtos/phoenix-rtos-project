@@ -8,5 +8,6 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
   - app {{ env.BOOT_DEVICE }} -x imx6ull-uart ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x coredump_server ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
   - go!
