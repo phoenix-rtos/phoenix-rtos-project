@@ -7,6 +7,7 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs xip1 ocram2
   - app {{ env.BOOT_DEVICE }} -x imxrt-multi xip1 ocram2;aips14;aips5
+  - app {{ env.BOOT_DEVICE }} -x coredump_server xip1 ocram2
   - app {{ env.BOOT_DEVICE }} -x psh xip1 ocram2
   - wait 2000
   - go!
