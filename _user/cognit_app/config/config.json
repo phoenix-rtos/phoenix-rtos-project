@@ -1,0 +1,86 @@
+{
+	"S3": {
+		"endpoint_url": "",
+		"bucket_name": "",
+		"model_filename": "",
+		"access_key_id": "",
+		"secret_access_key": ""
+	},
+	"besmartOffload": {
+		"workspace_key": "",
+		"login": "",
+		"password": "",
+		"pv_generation": {
+			"cid": 68,
+			"mid": 84,
+			"moid": 70
+		},
+		"energy_consumption": {
+			"cid": 68,
+			"mid": 83,
+			"moid": 32
+		},
+		"temperature_moid": 139,
+		"since": 0,
+		"till": 0
+	},
+	"besmartSend": {
+		"login": "",
+		"pwd": "",
+		"cid": 68,
+		"mid": 82
+	},
+	"cognit": {
+		"url": "",
+		"user": "",
+		"pwd": "",
+		"training": {
+			"flavour": "EnergyTorch",
+			"max_latency": 100,
+			"min_renewable": 85,
+			"max_fnexec_time": 3.5,
+			"geolocation": {
+				"latitude": 40.4168,
+				"longitude": -3.7038
+			}
+		},
+		"decision": {
+			"flavour": "EnergyTorch",
+			"max_latency": 100,
+			"min_renewable": 85,
+			"max_fnexec_time": 3.5,
+			"geolocation": {
+				"latitude": 40.4168,
+				"longitude": -3.7038
+			}
+		}
+	},
+	"trainParams": {
+		"history_timedelta_days": 90,
+		"num_episodes": 500,
+		"critic_lr": 0.001,
+		"actor_lr": 0.001,
+		"gamma": 0.2,
+		"lambda_": 0.95,
+		"num_epochs": 10,
+		"eps_clip": 0.2,
+		"min_action_std": 0.1,
+		"action_std_decay_freq": 0.02,
+		"action_std_decay_rate": 0.01,
+		"update_epoch": 10,
+		"action_std_init": 0.6,
+		"batch_size": 64,
+		"energy_reward_coeff": 0.3,
+		"temp_reward_coeff": 2.0,
+		"storage_reward_coeff": 0.8,
+		"ev_reward_coeff": 0.8,
+		"debug_mode": false
+	},
+	"app": {
+		"decisionPath": "/cognit/decision.py",
+		"trainPath": "/cognit/train.py",
+		"trainTimeOut": 240000,
+		"decisionTimeOut": 30000,
+		"userPrefUpdFreqSec": 5
+	}
+}
