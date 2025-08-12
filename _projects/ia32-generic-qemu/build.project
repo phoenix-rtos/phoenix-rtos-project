@@ -26,6 +26,9 @@ export PORTS_AZURE_SDK=n # FIXME: requires port to macos
 if [ "$LONG_TEST" = "y" ]; then
 	export PORTS_COREMARK_PRO=y
 fi
+export PORTS_COGNIT=y
+export PORTS_CURL_USE_MBEDTLS=y
+
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
