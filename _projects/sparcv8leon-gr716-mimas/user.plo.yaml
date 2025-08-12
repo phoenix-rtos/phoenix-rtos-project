@@ -7,6 +7,7 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs extram extram
   - app {{ env.BOOT_DEVICE }} -x grlib-multi extram extram
+  - app {{ env.BOOT_DEVICE }} -x coredump_server extram extram
   - app {{ env.BOOT_DEVICE }} -x psh extram extram
   - wait 2000
   - go!
