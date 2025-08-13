@@ -56,6 +56,8 @@
 #define UART4_ACTIVE 0
 #define UART5_ACTIVE 0
 
+#define UART_CONSOLE_PLO      0
+#define UART_CONSOLE_KERNEL   0
 #define UART_CONSOLE_USER     0
 #define SPIKETTY_CONSOLE_USER 0
 
