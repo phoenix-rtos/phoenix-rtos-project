@@ -20,7 +20,7 @@ inputs:
 # action runner
 runs:
   using: 'docker'
-  image: 'ghcr.io/phoenix-rtos/devel'
+  image: 'ghcr.io/phoenix-rtos/devel:v3.3.0'
   entrypoint: ./phoenix-rtos-tests/runner.py
   args:
     - '-v' # output SKIP subresults at a top level
