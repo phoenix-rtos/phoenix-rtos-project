@@ -137,6 +137,34 @@ jobs:
           target: ${{ matrix.target }}
           nightly: ${{ inputs.nightly }}
 
+      - name: Gather trace from target
+        if: matrix.target == 'ia32-generic-qemu' || matrix.target == 'riscv64-generic-qemu'
+        working-directory: phoenix-rtos-hostutils/trace
+        run: |
+          # TODO: add support for non-MBR QEMU targets
+          # TODO: remove wildcard pattern once the rootfs disk names become standarized
+          # or CI becomes aware of nvm.yaml
+          DISK_PATH=( "../../_boot/${{ matrix.target }}"/*0.disk )
+          OFS="$(./get_rootfs_offset.sh "${DISK_PATH}")"
+
+          sudo mount -o loop,offset="${OFS}" "${DISK_PATH}" /mnt
+          sudo cp -r /mnt/test_perf_trace ctf_trace
+
+      - name: Test trace parsability
+        if: matrix.target == 'ia32-generic-qemu' || matrix.target == 'riscv64-generic-qemu'
+        uses: ./.github/actions/phoenix-convert-trace
+        with:
+          image-tag: ${{ inputs.image-tag }}
+          trace-path: ./phoenix-rtos-hostutils/trace/ctf_trace
+
+      - name: Upload resulting traces
+        if: matrix.target == 'ia32-generic-qemu' || matrix.target == 'riscv64-generic-qemu'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-${{ matrix.target }}
+          path: |
+            out.pftrace
+
       - name: Upload runner results
         if: always()
         uses: actions/upload-artifact@v4
