@@ -1,0 +1,62 @@
+# vim:sw=2:ts=2
+# action name
+name: 'phoenix-convert-trace'
+
+# action description
+description: 'Runs CTF to Perfetto protobuf converter'
+
+inputs:
+  image-tag:
+    description: 'Docker image tag version'
+    default: 'latest'
+    required: false
+  trace-path:
+    description: 'Path to trace to convert'
+    required: true
+
+# we're using a composite action as `docker` action type doesn't allow non-static image specification
+runs:
+  using: 'composite'
+  steps:
+  - name: Run phoenix-build container
+    shell: bash
+    run: |
+      IMAGE="ghcr.io/phoenix-rtos/devel:${{ inputs.image-tag }}"
+      echo "Using Docker image: $IMAGE"
+
+      # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
+      GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
+
+      # Build the nightly flag logic
+      NIGHTLY_ARG=""
+      if [ "${{ inputs.nightly }}" = "true" ]; then
+        NIGHTLY_ARG="--nightly"
+      fi
+
+      # runner args:
+      #  * path to CTF trace
+      #  * path to kernel's tsdl definition
+      #  * perfetto trace file output path
+      # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
+      docker run --rm --privileged \
+        -v "${{ github.workspace }}:${{ github.workspace }}" \
+        -w "${{ github.workspace }}" \
+        -v "${HOME}:${HOME}" \
+        -v "${RUNNER_TEMP}:${RUNNER_TEMP}" \
+        -v "${GITHUB_ENV}:${GITHUB_ENV}" \
+        -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
+        -e CI=true \
+        -e HOME \
+        -e RUNNER_TEMP \
+        -e TARGET="${{ inputs.target }}" \
+        $GH_ENV_ARGS \
+        --entrypoint="./phoenix-rtos-hostutils/trace/convert.sh" \
+        "$IMAGE" \
+          ${{ inputs.trace-path }} \
+          './phoenix-rtos-kernel/perf/tsdl/metadata' \
+          'out.pftrace'
+
+# branding
+branding:
+  icon: terminal
+  color: green
