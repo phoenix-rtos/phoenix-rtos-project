@@ -78,13 +78,18 @@ jobs:
         working-directory: _fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 4: upload project boot directory and tarball of rootfs as build artifacts
+      # step 4: tar project boot directory
+      - name: Tar boot directory
+        working-directory: _boot
+        run: tar -cvf ../boot-${{ matrix.target }}.tar ${{ matrix.target }}
+
+      # step 5: upload project boot and rootfs tarballs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            _boot/${{ matrix.target }}
+            boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
 
   test-emu:
@@ -112,6 +117,13 @@ jobs:
       - name: Untar rootfs
         working-directory: _fs
         run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Create empty _boot
+        run: mkdir _boot
+
+      - name: Untar boot
+        working-directory: _boot
+        run: tar -xvf ../boot-${{ matrix.target }}.tar
 
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
@@ -157,6 +169,13 @@ jobs:
       - name: Untar rootfs
         working-directory: _fs
         run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Create empty _boot
+        run: mkdir _boot
+
+      - name: Untar boot
+        working-directory: _boot
+        run: tar -xvf ../boot-${{ matrix.target }}.tar
 
       - name: Test runner
         id: runner
