@@ -1,0 +1,27 @@
+# vim:sw=2:ts=2
+# action name
+name: 'phoenix-convert-trace'
+
+# action description
+description: 'Runs CTF to Perfetto protobuf converter'
+
+inputs:
+  trace-path:
+    description: 'Path to trace to convert'
+    required: true
+
+# action runner
+runs:
+  using: 'docker'
+  # TODO: change image to phoenixrtos once it gets updated
+  image: 'ghcr.io/adamgreloch/devel'
+  entrypoint: ./phoenix-rtos-hostutils/trace/convert.sh
+  args:
+    - ${{ inputs.trace-path }}
+    - './phoenix-rtos-kernel/perf/tsdl/metadata'
+    - 'out.pftrace'
+
+# branding
+branding:
+  icon: terminal
+  color: green
