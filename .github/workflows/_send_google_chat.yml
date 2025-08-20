@@ -43,16 +43,7 @@ jobs:
                                                   "keyValue": {
                                                       "topLabel": "Repo",
                                                       "content": "${{ github.repository }}",
-                                                      "iconUrl": "https://git-scm.com/images/logos/logomark-black@2x.png",
-                                                      "button": {
-                                                          "textButton": {
-                                                              "text": "OPEN",
-                                                              "onClick": {
-                                                                  "openLink": {
-                                                                      "url": "${{ github.server_url }}/${{ github.repository }}"
-                                                                  }
-                                                              }
-                                                          }
+                                                      "iconUrl": "https://git-scm.com/images/logos/logomark-black@2x.png"
                                                       }
                                                   }
                                               },
