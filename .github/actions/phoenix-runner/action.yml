@@ -6,6 +6,10 @@ name: 'phoenix-runner'
 description: 'Runs Phoenix-RTOS tests'
 
 inputs:
+  image-tag:
+    description: 'Docker image tag version'
+    default: 'latest'
+    required: false
   target:
     description: 'Specifies target to run tests'
     default: 'ia32-generic-qemu'
@@ -16,20 +20,44 @@ inputs:
     default: 'false'
     required: false
 
-
-# action runner
+# we're using a composite action as `docker` action type doesn't allow non-static image specification
 runs:
-  using: 'docker'
-  image: 'ghcr.io/phoenix-rtos/devel'
-  entrypoint: ./phoenix-rtos-tests/runner.py
-  args:
-    - '-v' # output SKIP subresults at a top level
-    - '-T${{ inputs.target }}'
-    # HACK: We can't pass an empty argument to the runner due to strict arg parsing.
-    # Additionally, there is no conditional arg in github actions. If this is not a nightly run
-    # then repeating the target flag is acceptable, the runner is OK with that.
-    - ${{ inputs.nightly == 'true' && '--nightly' || format('-T{0}', inputs.target) }}
-    - '-Oresults.csv'
+  using: 'composite'
+  steps:
+  - name: Run phoenix-build container
+    shell: bash
+    run: |
+      IMAGE="ghcr.io/phoenix-rtos/devel:${{ inputs.image-tag }}"
+      echo "Using Docker image: $IMAGE"
+
+      # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
+      GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
+
+      # Build the nightly flag logic
+      NIGHTLY_ARG=""
+      if [ "${{ inputs.nightly }}" = "true" ]; then
+        NIGHTLY_ARG="--nightly"
+      fi
+
+      # runner args:
+      #  -v  # output SKIP subresults at a top level
+      #  -Oresults.csv # creates also junit xml
+      docker run --rm --privileged \
+        -v "${{ github.workspace }}:/workspace" \
+        -w /workspace \
+        -v "${HOME}:/github/home" \
+        -v "${RUNNER_TEMP}:/github/workflow" \
+        -v "${GITHUB_ENV}:/github/file_commands/env" \
+        -v "${GITHUB_OUTPUT}:/github/file_commands/output" \
+        -e CI=true \
+        -e TARGET="${{ inputs.target }}" \
+        $GH_ENV_ARGS \
+        --entrypoint="./phoenix-rtos-tests/runner.py" \
+        "$IMAGE" \
+          -v \
+          -T${{ inputs.target }} \
+          $NIGHTLY_ARG \
+          -Oresults.csv
 
 # branding
 branding:
