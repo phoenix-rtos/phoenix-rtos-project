@@ -10,6 +10,11 @@ on:
       CI_BOT_EMAIL_PASSWORD:
         required: false
     inputs:
+      image-tag:
+        type: string
+        description: 'Docker image tag version'
+        default: 'latest'
+        required: false
       build_params:
         type: string
         description: "parameters to build.sh script"
@@ -66,6 +71,7 @@ jobs:
         id: build
         uses: ./.buildroot/phoenix-rtos-project/.github/actions/phoenix-build    # BUILD_DIRECTORY value, but we can't use templates here
         with:
+          image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           buildroot: ${{env.CI_CUSTOM_BUILDROOT}}
@@ -125,6 +131,7 @@ jobs:
         id: runner
         uses: ./.github/actions/phoenix-runner
         with:
+          image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
 
       - name: Upload runner results
