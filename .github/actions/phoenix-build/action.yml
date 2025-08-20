@@ -10,6 +10,10 @@ description: 'Builds Phoenix-RTOS based projects'
 
 # action input values
 inputs:
+  image-tag:
+    description: 'Docker image tag version'
+    default: 'latest'
+    required: false
   target:
     description: 'Target env variable'
     default: 'ia32-generic-qemu'
@@ -26,18 +30,35 @@ inputs:
     default: 'false'
     required: false
 
-# action runner
+# we're using a composite action as `docker` action type doesn't allow non-static image specification
 runs:
-  using: 'docker'
-  image: 'ghcr.io/phoenix-rtos/build'
-  env:
-    CONSOLE: 'serial'
-    DEBUG: '1'
-    TARGET: ${{ inputs.target }}
-    CI_CUSTOM_BUILDROOT: ${{ inputs.buildroot }}
-    LONG_TEST: ${{ inputs.nightly == 'true' && 'y' || 'n' }}
-  args:
-    - ${{ inputs.params }}  # note: params will be split by build.sh internally
+  using: 'composite'
+  steps:
+  - name: Run phoenix-build container
+    shell: bash
+    run: |
+      IMAGE="ghcr.io/phoenix-rtos/build:${{ inputs.image-tag }}"
+      echo "Using Docker image: $IMAGE"
+
+      # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
+      GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
+
+      docker run --rm --privileged \
+        -v "${{ github.workspace }}:/workspace" \
+        -w /workspace \
+        -v "${HOME}:/github/home" \
+        -v "${RUNNER_TEMP}:/github/workflow" \
+        -v "${GITHUB_ENV}:/github/file_commands/env" \
+        -v "${GITHUB_OUTPUT}:/github/file_commands/output" \
+        -e CI=true \
+        -e CONSOLE=serial \
+        -e DEBUG=1 \
+        -e TARGET="${{ inputs.target }}" \
+        -e CI_CUSTOM_BUILDROOT="${{ inputs.buildroot }}" \
+        -e LONG_TEST="${{ inputs.nightly == 'true' && 'y' || 'n' }}" \
+        $GH_ENV_ARGS \
+        "$IMAGE" \
+        "${{ inputs.params }}"
 
 # branding
 branding:
