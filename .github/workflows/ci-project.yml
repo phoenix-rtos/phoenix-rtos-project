@@ -5,6 +5,11 @@ name: ci-project
 on:
   workflow_call:
     inputs:
+      image-tag:
+        type: string
+        description: 'Docker image tag version'
+        default: 'latest'
+        required: false
       build_params:
         type: string
         description: "parameters to build.sh script"
@@ -64,6 +69,7 @@ jobs:
         id: build
         uses: ./.github/actions/phoenix-build
         with:
+          image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
@@ -125,6 +131,7 @@ jobs:
         id: runner
         uses: ./.github/actions/phoenix-runner
         with:
+          image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
           nightly: ${{ inputs.nightly }}
 
