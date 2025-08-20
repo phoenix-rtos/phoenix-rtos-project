@@ -4,11 +4,6 @@ name: ci-project
 # on events
 on:
   workflow_call:
-    secrets:
-      CI_BOT_EMAIL_USERNAME:
-        required: false
-      CI_BOT_EMAIL_PASSWORD:
-        required: false
     inputs:
       build_params:
         type: string
@@ -26,8 +21,6 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    outputs:
-      build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
         target:
@@ -91,8 +84,6 @@ jobs:
     needs: build
     name: test EMU
     runs-on: ubuntu-latest
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
     strategy:
       fail-fast: false
       matrix:
@@ -136,8 +127,6 @@ jobs:
     needs: build
     name: test HW
     runs-on: ${{ matrix.target }}
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
     strategy:
       fail-fast: false
       matrix:
