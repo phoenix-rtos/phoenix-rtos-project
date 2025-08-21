@@ -43,14 +43,17 @@ runs:
       # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
 
+      # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
       docker run --rm --privileged \
-        -v "${{ github.workspace }}:/workspace" \
-        -w /workspace \
-        -v "${HOME}:/github/home" \
-        -v "${RUNNER_TEMP}:/github/workflow" \
-        -v "${GITHUB_ENV}:/github/file_commands/env" \
-        -v "${GITHUB_OUTPUT}:/github/file_commands/output" \
+        -v "${{ github.workspace }}:${{ github.workspace }}" \
+        -w "${{ github.workspace }}" \
+        -v "${HOME}:${HOME}" \
+        -v "${RUNNER_TEMP}:${RUNNER_TEMP}" \
+        -v "${GITHUB_ENV}:${GITHUB_ENV}" \
+        -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
         -e CI=true \
+        -e HOME \
+        -e RUNNER_TEMP \
         -e CONSOLE=serial \
         -e DEBUG=1 \
         -e TARGET="${{ inputs.target }}" \
