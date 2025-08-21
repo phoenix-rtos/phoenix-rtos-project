@@ -42,14 +42,17 @@ runs:
       # runner args:
       #  -v  # output SKIP subresults at a top level
       #  -Oresults.csv # creates also junit xml
+      # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
       docker run --rm --privileged \
-        -v "${{ github.workspace }}:/workspace" \
-        -w /workspace \
-        -v "${HOME}:/github/home" \
-        -v "${RUNNER_TEMP}:/github/workflow" \
-        -v "${GITHUB_ENV}:/github/file_commands/env" \
-        -v "${GITHUB_OUTPUT}:/github/file_commands/output" \
+        -v "${{ github.workspace }}:${{ github.workspace }}" \
+        -w "${{ github.workspace }}" \
+        -v "${HOME}:${HOME}" \
+        -v "${RUNNER_TEMP}:${RUNNER_TEMP}" \
+        -v "${GITHUB_ENV}:${GITHUB_ENV}" \
+        -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
         -e CI=true \
+        -e HOME \
+        -e RUNNER_TEMP \
         -e TARGET="${{ inputs.target }}" \
         $GH_ENV_ARGS \
         --entrypoint="./phoenix-rtos-tests/runner.py" \
