@@ -8,6 +8,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
   - app {{ env.BOOT_DEVICE }} -x grlib-uart ddr ddr
   - app {{ env.BOOT_DEVICE }} -x flashdrv;-r;rootfs:jffs2;-c;0xffff0000;-m;0x90000000;-d;spimctrl ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x coredump_server ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
   - wait 500
   - go!
