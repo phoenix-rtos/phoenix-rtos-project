@@ -43,6 +43,7 @@ static struct {
 
 	uint16_t historyTimeDeltaDays; /* for besmart */
 	json_t *besmartOffloadParams;
+	json_t *stateRange;
 
 	modbus_t modbus;
 	devices_ctx_t devices;
@@ -170,6 +171,7 @@ static int runDecision(void)
 		.S3 = common.offloadFunParams.S3,
 		.besmart = common.offloadFunParams.besmart,
 		.userPref = &common.userPref,
+		.stateRangeJson = common.stateRange,
 	};
 
 	if (offload_decisionAlgo(&common.offload, &in) < 0) {
@@ -204,7 +206,7 @@ static int dumpBesmartOffloadParams(uint64_t now)
 	}
 	json_integer_set(till, (int64_t)(now - common.userPref.offloadFrequency));
 
-	size_t len = json_dumpb(obj, common.offloadFunParams.besmart, sizeof(common.offloadFunParams.besmart) - 1, 0); /* TODO: are we handling errors properly here? */
+	size_t len = json_dumpb(obj, common.offloadFunParams.besmart, sizeof(common.offloadFunParams.besmart) - 1, JSON_REAL_PRECISION(4)); /* TODO: are we handling errors properly here? */
 	common.offloadFunParams.besmart[len] = '\0';
 
 	return 0;
@@ -229,12 +231,15 @@ static int runTraining(uint64_t now)
 		.besmart = common.offloadFunParams.besmart,
 		.userPref = &common.userPref,
 		.trainingParams = common.offloadFunParams.training,
+		.stateRangeJson = common.stateRange,
 	};
 
 	if (offload_training(&common.offload, &in) < 0) {
 		log_warn("offload_training failed");
 		return -1;
 	}
+
+	devices_simulationSetTrainingState(&common.devices, true);
 
 	log_info("Training algorithm offloaded");
 	return 0;
@@ -266,16 +271,24 @@ static int executeDecisionResult(void)
 
 static int getTrainingResult(void)
 {
-	int ret = offload_getTrainingnResult(&common.offload);
+	json_t *tmp;
+	int ret = offload_getTrainingnResult(&common.offload, &tmp);
 	if (ret > 0) {
 		return 1; /* Still waiting for the result */
 	}
-	else if (ret < 0) {
+
+	if (ret < 0) {
 		log_warn("Obtaining training result failed");
-		return -1;
+	}
+	else {
+		if (common.stateRange != NULL) {
+			json_decref(common.stateRange);
+		}
+		common.stateRange = tmp;
+		log_success("Training finished successfully");
 	}
 
-	log_success("Training finished successfully");
+	devices_simulationSetTrainingState(&common.devices, false);
 	return 0;
 }
 
@@ -286,7 +299,7 @@ static void mainLoop(void)
 	uint64_t lastDecision = 0;
 	uint64_t lastBesmart = 0;
 	uint64_t lastUserPref = 0;
-	uint64_t lastTraining = now; /* Wait till we have enough data to train */
+	uint64_t lastTraining = 0; /* Wait till we have enough data to train */
 
 	bool decisionOffloaded = false;
 	bool trainingOffloaded = false;
@@ -314,17 +327,17 @@ static void mainLoop(void)
 			lastUserPref = now;
 		}
 
-		if (now - lastDecision > common.userPref.offloadFrequency) {
-			runDecision();
-			lastDecision = now;
-			decisionOffloaded = true;
-			continue;
-		}
-
 		if (now - lastTraining > common.userPref.trainingFrequency) {
 			runTraining(now);
 			lastTraining = now;
 			trainingOffloaded = true;
+			continue;
+		}
+
+		if (now - lastDecision > common.userPref.offloadFrequency) {
+			runDecision();
+			lastDecision = now;
+			decisionOffloaded = true;
 			continue;
 		}
 
@@ -537,7 +550,7 @@ static int readConfigFile(const char *path)
 		close(fd);
 		return -1;
 	}
-	size_t len = json_dumpb(common.besmartOffloadParams, common.offloadFunParams.besmart, sizeof(common.offloadFunParams.besmart) - 1, 0);
+	size_t len = json_dumpb(common.besmartOffloadParams, common.offloadFunParams.besmart, sizeof(common.offloadFunParams.besmart) - 1, JSON_REAL_PRECISION(4));
 	common.offloadFunParams.besmart[len] = '\0';
 	json_incref(common.besmartOffloadParams); /* Will be modified and used later */
 
@@ -547,7 +560,7 @@ static int readConfigFile(const char *path)
 		close(fd);
 		return -1;
 	}
-	len = json_dumpb(S3, common.offloadFunParams.S3, sizeof(common.offloadFunParams.S3) - 1, 0);
+	len = json_dumpb(S3, common.offloadFunParams.S3, sizeof(common.offloadFunParams.S3) - 1, JSON_REAL_PRECISION(4));
 	common.offloadFunParams.S3[len] = '\0';
 
 	json_t *training = json_object_get(config, "trainParams");
@@ -565,7 +578,7 @@ static int readConfigFile(const char *path)
 	}
 	common.historyTimeDeltaDays = json_integer_value(timeDeltaDays);
 
-	len = json_dumpb(training, common.offloadFunParams.training, sizeof(common.offloadFunParams.training) - 1, 0);
+	len = json_dumpb(training, common.offloadFunParams.training, sizeof(common.offloadFunParams.training) - 1, JSON_REAL_PRECISION(4));
 	common.offloadFunParams.training[len] = '\0';
 
 	json_t *app = json_object_get(config, "app");

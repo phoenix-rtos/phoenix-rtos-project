@@ -102,7 +102,7 @@ static int prepareSignalJson(char *buf, size_t buflen, const besmart_signalData_
 			return -1;
 	}
 
-	size_t ret = json_dumpb(root, buf, buflen, 0);
+	size_t ret = json_dumpb(root, buf, buflen, JSON_REAL_PRECISION(4));
 	buf[ret] = '\0';
 	json_decref(root);
 
@@ -149,7 +149,7 @@ static int createAuthJson(besmart_ctx_t *ctx, char *buf, size_t buflen)
 	json_object_set_new(root, "login", login);
 	json_object_set_new(root, "password", password);
 
-	size_t ret = json_dumpb(root, buf, buflen, 0);
+	size_t ret = json_dumpb(root, buf, buflen, JSON_REAL_PRECISION(4));
 	buf[ret] = '\0';
 	json_decref(root);
 

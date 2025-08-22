@@ -27,7 +27,7 @@ int devicesJson_metersimInfoToJson(const devices_metersimInfo_t *metersim, char 
 int devicesJson_heatingInfoToJson(const devices_heatingInfo_t *heating, char *buf, size_t bufSize);
 
 
-int devicesJson_homeModelInfoToJson(const devices_homeModelInfo_t *home, char *buf, size_t bufsize);
+int devicesJson_homeModelInfoToJson(const devices_homeModelInfo_t *home, json_t *stateRange, char *buf, size_t bufsize);
 
 
 int devicesJson_userPrefToJson(const devices_userPref_t *pref, char *buf, size_t bufsize);
@@ -43,6 +43,9 @@ int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, const char *buf, size_t
 
 
 int devicesJson_heatingParamsFromJson(devices_heatingParams_t *heating, const char *buf, size_t buflen);
+
+
+int devicesJson_stateRangeFromJson(json_t **stateRange, const char *buf, size_t buflen);
 
 
 #endif /* COGNIT_APP_DEVICES_JSON_H */

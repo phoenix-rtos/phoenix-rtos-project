@@ -16,6 +16,8 @@
 #include <stddef.h>
 #include <pthread.h>
 
+#include <jansson.h>
+
 #include <cognit/device_runtime.h>
 
 #include "devices.h"
@@ -66,6 +68,7 @@ typedef struct {
 	const char *besmart;
 	devices_userPref_t *userPref;
 	const char *hmm;
+	json_t *stateRangeJson;
 } offload_decisionInput_t;
 
 
@@ -76,6 +79,7 @@ typedef struct {
 	devices_userPref_t *userPref;
 	const char *hmm;
 	const char *trainingParams;
+	json_t *stateRangeJson;
 } offload_trainingInput_t;
 
 
@@ -106,7 +110,7 @@ int offload_getDecisionResult(offload_ctx_t *ctx, devices_config_t *out);
 int offload_training(offload_ctx_t *ctx, const offload_trainingInput_t *in);
 
 
-int offload_getTrainingnResult(offload_ctx_t *ctx);
+int offload_getTrainingnResult(offload_ctx_t *ctx, json_t **stageRange);
 
 
 int offload_deinitDR(offload_ctx_t *ctx);

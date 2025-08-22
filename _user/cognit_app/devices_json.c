@@ -15,6 +15,10 @@
 #include <jansson.h>
 #include "devices_json.h"
 
+#define COGNIT_APP_LOG_TAG "cognit_app/dev_json : "
+#define COGNIT_APP_LOG_LVL COGNIT_APP_LOG_LVL_INFO
+#include "logger.h"
+
 
 #define TRY_ADD(root__, type__, key__, ...) \
 	({ \
@@ -138,7 +142,7 @@ int devicesJson_heatingInfoToJson(const devices_heatingInfo_t *heating, char *bu
 }
 
 
-int devicesJson_homeModelInfoToJson(const devices_homeModelInfo_t *home, char *buf, size_t bufsize)
+int devicesJson_homeModelInfoToJson(const devices_homeModelInfo_t *home, json_t *stateRange, char *buf, size_t bufsize)
 {
 	json_t *root = json_object();
 	if (root == NULL) {
@@ -147,18 +151,25 @@ int devicesJson_homeModelInfoToJson(const devices_homeModelInfo_t *home, char *b
 
 	TRY_ADD(root, real, "min_temp_setting", home->minTempSetting);
 	TRY_ADD(root, real, "max_temp_setting", home->maxTempSetting);
-	TRY_ADD(root, real, "heating_delta_temperature", home->heatingDeltaTemperature);
+	TRY_ADD(root, real, "temp_window", home->heatingDeltaTemperature);
 	TRY_ADD(root, real, "heating_coefficient", home->heatingCoeff);
 	TRY_ADD(root, real, "heat_loss_coefficient", home->heatLossCoeff);
 	TRY_ADD(root, real, "heat_capacity", home->heatCapacity);
+
+	if (stateRange != NULL) {
+		json_object_set(root, "state_range", stateRange);
+	}
 
 	size_t ret = json_dumpb(root, buf, bufsize, JSON_REAL_PRECISION(5));
 	buf[ret] = '\0';
 
 	json_decref(root);
 
+	log_debug("HMM: %s", buf);
+
 	return 0;
 }
+
 
 int devicesJson_userPrefToJson(const devices_userPref_t *pref, char *buf, size_t bufsize)
 {
@@ -241,5 +252,19 @@ int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, const char *buf, size_t
 
 int devicesJson_heatingParamsFromJson(devices_heatingParams_t *heating, const char *buf, size_t buflen)
 {
+	return 0;
+}
+
+
+int devicesJson_stateRangeFromJson(json_t **stateRange, const char *buf, size_t buflen)
+{
+	json_error_t err;
+	json_t *root = json_loads(buf, 0, &err);
+	if (root == NULL) {
+		return -1;
+	}
+
+	*stateRange = root;
+
 	return 0;
 }

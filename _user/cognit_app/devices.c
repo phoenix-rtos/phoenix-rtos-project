@@ -464,6 +464,22 @@ static int getSimulationData(devices_ctx_t *ctx)
 }
 
 
+int devices_simulationSetTrainingState(devices_ctx_t *ctx, bool state)
+{
+	uint16_t *regs = ctx->regsBuffer;
+
+	regs[0] = state ? 1 : 0;
+
+	int err = modbus_setMultiRegister(ctx->modbus, ADDRESS_METERSIM, REGISTER_CONFIG, 1, regs);
+	if (err != MODBUS_RESULT_OK) {
+		log_warn("setting training state regs failed %d", err);
+		return -1;
+	}
+
+	return 0;
+}
+
+
 int devices_init(devices_ctx_t *ctx, modbus_t *modbus)
 {
 	ctx->modbus = modbus;

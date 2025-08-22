@@ -159,6 +159,13 @@ int devices_getTimeMetersim(devices_ctx_t *ctx, uint64_t *val);
 int devices_getUserPref(devices_ctx_t *ctx, devices_userPref_t *pref);
 
 
+/*
+ * Informs the simulation that training is taking place, so that the simulation
+ * can decrease the speed of time passing, to wait for training results.
+ * */
+int devices_simulationSetTrainingState(devices_ctx_t *ctx, bool state);
+
+
 /* Devices initializer assumes the modbus library to be already initialized */
 int devices_init(devices_ctx_t *ctx, modbus_t *modbus);
 

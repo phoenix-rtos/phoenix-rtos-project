@@ -15,6 +15,8 @@
 
 #include <curl/curl.h>
 
+#include <jansson.h>
+
 #include <cognit/device_runtime.h>
 
 #include "devices_json.h"
@@ -60,10 +62,10 @@ static void waitForReadyInput(offload_ctx_t *ctx)
 }
 
 
-#define TRY_ADD_STRING_PARAM(fun__, arg__) \
+#define TRY_ADD_STRING_PARAM(fun__, ...) \
 	do { \
 		memset(ctx->paramBuffer, '\0', sizeof(ctx->paramBuffer)); \
-		int ret__ = fun__(arg__, ctx->paramBuffer, MAX_STRING_PARAM_LEN); \
+		int ret__ = fun__(__VA_ARGS__, ctx->paramBuffer, MAX_STRING_PARAM_LEN); \
 		if (ret__ < 0) { \
 			return OFFLOAD_RESULT_ERROR; \
 		} \
@@ -79,7 +81,7 @@ static int prepareDecisionAlgoInput(offload_ctx_t *ctx, const offload_decisionIn
 	addSTRINGParam(&ctx->faas, in->S3);
 	addSTRINGParam(&ctx->faas, in->besmart);
 
-	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel);
+	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel, in->stateRangeJson);
 	TRY_ADD_STRING_PARAM(devicesJson_storageInfoToJson, &in->devInfo->storage[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, &in->devInfo->ev[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_heatingInfoToJson, &in->devInfo->heating[0]);
@@ -97,7 +99,7 @@ static int prepareTrainingInput(offload_ctx_t *ctx, const offload_trainingInput_
 	addSTRINGParam(&ctx->faas, in->S3);
 	addSTRINGParam(&ctx->faas, in->besmart);
 
-	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel);
+	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel, NULL);
 	TRY_ADD_STRING_PARAM(devicesJson_storageInfoToJson, &in->devInfo->storage[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, &in->devInfo->ev[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_heatingInfoToJson, &in->devInfo->heating[0]);
@@ -127,6 +129,17 @@ static int parseDecisionAlgoOutput(devices_config_t *out, char **response)
 		return OFFLOAD_RESULT_ERROR;
 	}
 
+	return OFFLOAD_RESULT_OK;
+}
+
+
+static int parseTrainingOutput(json_t **stageRange, char **response)
+{
+	int ret = devicesJson_stateRangeFromJson(stageRange, response[0], strlen(response[0]));
+	if (ret < 0) {
+		log_warn("Parsing stage range response failed");
+		return OFFLOAD_RESULT_ERROR;
+	}
 	return OFFLOAD_RESULT_OK;
 }
 
@@ -257,7 +270,7 @@ int offload_training(offload_ctx_t *ctx, const offload_trainingInput_t *in)
 }
 
 
-int offload_getTrainingnResult(offload_ctx_t *ctx)
+int offload_getTrainingnResult(offload_ctx_t *ctx, json_t **stageRange)
 {
 	offload_state_t state = getState(ctx);
 	if (state == offload_stateInputReady) {
@@ -269,6 +282,14 @@ int offload_getTrainingnResult(offload_ctx_t *ctx)
 		return OFFLOAD_RESULT_ERROR;
 	}
 
+	/* Parse response */
+	if (parseTrainingOutput(stageRange, (char **)ctx->response) < 0) {
+		freeResponse(ctx->response, 1);
+		setState(ctx, offload_stateNone);
+		return OFFLOAD_RESULT_ERROR;
+	}
+
+	freeResponse(ctx->response, 1);
 	setState(ctx, offload_stateNone);
 	return OFFLOAD_RESULT_OK;
 }
