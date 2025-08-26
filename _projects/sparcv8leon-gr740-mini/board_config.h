@@ -155,4 +155,9 @@
 
 #define FTMCTRL_BASE 0xff903000
 
+/* GRETH configuration */
+
+#define GRETH_EDCL  0
+#define GRETH_EUI48 0x862u
+
 #endif
