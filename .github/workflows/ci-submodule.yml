@@ -111,7 +111,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu']
+        target: ['armv7a9-zynq7000-qemu', 'armv8r52-mps3an536-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu']
 
     steps:
       - name: Checkout phoenix-rtos-project
