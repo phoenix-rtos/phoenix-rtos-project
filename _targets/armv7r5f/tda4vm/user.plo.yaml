@@ -6,8 +6,8 @@ is_relative: True
 contents:
   - wait 1500
   - kernel {{ env.BOOT_DEVICE }}
-  - app {{ env.BOOT_DEVICE }} -x dummyfs {{ env.BOOT_DEVICE }} ocram
-  - app {{ env.BOOT_DEVICE }} -x psh {{ env.BOOT_DEVICE }} ocram
+  - app {{ env.BOOT_DEVICE }} -xn dummyfs {{ env.BOOT_DEVICE }} ocram
+  - app {{ env.BOOT_DEVICE }} -xn psh {{ env.BOOT_DEVICE }} ocram;dev1
   - app {{ env.BOOT_DEVICE }} -x uart16550 ocram ocram;dev2
-  - app {{ env.BOOT_DEVICE }} -xn lwip ocram ocram;dev2;dev3
+  - app {{ env.BOOT_DEVICE }} -x lwip;enet ocram ocram;dev1;dev2;dev3 
   - go!
