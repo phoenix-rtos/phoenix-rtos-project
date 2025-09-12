@@ -111,8 +111,8 @@ static int getStorageInfo(devices_ctx_t *ctx, devices_storageInfo_t *info, uint8
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 14, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 14, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading storage regs failed %d", err);
 		return -1;
 	}
@@ -134,8 +134,8 @@ static int getEVInfo(devices_ctx_t *ctx, devices_EVInfo_t *info, uint8_t devAddr
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 17, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 17, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading ev regs failed %d", err);
 		return -1;
 	}
@@ -158,8 +158,8 @@ static int getHomeModelInfo(devices_ctx_t *ctx, devices_homeModelInfo_t *info, u
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 12, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 12, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading home model regs failed %d", err);
 		return -1;
 	}
@@ -179,8 +179,8 @@ static int getHeatingInfo(devices_ctx_t *ctx, devices_heatingInfo_t *info, uint8
 	uint16_t *regs = ctx->regsBuffer;
 	uint16_t regCnt = 5;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, regCnt, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, regCnt, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading heating regs failed %d", err);
 		return -1;
 	}
@@ -196,7 +196,7 @@ static int getHeatingInfo(devices_ctx_t *ctx, devices_heatingInfo_t *info, uint8
 
 	regCnt = info->heatDevCnt * 3;
 	err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO + 5, regCnt, regs);
-	if (err != MODBUS_RESULT_OK) {
+	if (err != modbus_statusOk) {
 		log_warn("reading heating regs failed %d", err);
 		return -1;
 	}
@@ -258,8 +258,8 @@ static int setStorageConfig(devices_ctx_t *ctx, const devices_storageParams_t *c
 	floatToRegs(config->outWRte, &regs[2]);
 	regs[4] = config->storCtl;
 
-	int err = modbus_setMultiRegister(ctx->modbus, devAddr, REGISTER_CONFIG, 5, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_setMultiRegister(ctx->modbus, devAddr, REGISTER_CONFIG, 5, regs);
+	if (err != modbus_statusOk) {
 		log_warn("setting storage regs failed %d", err);
 		return -1;
 	}
@@ -276,8 +276,8 @@ static int setEVConfig(devices_ctx_t *ctx, const devices_EVParams_t *config, uin
 	floatToRegs(config->outWRte, &regs[2]);
 	regs[4] = config->storCtl;
 
-	int err = modbus_setMultiRegister(ctx->modbus, devAddr, REGISTER_CONFIG, 5, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_setMultiRegister(ctx->modbus, devAddr, REGISTER_CONFIG, 5, regs);
+	if (err != modbus_statusOk) {
 		log_warn("setting ev regs failed %d", err);
 		return -1;
 	}
@@ -292,8 +292,8 @@ static int setHeatingConfig(devices_ctx_t *ctx, const devices_heatingParams_t *c
 
 	floatToRegs(config->optimalTemp, &regs[0]);
 
-	int err = modbus_setMultiRegister(ctx->modbus, devAddr, REGISTER_CONFIG, 2, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_setMultiRegister(ctx->modbus, devAddr, REGISTER_CONFIG, 2, regs);
+	if (err != modbus_statusOk) {
 		log_warn("setting heating regs failed %d", err);
 		return -1;
 	}
@@ -335,8 +335,8 @@ int devices_getMetersimInfo(devices_ctx_t *ctx, devices_metersimInfo_t *metersim
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_METERSIM, REGISTER_INFO, 12, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_METERSIM, REGISTER_INFO, 12, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading metersim regs failed %d", err);
 		return -1;
 	}
@@ -353,8 +353,8 @@ int devices_getTimeMetersim(devices_ctx_t *ctx, uint64_t *val)
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_METERSIM, REGISTER_INFO + 8, 4, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_METERSIM, REGISTER_INFO + 8, 4, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading metersim time regs failed %d", err);
 		return -1;
 	}
@@ -370,8 +370,8 @@ static int getUserPrefStr(devices_ctx_t *ctx, uint8_t devAddr, char *buf, size_t
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 1, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 1, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading user pref length reg failed %d", err);
 		return -1;
 	}
@@ -392,7 +392,7 @@ static int getUserPrefStr(devices_ctx_t *ctx, uint8_t devAddr, char *buf, size_t
 		uint16_t regCnt = (length - bytesRead + 1) / 2;
 		regCnt = regCnt <= MODBUS_MAX_REG_CNT ? regCnt : MODBUS_MAX_REG_CNT;
 		err = modbus_getHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO + 1 + bytesRead / 2, regCnt, regs);
-		if (err != MODBUS_RESULT_OK) {
+		if (err != modbus_statusOk) {
 			log_warn("reading user pref regs failed %d", err);
 			return -1;
 		}
@@ -407,8 +407,8 @@ static int getUserPrefStr(devices_ctx_t *ctx, uint8_t devAddr, char *buf, size_t
 static int getOtherUserPref(devices_ctx_t *ctx, devices_userPref_t *pref)
 {
 	uint16_t *regs = ctx->regsBuffer;
-	int err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_CONFIG, 5, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_CONFIG, 5, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading other user pref reg failed %d", err);
 		return -1;
 	}
@@ -448,8 +448,8 @@ static int getSimulationData(devices_ctx_t *ctx)
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	int err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_INFO, 5, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_getHoldingRegisters(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_INFO, 5, regs);
+	if (err != modbus_statusOk) {
 		log_warn("reading sim control regs failed %d", err);
 		return -1;
 	}
@@ -470,8 +470,8 @@ int devices_simulationSetTrainingState(devices_ctx_t *ctx, bool state)
 
 	regs[0] = state ? 1 : 0;
 
-	int err = modbus_setMultiRegister(ctx->modbus, ADDRESS_METERSIM, REGISTER_CONFIG, 1, regs);
-	if (err != MODBUS_RESULT_OK) {
+	modbus_status_t err = modbus_setMultiRegister(ctx->modbus, ADDRESS_METERSIM, REGISTER_CONFIG, 1, regs);
+	if (err != modbus_statusOk) {
 		log_warn("setting training state regs failed %d", err);
 		return -1;
 	}

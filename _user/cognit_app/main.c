@@ -682,10 +682,7 @@ int main(int argc, char **argv)
 		.write = modbusComm_write,
 		.userArgs = NULL,
 	};
-	if (modbus_init(&common.modbus, &modbusCb) < 0) {
-		log_error("Could not initialize modbus lib");
-		return EXIT_FAILURE;
-	}
+	modbus_init(&common.modbus, &modbusCb);
 	modbus_setTimeouts(&common.modbus, MODBUS_READ_WRITE_TIMEOUT_MS, MODBUS_READ_WRITE_TIMEOUT_MS); /* TODO: make these timeouts work properly */
 
 
