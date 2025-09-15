@@ -7,6 +7,7 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D sdram sdram
   - app {{ env.BOOT_DEVICE }} -x grlib-multi sdram sdram
+  - app {{ env.BOOT_DEVICE }} -x lwip;greth:0xff940000:24:PHY:ksz9031mnx:0.1:irq:MAC sdram sdram
   - app {{ env.BOOT_DEVICE }} -x flashdrv;-r;rootfs:jffs2;-c;0xff903000;-m;0xc0000000;-d;ftmctrl sdram sdram
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh sdram sdram
   - wait 500

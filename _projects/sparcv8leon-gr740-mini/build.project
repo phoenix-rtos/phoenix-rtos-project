@@ -12,3 +12,5 @@
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"
 }
+
+export LWIPOPTS_DIR="$(pwd)/_projects/sparcv8leon-gr740-mini/lwip"
