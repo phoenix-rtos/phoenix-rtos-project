@@ -79,9 +79,9 @@
 #define RAM_ADDR      (0x10000000)
 #define RAM_BANK_SIZE (0x10000000)
 
-/* SpaceWire */
+/* SpaceWire GRSPW2 */
 
-#define SPW_CNT 6
+#define SPW_CNT 2
 
 #define SPW0_ACTIVE 1
 #define SPW1_ACTIVE 1
@@ -95,5 +95,16 @@
 
 /* if ports are connected via loopback */
 #define TEST_SPW_LOOPBACK 0
+
+/* SpaceWire SPWRTR */
+
+#define SPWRTR_CNT 1
+
+#define SPWRTR0_ACTIVE 1
+#define SPWRTR1_ACTIVE 0
+#define SPWRTR2_ACTIVE 0
+#define SPWRTR3_ACTIVE 0
+#define SPWRTR4_ACTIVE 0
+#define SPWRTR5_ACTIVE 0
 
 #endif
