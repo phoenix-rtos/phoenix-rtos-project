@@ -103,6 +103,9 @@ esac
 
 
 b_build_project() {
+	b_log "Building device-runtim-c"
+	"${PREFIX_PROJECT}"/build_drc.sh
+
 	b_log "Building user applications"
 	make -C "_user" all install
 
