@@ -43,3 +43,6 @@
 [submodule "phoenix-rtos-doc"]
 	path = phoenix-rtos-doc
 	url = https://github.com/phoenix-rtos/phoenix-rtos-doc
+[submodule "device-runtime-c"]
+	path = device-runtime-c
+	url = https://github.com/SovereignEdgeEU-COGNIT/device-runtime-c.git
