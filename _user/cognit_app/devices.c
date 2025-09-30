@@ -409,14 +409,40 @@ static int getUserPrefStr(devices_ctx_t *ctx, uint8_t devAddr, char *buf, size_t
 static int getOtherUserPref(devices_ctx_t *ctx, devices_userPref_t *pref)
 {
 	uint16_t *regs = ctx->regsBuffer;
-	modbus_status_t err = modbus_readHoldingRegisters(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_CONFIG, 5, regs);
+	modbus_status_t err = modbus_readHoldingRegisters(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_CONFIG, 7, regs);
 	if (err != modbus_statusOk) {
 		log_warn("reading other user pref reg failed %d", err);
 		return -1;
 	}
 
+	uint16_t prefChanged = regs[0];
+
+	if (prefChanged == 0 && pref->initialized) {
+		return 0;
+	}
+
+	pref->initialized = true;
+	log_info("User preferences changed");
+
 	pref->offloadFrequency = uint32FromRegs(&regs[1]);
 	pref->trainingFrequency = uint32FromRegs(&regs[3]);
+	pref->offloadPredictNow = regs[5] > 0;
+	pref->offloadTrainingNow = regs[6] > 0;
+
+	if (pref->offloadPredictNow) {
+		log_info("Forcing decision now!");
+	}
+
+	if (pref->offloadTrainingNow) {
+		log_success("Forcing training now!");
+	}
+
+	err = modbus_writeSingleRegister(ctx->modbus, ADDRESS_SIMULATION_CONTROL, REGISTER_CONFIG, 0);
+	if (err != modbus_statusOk) {
+		log_warn("reseting user pref changed reg failed %d", err);
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -441,7 +467,6 @@ int devices_getUserPref(devices_ctx_t *ctx, devices_userPref_t *pref)
 	}
 	log_debug("Offload freq: %u", pref->offloadFrequency);
 
-	log_debug("Updated user preferences");
 	return 0;
 }
 

@@ -81,10 +81,13 @@ typedef struct {
 
 
 typedef struct {
+	bool initialized;
 	char ev[256];               /* JSON */
 	char temp[256];             /* JSON */
 	uint32_t offloadFrequency;  /* sec */
 	uint32_t trainingFrequency; /* sec */
+	bool offloadPredictNow;
+	bool offloadTrainingNow;
 } devices_userPref_t;
 
 

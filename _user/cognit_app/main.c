@@ -327,17 +327,19 @@ static void mainLoop(void)
 			lastUserPref = now;
 		}
 
-		if (now - lastTraining > common.userPref.trainingFrequency) {
+		if (common.userPref.offloadTrainingNow || now - lastTraining > common.userPref.trainingFrequency) {
 			runTraining(now);
 			lastTraining = now;
 			trainingOffloaded = true;
+			common.userPref.offloadTrainingNow = false;
 			continue;
 		}
 
-		if (now - lastDecision > common.userPref.offloadFrequency) {
+		if (common.userPref.offloadPredictNow || now - lastDecision > common.userPref.offloadFrequency) {
 			runDecision();
 			lastDecision = now;
 			decisionOffloaded = true;
+			common.userPref.offloadPredictNow = false;
 			continue;
 		}
 
