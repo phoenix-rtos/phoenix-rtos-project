@@ -2,7 +2,7 @@ def A(timestamp,s3_parameters,besmart_parameters,home_model_parameters,storage_p
 	u=Exception
 	O=len
 	C=int
-	A9='pv_generation';A8='curr_charge_level';A7='Not enough data for decision-making';A6='origin';A5='get_last';A4='Authorization';A3='workspace_key';A2='X-Auth';t='OutWRte';s='nominal_power';r='energy_consumption';q=True;p=False;d=user_preferences;c='StorCtl_Mod';b='InWRte';a='Accept';Z='Content-Type';Q=heating_parameters;P=storage_parameters;N=.0;M='s';I=ev_battery_parameters_per_id;H=home_model_parameters;G=s3_parameters;F='application/json';D=besmart_parameters;import datetime as e,json as E;from io import BytesIO;import boto3,numpy as A,onnx,torch as J,requests as R;from onnx2torch import convert
+	A9='pv_generation';A8='curr_charge_level';A7='Not enough data for decision-making';A6='origin';A5='get_last';A4='Authorization';A3='workspace_key';A2='X-Auth';t='OutWRte';s='nominal_power';r='energy_consumption';q=True;p=False;d=user_preferences;c='StorCtl_Mod';b='InWRte';a='Accept';Z='Content-Type';Q=heating_parameters;P=storage_parameters;N=.0;M='s';I=home_model_parameters;H=ev_battery_parameters_per_id;G=s3_parameters;F='application/json';D=besmart_parameters;import datetime as e,json as E;from io import BytesIO;import boto3,numpy as A,onnx,torch as J,requests as R;from onnx2torch import convert
 	def AA(actor_model,tensor_state,lower_bounds,upper_bounds):
 		E=lower_bounds;D=tensor_state;C=upper_bounds
 		with J.no_grad():D=J.FloatTensor(D).to(AE);B=actor_model(D)
@@ -23,16 +23,16 @@ def A(timestamp,s3_parameters,besmart_parameters,home_model_parameters,storage_p
 		E={Z:F,a:F,A4:f"Bearer {y}"};G=D[r];H=R.get(f"https://api.besmart.energy/api/sensors/{G['cid']}.{G['mid']}",headers=E).json();E={Z:F,a:F,A2:D[A3]};K=A.datetime64(B)+A.timedelta64(S,M);L={'since':C(A.datetime64(B).astype(C)/1000),'till':C(K.astype(C)/1000),'delta_t':S//60,'raw':p,A5:q};N=R.get(f"https://api.besmart.energy/api/weather/{H['lat']}/{H['lon']}/{D['temperature_moid']}/data",headers=E,params=L);I=N.json()['data'];P=A.array(I['value']);Q=A.array(I[A6]);J=P[Q==3]
 		if O(J)<1:raise u(A7)
 		return J[0]-272.15
-	AE=J.device('cuda'if J.cuda.is_available()else'cpu');G=E.loads(G);D=E.loads(D);H=E.loads(H);P=E.loads(P);I=E.loads(I);Q=E.loads(Q);d=E.loads(d);B=e.datetime.fromtimestamp(timestamp);S=d['cycle_timedelta_s'];f=S//60;T=B.minute%f
+	AE=J.device('cuda'if J.cuda.is_available()else'cpu');G=E.loads(G);D=E.loads(D);I=E.loads(I);P=E.loads(P);H=E.loads(H)if H!=E.dumps(None)else{};Q=E.loads(Q);d=E.loads(d);B=e.datetime.fromtimestamp(timestamp);S=d['cycle_timedelta_s'];f=S//60;T=B.minute%f
 	if T>f/2:T=-(f-T)
-	B=e.datetime(year=B.year,month=B.month,day=B.day,hour=B.hour,minute=B.minute);B=B-e.timedelta(minutes=T);U=H['min_temp_setting'];V=H['max_temp_setting'];W=P[s];AF=P[A8];K=list(I.keys());K.sort();g=Q['curr_temp'];w=Q['preferred_temp'];x=H['temp_window'];h=H['state_range'];i=h[A9];j=h[r];k=h['temperature'];AG=[U,-W]+O(K)*[N];AH=[V,W]+[I[A][s]for A in K];y=AB();AI=v(D[A9]);AJ=v(D[r],q);AK=AD();AL=boto3.client('s3',endpoint_url=G['endpoint_url'],aws_access_key_id=G['access_key_id'],aws_secret_access_key=G['secret_access_key']);l=BytesIO();AL.download_fileobj(Bucket=G['bucket_name'],Key=G['model_filename'],Fileobj=l);l.seek(0);AM=onnx.load_model_from_string(l.getvalue());AN=convert(AM);z=(B.hour+B.minute/60)/24,(AI-i[0])/(i[1]-i[0]),(AJ-j[0])/(j[1]-j[0]),(g-U)/V,(g-(w-x))/(V-U),(w+x-g)/(V-U),(AK-k[0])/(k[1]-k[0]),AF/100
-	for X in K:m=I[X];AO=m['is_available'];AP=m['time_until_charged']/3600;AQ=m[A8];z+=AO,AP/24,AQ/100
+	B=e.datetime(year=B.year,month=B.month,day=B.day,hour=B.hour,minute=B.minute);B=B-e.timedelta(minutes=T);U=I['min_temp_setting'];V=I['max_temp_setting'];W=P[s];AF=P[A8];K=list(H.keys());K.sort();g=Q['curr_temp'];w=Q['preferred_temp'];x=I['temp_window'];h=I['state_range'];i=h[A9];j=h[r];k=h['temperature'];AG=[U,-W]+O(K)*[N];AH=[V,W]+[H[A][s]for A in K];y=AB();AI=v(D[A9]);AJ=v(D[r],q);AK=AD();AL=boto3.client('s3',endpoint_url=G['endpoint_url'],aws_access_key_id=G['access_key_id'],aws_secret_access_key=G['secret_access_key']);l=BytesIO();AL.download_fileobj(Bucket=G['bucket_name'],Key=G['model_filename'],Fileobj=l);l.seek(0);AM=onnx.load_model_from_string(l.getvalue());AN=convert(AM);z=(B.hour+B.minute/60)/24,(AI-i[0])/(i[1]-i[0]),(AJ-j[0])/(j[1]-j[0]),(g-U)/V,(g-(w-x))/(V-U),(w+x-g)/(V-U),(AK-k[0])/(k[1]-k[0]),AF/100
+	for X in K:m=H[X];AO=m['is_available'];AP=m['time_until_charged']/3600;AQ=m[A8];z+=AO,AP/24,AQ/100
 	n=AA(AN,J.tensor(z,dtype=J.float).unsqueeze(0),AG,AH);AR=n[0];o=n[1];AS=n[2:];L={b:N,t:N}
 	if o>0:L[b]=o/W*1e2;L[c]=1
 	else:L[t]=-o/W*1e2;L[c]=2
 	A0={}
 	for(X,A1)in zip(K,AS):
-		AT=I[X][s];Y={b:N,t:N}
+		AT=H[X][s];Y={b:N,t:N}
 		if A1>0:Y[b]=A1/AT*1e2;Y[c]=1
 		else:Y[c]=0
 		A0[X]=Y
