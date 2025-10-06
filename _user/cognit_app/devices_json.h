@@ -18,7 +18,7 @@
 int devicesJson_storageInfoToJson(const devices_storageInfo_t *storage, char *out, size_t outLen);
 
 
-int devicesJson_EVInfoToJson(const devices_EVInfo_t *ev, char *buf, size_t bufSize);
+int devicesJson_EVInfoToJson(const devices_EVInfo_t *evs, size_t evCount, char *buf, size_t bufSize);
 
 
 int devicesJson_metersimInfoToJson(const devices_metersimInfo_t *metersim, char *buf, size_t bufSize);
@@ -39,7 +39,7 @@ int devicesJson_tempSettingFromJson(float *val, const char *buf, size_t buflen);
 int devicesJson_storageParamsFromJson(devices_storageParams_t *storage, const char *buf, size_t buflen);
 
 
-int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, const char *buf, size_t buflen);
+int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, size_t evCount, const char *buf, size_t buflen);
 
 
 int devicesJson_heatingParamsFromJson(devices_heatingParams_t *heating, const char *buf, size_t buflen);

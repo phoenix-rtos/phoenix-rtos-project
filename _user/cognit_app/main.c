@@ -249,6 +249,7 @@ static int runTraining(uint64_t now)
 static int executeDecisionResult(void)
 {
 	devices_config_t *config = &common.devConfig;
+	config->evCount = common.devConfig.evCount; /* TODO: This is an ugly hack. Make it prettier. */
 
 	int ret = offload_getDecisionResult(&common.offload, config);
 	if (ret > 0) {

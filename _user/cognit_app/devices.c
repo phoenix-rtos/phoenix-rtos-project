@@ -136,7 +136,7 @@ static int getEVInfo(devices_ctx_t *ctx, devices_EVInfo_t *info, uint8_t devAddr
 {
 	uint16_t *regs = ctx->regsBuffer;
 
-	modbus_status_t err = modbus_readHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 17, regs);
+	modbus_status_t err = modbus_readHoldingRegisters(ctx->modbus, devAddr, REGISTER_INFO, 21, regs);
 	if (err != modbus_statusOk) {
 		log_warn("reading ev regs failed %d", err);
 		return -1;
@@ -151,6 +151,7 @@ static int getEVInfo(devices_ctx_t *ctx, devices_EVInfo_t *info, uint8_t devAddr
 	info->energyLoss = floatFromRegs(&regs[12]);
 	info->drivingPower = floatFromRegs(&regs[14]);
 	info->isAvailable = regs[16] > 0;
+	info->timeUntilCharged = uint64FromRegs(&regs[17]);
 
 	return 0;
 }
@@ -247,6 +248,8 @@ int devices_getInfo(devices_ctx_t *ctx, devices_info_t *info)
 		log_warn("getHomeModelInfo failed");
 		return -1;
 	}
+
+	info->evCount = ctx->simData.evCount;
 
 	return 0;
 }

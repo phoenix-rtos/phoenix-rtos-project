@@ -83,7 +83,7 @@ static int prepareDecisionAlgoInput(offload_ctx_t *ctx, const offload_decisionIn
 
 	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel, in->stateRangeJson);
 	TRY_ADD_STRING_PARAM(devicesJson_storageInfoToJson, &in->devInfo->storage[0]);
-	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, &in->devInfo->ev[0]);
+	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, in->devInfo->ev, in->devInfo->evCount);
 	TRY_ADD_STRING_PARAM(devicesJson_heatingInfoToJson, &in->devInfo->heating[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_userPrefToJson, in->userPref);
 
@@ -101,7 +101,7 @@ static int prepareTrainingInput(offload_ctx_t *ctx, const offload_trainingInput_
 
 	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel, NULL);
 	TRY_ADD_STRING_PARAM(devicesJson_storageInfoToJson, &in->devInfo->storage[0]);
-	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, &in->devInfo->ev[0]);
+	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, in->devInfo->ev, in->devInfo->evCount);
 	TRY_ADD_STRING_PARAM(devicesJson_heatingInfoToJson, &in->devInfo->heating[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_userPrefToJson, in->userPref);
 
@@ -123,7 +123,7 @@ static int parseDecisionAlgoOutput(devices_config_t *out, char **response)
 		return OFFLOAD_RESULT_ERROR;
 	}
 
-	ret = devicesJson_EVParamsFromJson(&out->ev[0], response[2], strlen(response[2]));
+	ret = devicesJson_EVParamsFromJson(&out->ev[0], out->evCount, response[2], strlen(response[2]));
 	if (ret < 0) {
 		log_warn("Parsing EV response failed");
 		return OFFLOAD_RESULT_ERROR;

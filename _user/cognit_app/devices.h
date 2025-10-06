@@ -48,6 +48,7 @@ typedef struct {
 	float energyLoss;
 	float drivingPower;
 	bool isAvailable;
+	uint64_t timeUntilCharged;
 } devices_EVInfo_t;
 
 
@@ -127,12 +128,15 @@ typedef struct {
 	devices_metersimInfo_t metersim;
 	devices_homeModelInfo_t homeModel;
 
+	size_t evCount;
+
 	devices_storageInfo_t storage[COGNIT_DEVICES_DEV_MAX_COUNT];
 	devices_EVInfo_t ev[COGNIT_DEVICES_DEV_MAX_COUNT];
 	devices_heatingInfo_t heating[COGNIT_DEVICES_DEV_MAX_COUNT];
 } devices_info_t;
 
 typedef struct {
+	size_t evCount;
 	devices_storageParams_t storage[COGNIT_DEVICES_DEV_MAX_COUNT];
 	devices_EVParams_t ev[COGNIT_DEVICES_DEV_MAX_COUNT];
 	devices_heatingParams_t heating[COGNIT_DEVICES_DEV_MAX_COUNT];

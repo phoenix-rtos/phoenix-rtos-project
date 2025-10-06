@@ -68,13 +68,8 @@ int devicesJson_storageInfoToJson(const devices_storageInfo_t *storage, char *bu
 }
 
 
-int devicesJson_EVInfoToJson(const devices_EVInfo_t *ev, char *buf, size_t bufSize)
+static int addEVJson(const devices_EVInfo_t *ev, json_t *root)
 {
-	json_t *root = json_object();
-	if (root == NULL) {
-		return -1;
-	}
-
 	TRY_ADD(root, real, "max_capacity", ev->maxCapacity);
 	TRY_ADD(root, real, "min_charge_level", ev->minChargeLevel);
 	TRY_ADD(root, real, "charging_switch_level", ev->chargingSwitchLevel);
@@ -83,16 +78,45 @@ int devicesJson_EVInfoToJson(const devices_EVInfo_t *ev, char *buf, size_t bufSi
 	TRY_ADD(root, real, "efficiency", ev->efficiency);
 	TRY_ADD(root, real, "energy_loss", ev->energyLoss);
 	TRY_ADD(root, real, "driving_charge_level", ev->drivingPower);
-	TRY_ADD(root, integer, "time_until_charged", 7200);
+	TRY_ADD(root, integer, "time_until_charged", (int64_t)ev->timeUntilCharged);
 	TRY_ADD(root, boolean, "is_available", ev->isAvailable);
 
-	json_t *xd = json_object();
-	json_object_set_new(xd, "0", root);
+	return 0;
+}
 
-	size_t ret = json_dumpb(xd, buf, bufSize, JSON_REAL_PRECISION(5));
+
+int devicesJson_EVInfoToJson(const devices_EVInfo_t *evs, size_t evCount, char *buf, size_t bufSize)
+{
+	json_t *root = json_object();
+	if (root == NULL) {
+		return -1;
+	}
+
+	if (evCount > 9) { /* One-digit allowed */
+		json_decref(root);
+		return -1;
+	}
+
+	for (size_t i = 0; i < evCount; i++) {
+		json_t *ev = json_object();
+
+		if (addEVJson(&evs[i], ev) < 0) {
+			json_decref(root);
+			return -1;
+		}
+
+		char dig[2];
+		dig[0] = '0' + i;
+		dig[1] = '\0';
+		json_object_set_new(root, dig, ev);
+	}
+
+	size_t ret = json_dumpb(root, buf, bufSize, JSON_REAL_PRECISION(5));
 	buf[ret] = '\0';
 
-	json_decref(xd);
+	json_decref(root);
+
+	log_debug("EV: %s", buf);
 	return 0;
 }
 
@@ -227,7 +251,7 @@ int devicesJson_storageParamsFromJson(devices_storageParams_t *storage, const ch
 }
 
 
-int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, const char *buf, size_t buflen)
+int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, size_t evCount, const char *buf, size_t buflen)
 {
 	json_error_t err;
 	json_t *root = json_loads(buf, 0, &err);
@@ -235,15 +259,21 @@ int devicesJson_EVParamsFromJson(devices_EVParams_t *ev, const char *buf, size_t
 		return -1;
 	}
 
-	json_t *first = json_object_get(root, "0");
-	if (first == NULL) {
-		json_decref(root);
-		return -1;
-	}
+	for (size_t i = 0; i < evCount; i++) {
+		char dig[2];
+		dig[0] = '0' + i;
+		dig[1] = '\0';
 
-	ev->inWRte = TRY_GET(first, real, "InWRte");
-	ev->outWRte = TRY_GET(first, real, "OutWRte");
-	ev->storCtl = TRY_GET(first, integer, "StorCtl_Mod");
+		json_t *evObj = json_object_get(root, dig);
+		if (evObj == NULL) {
+			json_decref(root);
+			return -1;
+		}
+
+		ev[i].inWRte = TRY_GET(evObj, real, "InWRte");
+		ev[i].outWRte = TRY_GET(evObj, real, "OutWRte");
+		ev[i].storCtl = TRY_GET(evObj, integer, "StorCtl_Mod");
+	}
 
 	json_decref(root);
 	return 0;
