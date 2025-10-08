@@ -1,13 +1,9 @@
-ramdisk:
-  size: 0x80000 # 512 KB
+flash0:
+  size: 0x4000000 # 64 MB
   block_size: 0x10000 # program page size
   padding_byte: 0xff
   partitions:
-    - name: user
+    - name: plo
       offs: 0x0
-      # if size not set - last non-virtual partition will be extnded to the end of flash
-
-    # virtual offset [user.offs] + [user.script.size]
-    - name: kernel
-      offs: 0x800
-      virtual: True
+    - name: user
+      offs: 0x10000
