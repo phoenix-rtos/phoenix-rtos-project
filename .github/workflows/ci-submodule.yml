@@ -141,10 +141,11 @@ jobs:
 
       - name: Test runner
         id: runner
-        uses: ./.github/actions/phoenix-runner
+        uses: phoenix-rtos/phoenix-rtos-project/.github/actions/phoenix-runner@wmlynik/coremark_pro_tests_tmp
         with:
           image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
+          nightly: true
 
       - name: Upload runner results
         if: always()

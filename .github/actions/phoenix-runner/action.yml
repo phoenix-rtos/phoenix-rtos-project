@@ -34,10 +34,7 @@ runs:
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
 
       # Build the nightly flag logic
-      NIGHTLY_ARG=""
-      if [ "${{ inputs.nightly }}" = "true" ]; then
-        NIGHTLY_ARG="--nightly"
-      fi
+      NIGHTLY_ARG="--nightly"
 
       # runner args:
       #  -v  # output SKIP subresults at a top level
