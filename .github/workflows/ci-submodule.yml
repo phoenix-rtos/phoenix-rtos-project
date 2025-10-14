@@ -89,6 +89,7 @@ jobs:
           target: ${{ matrix.target }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           buildroot: ${{env.CI_CUSTOM_BUILDROOT}}
+          nightly: ${{ inputs.nightly }}
 
       # step 4: tar rootfs
       - name: Tar rootfs
@@ -145,6 +146,7 @@ jobs:
         with:
           image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
+          nightly: ${{ inputs.nightly }}
 
       - name: Upload runner results
         if: always()
@@ -191,7 +193,7 @@ jobs:
       - name: Test runner
         id: runner
         run: |
-          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} -Oresults.csv
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
 
       - name: Upload runner results
         if: always()
