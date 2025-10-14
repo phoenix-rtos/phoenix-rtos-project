@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Shell script for building armv8m33-mcxn94x-frdm_cpu1 project
+#
+# Copyright 2025 Phoenix Systems
+# Author: Daniel Sawka
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+: "${WATCHDOG:=0}"
+export WATCHDOG
+
+# Use CPU1
+export MCX_USE_CPU1=y
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}
