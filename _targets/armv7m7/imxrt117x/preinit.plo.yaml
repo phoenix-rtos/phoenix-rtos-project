@@ -5,10 +5,21 @@ contents:
   # NOTE: All data/code maps need to be cacheable to allow unaligned accesses
   - map itcm 0x0 0x40000 rwxcb
   - map dtcm 0x20000000 0x20028000 rwcb
-  - map ocram2 0x202c0000 0x20340000 rwxcb
+  - map ocram2 0x202c0000 0x202d0000 rwxcb
+  - map ocram21 0x202d0000 0x202e0000 rwxcb
+  - map ocram22 0x202e0000 0x202f0000 rwxcb
+  - map ocram23 0x202f0000 0x20300000 rwxcb
+  - map ocram24 0x20300000 0x20310000 rwxcb
+  - map ocram25 0x20310000 0x20320000 rwxcb
+  - map ocram26 0x20320000 0x20330000 rwxcb
+  - map ocram27 0x20330000 0x20340000 rwxcb
   - map aips14 0x40000000 0x41000000 rws
   - map aips5 0x42000000 0x42100000 rws
   - map xip1 0x30000000 0x30400000 rxcb
+  # - map xip11 0x30300000 0x30400000 rxcb
+  # - map xip11 0x30100000 0x30200000 rxcb
+  # - map xip12 0x30200000 0x30300000 rxcb
+  # - map xip13 0x30300000 0x30400000 rxcb
   - phfs usb0 1.2 phoenixd
   - phfs flash0 2.0 raw
   - console 0.0

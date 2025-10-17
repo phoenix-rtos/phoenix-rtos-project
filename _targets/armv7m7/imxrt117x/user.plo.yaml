@@ -6,7 +6,10 @@ is_relative: True
 contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs xip1 ocram2
-  - app {{ env.BOOT_DEVICE }} -x imxrt-multi xip1 ocram2;aips14;aips5
-  - app {{ env.BOOT_DEVICE }} -x psh xip1 ocram2
+  - app {{ env.BOOT_DEVICE }} -x imxrt-multi xip1 ocram21;aips14;aips5
+  - app {{ env.BOOT_DEVICE }} -x hello xip1 ocram2;ocram21;ocram22;ocram23;ocram24;ocram25
+  - app {{ env.BOOT_DEVICE }} -x hello2 xip1 ocram24;ocram25;ocram26;ocram27
+  - app {{ env.BOOT_DEVICE }} hello3 xip1 ocram2;ocram22;ocram23;ocram24;ocram25;ocram26;ocram27
+  - app {{ env.BOOT_DEVICE }} -x psh xip1 ocram23;ocram24;ocram25;ocram26
   - wait 2000
   - go!
