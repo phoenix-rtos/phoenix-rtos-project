@@ -35,9 +35,6 @@ runs:
   using: 'composite'
   steps:
   - name: Run phoenix-build container
-    env:
-      # adding bear to the path
-      PATH: /opt/bear/bin:${{ env.PATH }}
     shell: bash
     run: |
       IMAGE="ghcr.io/phoenix-rtos/build:${{ inputs.image-tag }}"
