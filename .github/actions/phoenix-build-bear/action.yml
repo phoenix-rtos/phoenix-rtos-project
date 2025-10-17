@@ -1,6 +1,6 @@
 # vim:sw=2:ts=2
 # action name
-name: 'phoenix-build'
+name: 'phoenix-build-bear'
 
 # action author
 author: 'Marek Białowąs <marek.bialowas@phoenix-rtos.com>'
