@@ -37,6 +37,7 @@ jobs:
           - 'armv7m7-imxrt105x-evk'
           - 'armv7m7-imxrt106x-evk'
           - 'armv7m7-imxrt117x-evk'
+          - 'armv7r5f-zynqmp-qemu'
           - 'armv8r52-mps3an536-qemu'
           - 'armv8m33-mcxn94x-frdm'
           - 'aarch64a53-zynqmp-qemu'
