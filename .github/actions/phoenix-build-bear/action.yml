@@ -44,7 +44,8 @@ runs:
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
 
       # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
-      docker run --entrypoint bear --output _build/"$TARGET"/compile_commands.json -- ./phoenix-rtos-build/build.sh "$@"\
+      docker run \
+        --entrypoint "bear --output _build/"$TARGET"/compile_commands.json -- ./phoenix-rtos-build/build.sh "$@""\
         --rm --privileged \
         -v "${{ github.workspace }}:${{ github.workspace }}" \
         -w "${{ github.workspace }}" \
