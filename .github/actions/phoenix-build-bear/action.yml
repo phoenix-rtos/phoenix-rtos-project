@@ -1,0 +1,70 @@
+# vim:sw=2:ts=2
+# action name
+name: 'phoenix-build'
+
+# action author
+author: 'Marek Białowąs <marek.bialowas@phoenix-rtos.com>'
+
+# action description
+description: 'Builds Phoenix-RTOS based projects'
+
+# action input values
+inputs:
+  image-tag:
+    description: 'Docker image tag version'
+    default: 'latest'
+    required: false
+  target:
+    description: 'Target env variable'
+    default: 'ia32-generic-qemu'
+    required: false
+  params:
+    description: 'All parameters to the main build script - as string'
+    required: true
+  buildroot:
+    description: 'Custom phoenix-rtos-project buildroot (relative path)'
+    default: ''
+    required: false
+  nightly:
+    description: 'Build additional tests'
+    default: 'false'
+    required: false
+
+# we're using a composite action as `docker` action type doesn't allow non-static image specification
+runs:
+  using: 'composite'
+  steps:
+  - name: Run phoenix-build container
+    shell: bash
+    run: |
+      IMAGE="ghcr.io/phoenix-rtos/build:${{ inputs.image-tag }}"
+      echo "Using Docker image: $IMAGE"
+
+      # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
+      GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
+
+      # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
+      docker run --entrypoint bear --output _build/"$TARGET"/compile_commands.json -- ./phoenix-rtos-build/build.sh "$@"\
+        --rm --privileged \
+        -v "${{ github.workspace }}:${{ github.workspace }}" \
+        -w "${{ github.workspace }}" \
+        -v "${HOME}:${HOME}" \
+        -v "${RUNNER_TEMP}:${RUNNER_TEMP}" \
+        -v "${GITHUB_ENV}:${GITHUB_ENV}" \
+        -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
+        -e CI=true \
+        -e HOME \
+        -e RUNNER_TEMP \
+        -e CONSOLE=serial \
+        -e DEBUG=1 \
+        -e TARGET="${{ inputs.target }}" \
+        -e CI_CUSTOM_BUILDROOT="${{ inputs.buildroot }}" \
+        -e LONG_TEST="${{ inputs.nightly == 'true' && 'y' || 'n' }}" \
+        $GH_ENV_ARGS \
+        "$IMAGE" \
+        "${{ inputs.params }}"
+
+# branding
+branding:
+  icon: terminal
+  color: green
