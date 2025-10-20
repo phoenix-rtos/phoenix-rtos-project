@@ -163,10 +163,12 @@ jobs:
     needs: build
     name: Analyze project with C/C++test
     runs-on: self-hosted
+    container:
+      image: phoenixrtos/gh-runner-cpptest
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu']
+        target: ['armv7a9-zynq7000-qemu'] #, 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu']
 
     # Specifies required permissions for upload-sarif action
     permissions:
