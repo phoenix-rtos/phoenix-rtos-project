@@ -181,9 +181,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job.
     steps:
-    - name: Set up Docker
-      uses: docker/setup-docker-action@v4
-
     # Setup reviedog
     - name: ReviewDog setup
       uses: reviewdog/action-setup@v1
