@@ -164,7 +164,7 @@ jobs:
     name: Analyze project with C/C++test
     runs-on: self-hosted
     container:
-      image: phoenixrtos/gh-runner-cpptest
+      image: cpt
     strategy:
       fail-fast: false
       matrix:
