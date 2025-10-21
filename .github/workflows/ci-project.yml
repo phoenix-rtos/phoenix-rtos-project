@@ -110,6 +110,7 @@ jobs:
           path: |
             boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
+            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}
 
   run-cpptest:
     needs: build
