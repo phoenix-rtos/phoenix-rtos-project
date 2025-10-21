@@ -38,7 +38,7 @@ runs:
     shell: bash
     run: |
       IMAGE="ghcr.io/phoenix-rtos/build:latest"
-      echo "Using Docker image: $IMAGE"
+      echo "Using Docker image: $IMAGE test"
 
       # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
