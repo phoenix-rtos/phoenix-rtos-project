@@ -123,7 +123,7 @@ jobs:
     runs-on: self-hosted
 
     container:
-      image: cpt
+      image: parasoft/ctp
     strategy:
       fail-fast: false
       matrix:
