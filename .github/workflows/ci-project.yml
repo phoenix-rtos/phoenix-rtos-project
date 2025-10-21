@@ -20,17 +20,18 @@ on:
         default: false
         required: false
 
-    workflow_dispatch:
+  workflow_dispatch:
     inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
+      image-tag:
+        type: string
+        description: 'Docker image tag version'
+        default: 'latest'
+        required: false
+      build_params:
+        type: string
+        description: "parameters to build.sh script"
+        default: 'host core fs test project image'  # by default don't build ports
+        required: false
       tags:
         description: 'Test scenario tags'
         required: false
