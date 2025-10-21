@@ -102,6 +102,11 @@ jobs:
         working-directory: _boot
         run: tar -cvf ../boot-${{ matrix.target }}.tar ${{ matrix.target }}
 
+      # step 4: tar project boot directory
+      - name: Tar build directory
+        working-directory: _build
+        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}
+
       # step 5: upload project boot and rootfs tarballs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -110,7 +115,7 @@ jobs:
           path: |
             boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
-            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}
+            build-${{ matrix.target }}.tar
 
   run-cpptest:
     needs: build
