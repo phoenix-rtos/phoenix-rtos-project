@@ -84,7 +84,7 @@ jobs:
         # we need to use relative paths here so they would work in docker env
         run: |
           mkdir .buildroot && cd .buildroot
-          git clone https://github.com/bartekpaczek/phoenix-rtos-project-fork phoenix-rtos-project --recurse-submodules
+          git clone https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
           cd phoenix-rtos-project
           echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
           echo "CI_CUSTOM_BUILDROOT=.buildroot/phoenix-rtos-project" >> $GITHUB_ENV
