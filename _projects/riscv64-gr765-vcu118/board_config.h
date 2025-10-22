@@ -90,6 +90,8 @@
 #define SPW4_ACTIVE 0
 #define SPW5_ACTIVE 0
 
+#define SPW_MAX_PACKET_LEN 1024
+
 #define TEST_SPW_ADDR0 0x3
 #define TEST_SPW_ADDR1 0x4
 
