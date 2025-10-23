@@ -150,7 +150,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: phoenix-rtos-${{ matrix.target }}
-    
+
+    - name: Unpack build artifacts
+      run: |
+        mkdir -p  _build
+        tar -xvf build-${{ matrix.target }}.tar -C _build
+
     - name: Debug list unpacked build dir
       run: |
         set -e
@@ -165,11 +170,6 @@ jobs:
           ls -R _build
           exit 1
         fi
-
-    - name: Unpack build artifacts
-      run: |
-        mkdir -p  _build
-        tar -xvf build-${{ matrix.target }}.tar -C _build
 
 
     # Runs code analysis with C/C++test.
