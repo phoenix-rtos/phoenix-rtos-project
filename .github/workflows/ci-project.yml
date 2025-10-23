@@ -144,7 +144,7 @@ jobs:
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
-        name: phoenix-rtos-${{ matrix.target }}
+        name: _build/${{ matrix.target }}/compile_commands.json
 
 
     # Runs code analysis with C/C++test.
