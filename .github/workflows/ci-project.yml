@@ -150,6 +150,21 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: phoenix-rtos-${{ matrix.target }}
+    
+    - name: Debug: list unpacked build dir
+      run: |
+        set -e
+        echo "Listing _build top-level"
+        ls -la _build || true
+        echo "Listing target dir"
+        ls -la _build/${{ matrix.target }} || true
+        if [ -f _build/${{ matrix.target }}/compile_commands.json ]; then
+          echo "FOUND: _build/${{ matrix.target }}/compile_commands.json"
+        else
+          echo "MISSING: compile_commands.json"
+          ls -R _build
+          exit 1
+        fi
 
     - name: Unpack build artifacts
       run: |
