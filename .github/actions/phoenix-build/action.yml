@@ -44,6 +44,9 @@ runs:
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
       
       pwd
+      echo HOME: ${HOME}
+      echo buildroot: ${{ inputs.buildroot }}
+      echo RUNNER_TEMP: ${RUNNER_TEMP}
       
       # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
       docker run --rm --privileged \
