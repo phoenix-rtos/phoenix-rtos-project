@@ -158,6 +158,7 @@ jobs:
 
     - name: Debug list unpacked build dir
       run: |
+        pwd
         set -e
         echo "Listing _build top-level"
         ls -la _build || true

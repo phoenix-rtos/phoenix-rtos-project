@@ -42,7 +42,9 @@ runs:
 
       # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
-
+      
+      pwd
+      
       # when running docker manually - we need to reflect the host paths (no Path translation is done in the runner)
       docker run --rm --privileged \
         -v "${{ github.workspace }}:${{ github.workspace }}" \
