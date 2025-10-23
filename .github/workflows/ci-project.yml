@@ -153,7 +153,7 @@ jobs:
 
     - name: Unpack build artifacts
       run: |
-        mkdir -p _fs _boot _build
+        mkdir -p  _build
         tar -xvf build-${{ matrix.target }}.tar -C _build
 
 
@@ -166,6 +166,7 @@ jobs:
         # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
         input: _build/${{ matrix.target }}/compile_commands.json
         testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
+        compilerConfig: 'gcc_14-aarch32'
         # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
         # reportFormat: xml,html,custom
         # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
