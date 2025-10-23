@@ -38,7 +38,6 @@ on:
         type: boolean
 
 
-
 # jobs
 jobs:
   build:
@@ -102,11 +101,6 @@ jobs:
         working-directory: _boot
         run: tar -cvf ../boot-${{ matrix.target }}.tar ${{ matrix.target }}
 
-      # step 4: tar project boot directory
-      - name: Tar build directory
-        working-directory: _build
-        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}
-
       # step 5: upload project boot and rootfs tarballs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -115,7 +109,7 @@ jobs:
           path: |
             boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
-            build-${{ matrix.target }}.tar
+            _build/${{ matrix.target }}/compile_commands.json
 
   run-cpptest:
     needs: build
