@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Shell script for building armv7m4-stm32l4x6-nucleo project
+# Shell script for building armv8m55-stm32n6-nucleo
 #
 # Copyright 2022 Phoenix Systems
 # Author: Lukasz Kosinski
@@ -10,13 +10,6 @@
 
 : "${WATCHDOG:=0}"
 export WATCHDOG
-
-#
-# Ports configuration - additional to the one from _targets
-#
-if [ "$LONG_TEST" = "y" ]; then
-	export PORTS_COREMARK_PRO=y
-fi
 
 b_image_project () {
 	b_log "The images have been built for the ${TARGET} platform"

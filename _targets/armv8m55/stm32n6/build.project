@@ -1,0 +1,129 @@
+#!/bin/bash
+#
+# Shell script for building armv8m55-stm32n6 project
+#
+# Copyright 2018, 2019, 2020, 2024 Phoenix Systems
+# Author: Kaja Swat, Aleksander Kaminski, Pawel Pisarczyk, Lukasz Kosinski
+#
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+. "_targets/build.common"
+
+CROSS=arm-phoenix-
+
+# Path to STM32_SigningTool_CLI. User may wish to set a custom path.
+STM32SIGNTOOL=${STM32SIGNTOOL:="STM32_SigningTool_CLI"}
+
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
+export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
+export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
+
+#
+# Ports configuration
+#
+export PORTS_BUSYBOX=n
+export PORTS_PCRE=n
+export PORTS_OPENSSL=n
+export PORTS_LIGHTTPD=n
+export PORTS_DROPBEAR=n
+export PORTS_LUA=n
+export PORTS_LZO=n
+export PORTS_OPENVPN=n
+export PORTS_JANSSON=n
+export PORTS_CURL=n
+export PORTS_COREMARK=n
+export PORTS_COREMARK_PRO=n
+
+
+#
+# Platform dependent parameters
+#
+export SIZE_PAGE=$((0x200))
+
+
+#
+# Project specific build
+#
+
+export BOOT_DEVICE="flash0"
+export MAGIC_USER_SCRIPT=dabaabad
+
+
+# Physical kernel address
+KERNEL_PHBASE=$((0x10000000))
+KERNEL_PHOFFS=$((0x0))
+KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
+export KERNEL_PHADDR
+KERNEL_DATA_PHADDR=0x34014000
+export KERNEL_DATA_PHADDR
+
+# To load kernel into ITCM we need to add 1 additional bank (+ 64 KB)
+export LDSFLAGS="-DCUSTOM_FLEXRAM_ITCM_BANKS=1"
+
+
+b_build_project() {
+	b_log "Building user applications"
+	make -C "_user" all install
+}
+
+
+b_create_signed_bootloader() {
+	# User may wish to skip signing the image if they intend to only use dev boot
+	if [ "$PLO_SKIP_IMAGE_SIGN" = "y" ]; then
+		b_log "Signing PLO image skipped"
+		return
+	fi
+
+	b_log "Creating signed PLO image"
+	# STM32_SigningTool_CLI requires the binary to have ".bin" file extension,
+	# otherwise it will not be recognized as a flat binary file
+	PLO_UNSIGNED="${PREFIX_BOOT}/plo_unsigned.bin"
+	PLO_SIGNED="${PREFIX_BOOT}/part_plo.img"
+	cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "${PLO_UNSIGNED}"
+	# Bit 0 - add authentication
+	# Bit 1 - add encryption
+	# Bit 31 - add padding
+	OUTPUT_FLAGS=0x80000000
+	${STM32SIGNTOOL} \
+		-bin "${PLO_UNSIGNED}" \
+		-nk \
+		-of ${OUTPUT_FLAGS} \
+		-t fsbl \
+		-o "${PLO_SIGNED}" \
+		-hv 2.3 \
+		-s
+}
+
+
+b_build_target() {
+	b_log "Building $TARGET project"
+	b_log "Building phoenix-rtos-loader"
+
+	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
+	RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
+
+	make -C plo all
+
+	b_log "Creating kernel binary image"
+	KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+	${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_ELF/.elf/.bin}"
+
+	# Copy plo.elf with symbols to provide loading plo using gdb
+	cp "${PREFIX_PROG}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo.elf"
+	cp "${PREFIX_PROG}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo-ram.elf"
+
+	b_create_signed_bootloader
+}
+
+
+b_image_target() {
+	image_builder.py -v partition --nvm "$NVM_CONFIG" --name user --script "$PLO_SCRIPT_USER"
+	# STM32_Programmer_CLI requires the binary to have ".bin" file extension,
+	# otherwise it will not be recognized as a flat binary file
+	image_builder.py -v disk --nvm "$NVM_CONFIG" --name "$BOOT_DEVICE" --out "phoenix.disk.bin"
+}
+
+b_test_target() {
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
+}

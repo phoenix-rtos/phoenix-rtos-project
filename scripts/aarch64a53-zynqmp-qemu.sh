@@ -29,4 +29,5 @@ exec qemu-system-aarch64 \
 	-drive file="$IMG_FLASH_QEMU",if=mtd,format=raw,index=0 \
 	-device loader,addr=0xfd1a0104,data=0x80000e0e,data-len=4 \
 	-m 2G \
-	-display none
+	-display none \
+	-accel tcg,thread=single,tb-size=1024

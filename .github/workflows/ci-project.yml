@@ -4,12 +4,12 @@ name: ci-project
 # on events
 on:
   workflow_call:
-    secrets:
-      CI_BOT_EMAIL_USERNAME:
-        required: false
-      CI_BOT_EMAIL_PASSWORD:
-        required: false
     inputs:
+      image-tag:
+        type: string
+        description: 'Docker image tag version'
+        default: 'latest'
+        required: false
       build_params:
         type: string
         description: "parameters to build.sh script"
@@ -26,8 +26,6 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    outputs:
-      build_result: ${{ steps.build.outcome }}
     strategy:
       matrix:
         target:
@@ -46,7 +44,7 @@ jobs:
           - 'ia32-generic-pc'
           - 'ia32-generic-qemu'
           - 'riscv64-generic-qemu'
-          - 'riscv64-noelv-fpga'
+          - 'riscv64-grfpga-artya7'
           - 'sparcv8leon-generic-qemu'
           - 'sparcv8leon-gr712rc-board'
           - 'sparcv8leon-gr716-mimas'
@@ -71,6 +69,7 @@ jobs:
         id: build
         uses: ./.github/actions/phoenix-build
         with:
+          image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
@@ -80,25 +79,28 @@ jobs:
         working-directory: _fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 4: upload project boot directory and tarball of rootfs as build artifacts
+      # step 4: tar project boot directory
+      - name: Tar boot directory
+        working-directory: _boot
+        run: tar -cvf ../boot-${{ matrix.target }}.tar ${{ matrix.target }}
+
+      # step 5: upload project boot and rootfs tarballs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            _boot/${{ matrix.target }}
+            boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
 
   test-emu:
     needs: build
     name: test EMU
     runs-on: ubuntu-latest
-    outputs:
-      runner_result: ${{ steps.runner.outcome }}
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu']
+        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu']
 
     steps:
       - name: Checkout the repository
@@ -115,6 +117,13 @@ jobs:
         working-directory: _fs
         run: tar -xvf ../rootfs-${{ matrix.target }}.tar
 
+      - name: Create empty _boot
+        run: mkdir _boot
+
+      - name: Untar boot
+        working-directory: _boot
+        run: tar -xvf ../boot-${{ matrix.target }}.tar
+
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
 
@@ -122,8 +131,54 @@ jobs:
         id: runner
         uses: ./.github/actions/phoenix-runner
         with:
+          image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
           nightly: ${{ inputs.nightly }}
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            results.csv
+            results.xml
+
+  test-hw:
+    needs: build
+    name: test HW
+    runs-on: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['armv7a9-zynq7000-zedboard']
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+
+      - name: Untar rootfs
+        working-directory: _fs
+        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
+
+      - name: Create empty _boot
+        run: mkdir _boot
+
+      - name: Untar boot
+        working-directory: _boot
+        run: tar -xvf ../boot-${{ matrix.target }}.tar
+
+      - name: Test runner
+        id: runner
+        run: |
+          python3 ./phoenix-rtos-tests/runner.py -v -T${{ matrix.target }} ${{ inputs.nightly && '--nightly' || '' }} -Oresults.csv
 
       - name: Upload runner results
         if: always()

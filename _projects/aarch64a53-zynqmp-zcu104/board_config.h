@@ -141,33 +141,26 @@
 #define GPIO1_20 -1
 #define GPIO1_21 -1
 
-/**
- * Width of FPD AXI Slave 0
- * - 0x00 = 32 bit width
- * - 0x01 = 64 bit width
- * - 0x10 = 128 bit width
- */
-#define FPD_AXI_S0_WIDTH 0x00
-
-/**
- * Width of FPD AXI Slave 1
+/*
+ * PS-PL AXI bus width configuration
  *
  * Possible values:
- * - 0x00 = 32 bit width
- * - 0x01 = 64 bit width
- * - 0x10 = 128 bit width
+ * - 0x0 = 32 bit width
+ * - 0x1 = 64 bit width
+ * - 0x2 = 128 bit width
  */
-#define FPD_AXI_S1_WIDTH 0x00
+#define AXI_WIDTH_CFG_32B  0x0
+#define AXI_WIDTH_CFG_64B  0x1
+#define AXI_WIDTH_CFG_128B 0x2
 
-/**
- * Width of LPD AXI
- *
- * Possible values:
- * - 0x00 = 32 bit width
- * - 0x01 = 64 bit width
- * - 0x10 = 128 bit width
- */
-#define LPD_AXI_WIDTH 0x00
+/** Width of FPD AXI Slave 0 */
+#define FPD_AXI_S0_WIDTH AXI_WIDTH_CFG_32B
+
+/** Width of FPD AXI Slave 1 */
+#define FPD_AXI_S1_WIDTH AXI_WIDTH_CFG_32B
+
+/** Width of LPD AXI */
+#define LPD_AXI_WIDTH AXI_WIDTH_CFG_32B
 
 /* DDR controller parameters */
 #define DDRC_DERATEEN_VAL   0x00000200
@@ -230,5 +223,20 @@
 #define DDR_PHY_DX8SL2PLLCR0_VAL 0x01100000
 #define DDR_PHY_DX8SL3PLLCR0_VAL 0x01100000
 #define DDR_PHY_DX8SL4PLLCR0_VAL 0x21100000
+
+/* Memory ranges available for PCI Express driver */
+#define ADDR_M_AXI_HPM0_FPD_LOW    0xa4000000
+#define ADDR_M_AXI_HPM1_FPD_LOW    0xb0000000
+#define ADDR_PCIE_LOW              0xe0000000
+#define ADDR_M_AXI_HPM0_FPD_HIGH_1 0x400000000ULL
+#define ADDR_M_AXI_HPM1_FPD_HIGH_1 0x500000000ULL
+#define ADDR_PCIE_HIGH_1           0x600000000ULL
+#define ADDR_M_AXI_HPM0_FPD_HIGH_2 0x1000000000ULL
+#define ADDR_M_AXI_HPM1_FPD_HIGH_2 0x4800000000ULL
+#define ADDR_PCIE_HIGH_2           0x8000000000ULL
+
+/* Memory range used for PCI Express ECAM space */
+#define ECAM_SIZE    0x10000000U
+#define ECAM_ADDRESS ADDR_PCIE_HIGH_2
 
 #endif

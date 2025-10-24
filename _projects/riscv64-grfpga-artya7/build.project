@@ -1,12 +1,15 @@
 #!/bin/bash
 #
-# Shell script for building riscv64-noelv-fpga project
+# Shell script for building riscv64-grfpga-artya7 project
 #
 # Copyright 2024 Phoenix Systems
 # Author: Lukasz Leczkowski
 #
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+export PLO_DEVICES="uart-grlib flash-spimctrl"
+export RISCV_ISA_STRING="rv64gc_zba_zbb_zbs_zbc_zcb_sscofpmf_zicbom_zicond_zfh_zfhmin_zfa"
 
 b_image_project () {
 	cp -a "${PREFIX_PROG_STRIPPED}sbi-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/"

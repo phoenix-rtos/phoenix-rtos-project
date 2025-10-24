@@ -28,7 +28,7 @@
 /* plo params */
 
 #define RAM_ADDR      0x20000000
-#define RAM_BANK_SIZE (384 * 1024)
+#define RAM_BANK_SIZE (416 * 1024)
 #define UART_MAX_CNT  10
 
 

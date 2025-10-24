@@ -22,7 +22,7 @@ jobs:
 
     - name: Send Google Chat Notification
       run: |
-          curl --location --request POST '${{ secrets.GOOGLE_CHAT_CI_WEBHOOK }}' \
+          curl --fail --location --request POST '${{ secrets.GOOGLE_CHAT_CI_WEBHOOK }}' \
           --header 'Content-Type: application/json' \
           --data-raw '{
                           "cards": [
@@ -43,17 +43,7 @@ jobs:
                                                   "keyValue": {
                                                       "topLabel": "Repo",
                                                       "content": "${{ github.repository }}",
-                                                      "iconUrl": "https://git-scm.com/images/logos/logomark-black@2x.png",
-                                                      "button": {
-                                                          "textButton": {
-                                                              "text": "OPEN",
-                                                              "onClick": {
-                                                                  "openLink": {
-                                                                      "url": "${{ github.server_url }}/${{ github.repository }}"
-                                                                  }
-                                                              }
-                                                          }
-                                                      }
+                                                      "iconUrl": "https://git-scm.com/images/logos/logomark-black@2x.png"
                                                   }
                                               },
                                               {

@@ -1,0 +1,13 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - kernel {{ env.BOOT_DEVICE }}
+  # Note: for now only use -xn for XIP apps and -x for load-and-run apps
+  # This can be changed after hal_cleanDCache is implemented in the kernel for armv8m
+  - app {{ env.BOOT_DEVICE }} -x psh axi_app axi_app
+  - app {{ env.BOOT_DEVICE }} -x stm32l4-multi axi_app axi_app;per
+  - wait 1000
+  - go!
