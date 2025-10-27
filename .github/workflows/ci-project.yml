@@ -104,7 +104,7 @@ jobs:
       # step 4: tar project boot directory
       - name: Tar build directory
         working-directory: _build
-        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}
+        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}/compile_commands.json
 
       # step 5: upload project boot and rootfs tarballs as build artifacts
       - name: Upload build artifacts
