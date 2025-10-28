@@ -10,11 +10,31 @@ on:
     branches:
       - 'release/*'
 
-#TODO: this uses `latest` docker image instead of the release one
 jobs:
+  # extract release tag to be used as docker image tag
+  get-image-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.set_tag.outputs.image_tag }}
+
+    steps:
+      - name: Set image tag based on branch
+        shell: bash
+        id: set_tag
+        run: |
+          if [[ "$GITHUB_BASE_REF" =~ ^release/([0-9]+\.[0-9]+)$ ]]; then
+            IMAGE_TAG="v${BASH_REMATCH[1]}"
+            echo "IMAGE_TAG: $IMAGE_TAG"
+            echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "image_tag=latest" >> $GITHUB_OUTPUT
+          fi
+
   call-ci:
+    needs: get-image-tag
     uses: ./.github/workflows/ci-project.yml
     with:
+      image-tag: ${{ needs.get-image-tag.outputs.tag }}
       build_params: all tests
       nightly: true
     secrets: inherit

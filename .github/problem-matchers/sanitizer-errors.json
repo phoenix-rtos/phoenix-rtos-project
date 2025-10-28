@@ -14,6 +14,20 @@
             ]
         },
         {
+            "owner": "sanitizer-runtime-errors-ansi-colored",
+            "pattern": [
+                {
+                    "__comment": "GH doesn't strip ANSI colors correctly (actions/runner#2341), strip them manually",
+                    "regexp": "^(?:\\x1b\\[[\\d;]+m)*(.*):(\\d+):(\\d+):(?:\\x1b\\[[\\d;]+m)*\\s+runtime (error):\\s+(?:\\x1b\\[[\\d;]+m)*(.*)(?:\\x1b\\[[\\d;]+m)*$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            ]
+        },
+        {
             "owner": "sanitizer-errors",
             "pattern": [
                 {
