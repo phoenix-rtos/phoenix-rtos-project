@@ -6,7 +6,7 @@
 # Author: Jacek Maksymowicz
 #
 
-IMG_PLO_ZYNQMP="$(dirname "${BASH_SOURCE[0]}")/../_build/armv7r5f-zynqmp-qemu/prog/plo-armv7r5f-zynqmp.elf"
+IMG_PLO_ZYNQMP="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7r5f-zynqmp-qemu/plo.elf"
 IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7r5f-zynqmp-qemu/flash0.disk"
 DTB_ZYNQMP="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynqmp-zcu104.dtb"
 
