@@ -37,6 +37,7 @@ jobs:
           - 'armv7m7-imxrt105x-evk'
           - 'armv7m7-imxrt106x-evk'
           - 'armv7m7-imxrt117x-evk'
+          - 'armv7r5f-zynqmp-qemu'
           - 'armv8r52-mps3an536-qemu'
           - 'armv8m33-mcxn94x-frdm'
           - 'aarch64a53-zynqmp-qemu'
@@ -100,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu']
+        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu', 'armv7r5f-zynqmp-qemu']
 
     steps:
       - name: Checkout the repository
