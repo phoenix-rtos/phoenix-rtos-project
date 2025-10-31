@@ -19,7 +19,7 @@ on:
         type: boolean
         default: false
         required: false
-
+  # on manual trigger 
   workflow_dispatch:
     inputs:
       image-tag:
