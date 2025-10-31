@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - master
+      - test_pr
       - 'release/*'
 
 jobs:
