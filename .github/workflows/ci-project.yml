@@ -196,7 +196,7 @@ jobs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        cat reports/report.sarif | reviewdog -f=sarif -diff="git diff -U0 HEAD^" -name=cpptest-pr -reporter=github-pr-review -fail-on-error
+        cat reports/report.sarif | reviewdog -f=sarif
 
     # Uploads an archive that includes all report files (.xml, .html, .sarif).
     - name: Archive reports
