@@ -117,6 +117,7 @@ jobs:
             build-${{ matrix.target }}.tar
 
   run-cpptest:
+    if: github.event_name == 'pull_request'
     needs: build
     name: Analyze project with C/C++test
     runs-on: self-hosted
@@ -128,10 +129,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job.
     steps:
-    # Setup reviedog
-    - name: ReviewDog setup
-      uses: reviewdog/action-setup@v1
-      if: true
 
     # Checks out your repository under $GITHUB_WORKSPACE, so that your job can access it.
     - name: Checkout code
@@ -181,7 +178,11 @@ jobs:
           ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
           -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
 
-
+    # Setup reviedog
+    - name: ReviewDog setup
+      uses: reviewdog/action-setup@v1
+      if: true
+      
     # Run Reviewdog
     - name: Run Reviewdog
       if: always()
