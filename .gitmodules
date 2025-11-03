@@ -1,5 +1,5 @@
 [submodule "phoenix-rtos-kernel"]
-	path = phoenix-rtos-kernel-fork
+	path = phoenix-rtos-kernel
 	url = https://github.com/bartekpaczek/phoenix-rtos-kernel-fork
 [submodule "libphoenix"]
 	path = libphoenix
