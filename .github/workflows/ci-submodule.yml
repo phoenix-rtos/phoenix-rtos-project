@@ -219,9 +219,13 @@ jobs:
         # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
         input: _build/${{ matrix.target }}/compile_commands.json
         testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
+        compilerConfig: 'gcc_14-aarch32'
         # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
         # reportFormat: xml,html,custom
         # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
+        commandLinePattern: |
+          ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
+          -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
 
     # Run Reviewdog
     - name: Run Reviewdog
