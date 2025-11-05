@@ -129,7 +129,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+        # armv7m7-imxrt117x-evk disabled due to lack of support of W25Q512NW-IQ/IN flash used in new revision of evk used in CI
+        # see: https://github.com/phoenix-rtos/plo/commit/9db2e1ce29f1a19ad54367cf2981022d6ceef33f
+        #      https://github.com/phoenix-rtos/phoenix-rtos-devices/commit/10cca0a5897756243886ad235ea7ef2daf8735dc
+        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
 
     steps:
       - name: Checkout the repository
