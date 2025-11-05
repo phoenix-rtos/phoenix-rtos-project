@@ -111,15 +111,20 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}/_fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 5: upload project boot directory and tarball of rootfs as build artifacts
+      # step 5: tar project boot directory
+      - name: Tar build directory
+        working-directory: _build
+        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}/compile_commands.json
+
+      # step 6: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
-            ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
-            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}
+            boot-${{ matrix.target }}.tar
+            rootfs-${{ matrix.target }}.tar
+            build-${{ matrix.target }}.tar
 
 #  test-emu:
 #    needs: build
@@ -209,24 +214,30 @@ jobs:
       with:
         name: phoenix-rtos-${{ matrix.target }}
 
+    - name: Unpack build artifacts
+      run: |
+        mkdir -p  _build
+        tar -xvf build-${{ matrix.target }}.tar -C _build
+
 
     # Runs code analysis with C/C++test.
     - name: Run C/C++test
       # Use the 'run-cpptest-action' GitHub action.
-      uses: parasoft/run-cpptest-action@2.0.2
-      # Optional parameters for 'run-cpptest-action'.
-      with:
-        # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
-        input: _build/${{ matrix.target }}/compile_commands.json
-        testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
-        compilerConfig: 'gcc_14-aarch32'
-        # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
-        # reportFormat: xml,html,custom
-        # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
-        commandLinePattern: |
-          ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
-          -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
-
+      #uses: parasoft/run-cpptest-action@2.0.2
+      ## Optional parameters for 'run-cpptest-action'.
+      #with:
+      #  # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
+      #  input: _build/${{ matrix.target }}/compile_commands.json
+      #  testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
+      #  compilerConfig: 'gcc_14-aarch32'
+      #  # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
+      #  # reportFormat: xml,html,custom
+      #  # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
+      #  commandLinePattern: |
+      #    ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
+      #    -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
+      run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
+      
     # Run Reviewdog
     - name: Run Reviewdog
       if: always()
