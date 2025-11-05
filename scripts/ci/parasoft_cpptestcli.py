@@ -76,7 +76,7 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
     ]
 
     if target.startswith("armv7"):
-        cmd.extend(["-compiler", "gcc_9_ARM"])
+        cmd.extend(["-compiler", "gcc_14-aarch32"])
     else:
         cmd.extend(["-compiler", "gcc_9"])
 
@@ -256,7 +256,8 @@ def parse_opts() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Blablabla for now")
 
     # TARGETS = "armv7a7-imx6ull-evk,armv7a9-zynq7000-qemu,armv7a9-zynq7000-zedboard,armv7a9-zynq7000-zturn,armv7m4-stm32l4x6-nucleo,armv7m7-imxrt106x-evk,armv7m7-imxrt117x-evk,host-generic-pc,ia32-generic-pc,ia32-generic-qemu,riscv64-generic-qemu,riscv64-generic-spike"
-    TARGETS = "ia32-generic-qemu,armv7m7-imxrt106x-evk,armv7a7-imx6ull-evk"
+    #TARGETS = "ia32-generic-qemu,armv7m7-imxrt106x-evk,armv7a7-imx6ull-evk"
+    TARGETS = "armv7a9-zynq7000-qemu"
 
     parser.add_argument("--targets", type=str, default=TARGETS)
     parser.add_argument("--quiet", action="store_true", default=False)
@@ -303,14 +304,14 @@ def main() -> None:
     for target in opts.targets:
         fix_compile_db(compile_db_path(target), opts.fix_compile_db)
         result_generator = run_cpptestcli_process(target, compile_db_path(target), opts.files)
-        diagnostics.update(result_generator)
-
-    print(f"Total: {len(diagnostics)}")
-    # Convert to rdf format
-    rdf = diagnostics_to_rdfjson(diagnostics)
-
-    with open("rdf.json", "w") as f:
-        f.write(rdf)
+#        diagnostics.update(result_generator)
+#
+#    print(f"Total: {len(diagnostics)}")
+#    # Convert to rdf format
+#    rdf = diagnostics_to_rdfjson(diagnostics)
+#
+#    with open("rdf.json", "w") as f:
+#        f.write(rdf)
 
 
 if __name__ == "__main__":
