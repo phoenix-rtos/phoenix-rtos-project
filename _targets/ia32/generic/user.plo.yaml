@@ -9,6 +9,7 @@ contents:
   - if: '{{ env.CONSOLE_APP2 }}'
     str: app {{ env.BOOT_DEVICE }} -x {{ env.CONSOLE_APP2 }};-n ram ram
   - app {{ env.BOOT_DEVICE }} -x {{ env.CONSOLE_APP }} ram ram
+  - app {{ env.BOOT_DEVICE }} -x coredump_server ram ram
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ram ram
   - app {{ env.BOOT_DEVICE }} -x pc-ata ram ram
   - go!
