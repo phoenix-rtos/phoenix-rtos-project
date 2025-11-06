@@ -200,14 +200,21 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job.
     steps:
-    # Setup reviedog
-    - name: ReviewDog setup
-      uses: reviewdog/action-setup@v1
-      if: true
 
-    # Checks out your repository under $GITHUB_WORKSPACE, so that your job can access it.
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - name: Checkout phoenix-rtos-project
+      uses: actions/checkout@v3
+      with:
+      repository: bartekpaczek/phoenix-rtos-project-fork
+      ref: master
+      submodules: recursive
+
+      # step 2: update the submodule (recurse-sumbodules=no is needed for phoenix-rtos-lwip checkout not to fail, but it fails to update the submodule (TODO)
+    - name: Update submodule ${{ github.event.repository.name }}
+      working-directory: ${{ github.event.repository.name }}
+      run: |
+        git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+        git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+        git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -239,6 +246,11 @@ jobs:
       #    ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
       #    -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
       run: ../scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
+    
+    # Setup reviedog
+    - name: ReviewDog setup
+      uses: reviewdog/action-setup@v1
+      if: true
       
     # Run Reviewdog
     - name: Run Reviewdog
