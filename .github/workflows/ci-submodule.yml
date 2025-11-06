@@ -220,7 +220,7 @@ jobs:
 
     - name: Get changed and added files
       id: changed_files
-      run: scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+      run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
     
     # Runs code analysis with C/C++test.
     - name: Run C/C++test
@@ -238,7 +238,7 @@ jobs:
       #  commandLinePattern: |
       #    ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
       #    -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
-      run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
+      run: ../scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
       
     # Run Reviewdog
     - name: Run Reviewdog
