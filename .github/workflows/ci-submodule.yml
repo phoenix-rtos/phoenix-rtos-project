@@ -215,12 +215,10 @@ jobs:
         name: phoenix-rtos-${{ matrix.target }}
     
     - name: Get changed and added files
-      working-directory: ${{ github.event.repository.name }}
       id: debug
       run: echo dupa; pwd; ls -la
 
     - name: Get changed and added files
-      working-directory: ${{ github.event.repository.name }}
       id: changed_files
       run: scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
     
