@@ -217,7 +217,7 @@ jobs:
     - name: Get changed and added files
       working-directory: ${{ github.event.repository.name }}
       id: changed_files
-      run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+      run: /scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
     
     # Runs code analysis with C/C++test.
     - name: Run C/C++test
