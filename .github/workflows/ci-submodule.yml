@@ -204,9 +204,9 @@ jobs:
     - name: Checkout phoenix-rtos-project
       uses: actions/checkout@v3
       with:
-      repository: bartekpaczek/phoenix-rtos-project-fork
-      ref: master
-      submodules: recursive
+        repository: bartekpaczek/phoenix-rtos-project-fork
+        ref: master
+        submodules: recursive
 
       # step 2: update the submodule (recurse-sumbodules=no is needed for phoenix-rtos-lwip checkout not to fail, but it fails to update the submodule (TODO)
     - name: Update submodule ${{ github.event.repository.name }}
@@ -251,7 +251,7 @@ jobs:
     - name: ReviewDog setup
       uses: reviewdog/action-setup@v1
       if: true
-      
+
     # Run Reviewdog
     - name: Run Reviewdog
       if: always()
