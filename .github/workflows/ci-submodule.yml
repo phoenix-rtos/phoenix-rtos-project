@@ -214,12 +214,6 @@ jobs:
       with:
         name: phoenix-rtos-${{ matrix.target }}
 
-    - name: Unpack build artifacts
-      run: |
-        mkdir -p  _build
-        tar -xvf build-${{ matrix.target }}.tar -C _build
-
-
     # Runs code analysis with C/C++test.
     - name: Run C/C++test
       # Use the 'run-cpptest-action' GitHub action.
