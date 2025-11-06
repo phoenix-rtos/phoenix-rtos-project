@@ -124,8 +124,7 @@ jobs:
           path: |
             ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
             ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
-            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}.tar
-
+            
 #  test-emu:
 #    needs: build
 #    name: test EMU
