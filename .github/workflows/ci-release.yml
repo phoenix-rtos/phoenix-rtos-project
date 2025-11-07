@@ -22,7 +22,7 @@ jobs:
         shell: bash
         id: set_tag
         run: |
-          if [[ "$GITHUB_BASE_REF" =~ ^release/([0-9]+\.[0-9]+)$ ]]; then
+          if [[ "${GITHUB_BASE_REF:-$GITHUB_REF_NAME}" =~ ^release/([0-9]+\.[0-9]+)$ ]]; then
             IMAGE_TAG="v${BASH_REMATCH[1]}"
             echo "IMAGE_TAG: $IMAGE_TAG"
             echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
