@@ -182,7 +182,7 @@ def run_cpptestcli_process(
     if rc != 0:
         raise CpptestcliError(f"error, return code: {rc}, output: {output}")
 
-    with open("reports/report.sarif", "r") as f:
+    with open("../../reports/report.sarif", "r") as f:
         results = json.load(f)
 
     return iter_sarif_result(results)
