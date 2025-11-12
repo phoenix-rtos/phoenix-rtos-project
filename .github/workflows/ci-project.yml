@@ -114,7 +114,7 @@ jobs:
           path: |
             boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
-            build-${{ matrix.target }}.tar
+            _build/*/compile_commands.json
 
   run-cpptest:
     if: github.event_name == 'pull_request'
@@ -133,16 +133,20 @@ jobs:
     # Checks out your repository under $GITHUB_WORKSPACE, so that your job can access it.
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+          submodules: recursive
+          fetch-depth: 2
 
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: phoenix-rtos-${{ matrix.target }}
+        path: _build
 
-    - name: Unpack build artifacts
-      run: |
-        mkdir -p  _build
-        tar -xvf build-${{ matrix.target }}.tar -C _build
+#    - name: Unpack build artifacts
+#      run: |
+#        mkdir -p  _build
+#        tar -xvf build-${{ matrix.target }}.tar -C _build
 
 #    - name: Debug list unpacked build dir
 #      run: |
@@ -161,24 +165,31 @@ jobs:
 #        fi
 
 
-    # Runs code analysis with C/C++test.
-    - name: Run C/C++test
-      # Use the 'run-cpptest-action' GitHub action.
-      uses: parasoft/run-cpptest-action@2.0.2
-      # Optional parameters for 'run-cpptest-action'.
-      with:
-        # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
-        input: _build/${{ matrix.target }}/compile_commands.json
-        testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
-        compilerConfig: 'gcc_14-aarch32'
-        # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
-        # reportFormat: xml,html,custom
-        # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
-        commandLinePattern: |
-          ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
-          -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
+#    # Runs code analysis with C/C++test.
+#    - name: Run C/C++test
+#      # Use the 'run-cpptest-action' GitHub action.
+#      uses: parasoft/run-cpptest-action@2.0.2
+#      # Optional parameters for 'run-cpptest-action'.
+#      with:
+#        # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
+#        input: _build/${{ matrix.target }}/compile_commands.json
+#        testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
+#        compilerConfig: 'gcc_14-aarch32'
+#        # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
+#        # reportFormat: xml,html,custom
+#        # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
+#        commandLinePattern: |
+#          ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
+#          -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
 
-    # Setup reviedog
+    - name: Get changed and added files
+      id: changed_files
+      run: scripts/ci/changed_files.sh
+
+    - name: Run cpptestcli
+      run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
+
+    # Setup reviewdog
     - name: ReviewDog setup
       uses: reviewdog/action-setup@v1
       if: true
