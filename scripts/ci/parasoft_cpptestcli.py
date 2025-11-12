@@ -68,7 +68,7 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
     cmd = [
         "cpptestcli",
         "-config",
-        "user://MISRA C 2012",
+        "builtin://MISRA C 2023 (MISRA C 2012)",
         "-input",
         compile_commands,
         "-module",
