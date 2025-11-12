@@ -187,6 +187,7 @@ jobs:
       run: chmod +x scripts/ci/changed_files.sh
 
     - name: Run cpptestcli
+      run: chmod +x scripts/ci/parasoft_cpptestcli.py
       run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
 
     # Setup reviewdog
