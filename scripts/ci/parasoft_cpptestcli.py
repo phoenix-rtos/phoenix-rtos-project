@@ -73,6 +73,7 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
         compile_commands,
         "-module",
         ".",
+        "-property report.format=sarif"
     ]
 
     if target.startswith("armv7"):
@@ -182,7 +183,7 @@ def run_cpptestcli_process(
     if rc != 0:
         raise CpptestcliError(f"error, return code: {rc}, output: {output}")
 
-    with open("../../reports/report.sarif", "r") as f:
+    with open("reports/report.sarif", "r") as f:
         results = json.load(f)
 
     return iter_sarif_result(results)
