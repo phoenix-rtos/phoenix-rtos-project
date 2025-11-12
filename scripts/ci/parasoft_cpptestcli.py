@@ -73,7 +73,8 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
         compile_commands,
         "-module",
         ".",
-        "-property report.format=sarif"
+        "-property",
+        "report.format=sarif"
     ]
 
     if target.startswith("armv7"):
