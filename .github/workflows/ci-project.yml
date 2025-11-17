@@ -192,13 +192,13 @@ jobs:
 
     # Setup reviewdog
     - name: ReviewDog setup
-      uses: reviewdog/action-setup@v1
+      uses: reviewdog/action-setup@v1.4.0
       if: true
       
     # Run Reviewdog
     - name: Run Reviewdog
       if: always()
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: reports/report.sarif
 
