@@ -118,7 +118,7 @@ jobs:
 
   run-cpptest:
     if: github.event_name == 'pull_request'
-    needs: build
+#    needs: build
     name: Analyze project with C/C++test
     runs-on: self-hosted
 
