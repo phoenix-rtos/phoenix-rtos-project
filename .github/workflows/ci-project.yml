@@ -47,7 +47,7 @@ jobs:
       matrix:
         target:
 #          - 'armv7a7-imx6ull-evk'
-          - 'armv7a9-zynq7000-qemu'
+#          - 'armv7a9-zynq7000-qemu'
 #          - 'armv7a9-zynq7000-zedboard'
 #          - 'armv7a9-zynq7000-zturn'
 #          - 'armv7m4-stm32l4x6-nucleo'
@@ -59,7 +59,7 @@ jobs:
 #          - 'aarch64a53-zynqmp-qemu'
 #          - 'host-generic-pc'
 #          - 'ia32-generic-pc'
-#          - 'ia32-generic-qemu'
+          - 'ia32-generic-qemu'
 #          - 'riscv64-generic-qemu'
 #          - 'riscv64-grfpga-artya7'
 #          - 'sparcv8leon-generic-qemu'
@@ -68,7 +68,7 @@ jobs:
 #          - 'sparcv8leon-gr716-mini'
 #          - 'sparcv8leon-gr740-mini'
         include:
-          - target: 'armv7a9-zynq7000-qemu'
+          - target: 'ia32-generic-qemu'
             additional_params: 'ports'
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
