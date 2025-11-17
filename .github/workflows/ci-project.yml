@@ -114,7 +114,7 @@ jobs:
           path: |
             boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
-            _build/*/compile_commands.json
+            _build/${{ matrix.target }}/compile_commands.json
 
   run-cpptest:
     if: github.event_name == 'pull_request'
