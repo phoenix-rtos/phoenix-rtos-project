@@ -84,7 +84,7 @@ jobs:
       # step 2: use our custom action to build the project
       - name: Build
         id: build
-        uses: ./.github/actions/phoenix-build
+        #uses: ./.github/actions/phoenix-build
         with:
           image-tag: ${{ inputs.image-tag }}
           target: ${{ matrix.target }}
