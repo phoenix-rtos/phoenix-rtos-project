@@ -40,85 +40,85 @@ on:
 
 # jobs
 jobs:
-#  build:
-#    name: build
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        target:
-##          - 'armv7a7-imx6ull-evk'
-#          - 'armv7a9-zynq7000-qemu'
-##          - 'armv7a9-zynq7000-zedboard'
-##          - 'armv7a9-zynq7000-zturn'
-##          - 'armv7m4-stm32l4x6-nucleo'
-##          - 'armv7m7-imxrt105x-evk'
-##          - 'armv7m7-imxrt106x-evk'
-##          - 'armv7m7-imxrt117x-evk'
-##          - 'armv8r52-mps3an536-qemu'
-##          - 'armv8m33-mcxn94x-frdm'
-##          - 'aarch64a53-zynqmp-qemu'
-##          - 'host-generic-pc'
-##          - 'ia32-generic-pc'
-##          - 'ia32-generic-qemu'
-##          - 'riscv64-generic-qemu'
-##          - 'riscv64-grfpga-artya7'
-##          - 'sparcv8leon-generic-qemu'
-##          - 'sparcv8leon-gr712rc-board'
-##          - 'sparcv8leon-gr716-mimas'
-##          - 'sparcv8leon-gr716-mini'
-##          - 'sparcv8leon-gr740-mini'
-#        include:
-#          - target: 'armv7a9-zynq7000-qemu'
-#            additional_params: 'all'
-#    steps:
-#      # step 1: checkout repository code inside the workspace directory of the runner
-#      - name: Checkout the repository
-#        uses: actions/checkout@v4
-#        with:
-#          submodules: recursive
-#
-#      # attach GCC problem matcher - will pin problems to files only in current submodule
-#      - name: Add GCC problem matcher
-#        run: echo "::add-matcher::.github/problem-matchers/gcc.json"
-#
-#      # step 2: use our custom action to build the project
-#      - name: Build
-#        id: build
-#        uses: ./.github/actions/phoenix-build
-#        with:
-#          image-tag: ${{ inputs.image-tag }}
-#          target: ${{ matrix.target }}
-#          params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
-#          nightly: ${{ inputs.nightly }}
-#
-#      # step 3: tar rootfs
-#      - name: Tar rootfs
-#        working-directory: _fs
-#        run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
-#
-#      # step 4: tar project boot directory
-#      - name: Tar boot directory
-#        working-directory: _boot
-#        run: tar -cvf ../boot-${{ matrix.target }}.tar ${{ matrix.target }}
-#
-#      # step 4: tar project boot directory
-#      - name: Tar build directory
-#        working-directory: _build
-#        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}/compile_commands.json
-#
-#      # step 5: upload project boot and rootfs tarballs as build artifacts
-#      - name: Upload build artifacts
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: phoenix-rtos-${{ matrix.target }}
-#          path: |
-#            boot-${{ matrix.target }}.tar
-#            rootfs-${{ matrix.target }}.tar
-#            _build/${{ matrix.target }}/compile_commands.json
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+#          - 'armv7a7-imx6ull-evk'
+          - 'armv7a9-zynq7000-qemu'
+#          - 'armv7a9-zynq7000-zedboard'
+#          - 'armv7a9-zynq7000-zturn'
+#          - 'armv7m4-stm32l4x6-nucleo'
+#          - 'armv7m7-imxrt105x-evk'
+#          - 'armv7m7-imxrt106x-evk'
+#          - 'armv7m7-imxrt117x-evk'
+#          - 'armv8r52-mps3an536-qemu'
+#          - 'armv8m33-mcxn94x-frdm'
+#          - 'aarch64a53-zynqmp-qemu'
+#          - 'host-generic-pc'
+#          - 'ia32-generic-pc'
+#          - 'ia32-generic-qemu'
+#          - 'riscv64-generic-qemu'
+#          - 'riscv64-grfpga-artya7'
+#          - 'sparcv8leon-generic-qemu'
+#          - 'sparcv8leon-gr712rc-board'
+#          - 'sparcv8leon-gr716-mimas'
+#          - 'sparcv8leon-gr716-mini'
+#          - 'sparcv8leon-gr740-mini'
+        include:
+          - target: 'armv7a9-zynq7000-qemu'
+            additional_params: 'all'
+    steps:
+      # step 1: checkout repository code inside the workspace directory of the runner
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # attach GCC problem matcher - will pin problems to files only in current submodule
+      - name: Add GCC problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/gcc.json"
+
+      # step 2: use our custom action to build the project
+      - name: Build
+        id: build
+        uses: ./.github/actions/phoenix-build
+        with:
+          image-tag: ${{ inputs.image-tag }}
+          target: ${{ matrix.target }}
+          params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
+          nightly: ${{ inputs.nightly }}
+
+      # step 3: tar rootfs
+      - name: Tar rootfs
+        working-directory: _fs
+        run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
+
+      # step 4: tar project boot directory
+      - name: Tar boot directory
+        working-directory: _boot
+        run: tar -cvf ../boot-${{ matrix.target }}.tar ${{ matrix.target }}
+
+      # step 4: tar project boot directory
+      - name: Tar build directory
+        working-directory: _build
+        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}/compile_commands.json
+
+      # step 5: upload project boot and rootfs tarballs as build artifacts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: phoenix-rtos-${{ matrix.target }}
+          path: |
+            boot-${{ matrix.target }}.tar
+            rootfs-${{ matrix.target }}.tar
+            _build/${{ matrix.target }}/compile_commands.json
 
   run-cpptest:
     if: github.event_name == 'pull_request'
-#    needs: build
+    needs: build
     name: Analyze project with C/C++test
     runs-on: self-hosted
 
@@ -136,15 +136,11 @@ jobs:
       with:
           submodules: recursive
           fetch-depth: 2
-          
-    - name: Build
-      id: build
-      run: TARGET=armv7a9-zynq7000-qemu phoenix-rtos-build/build.sh all
 
-#    - name: Download build artifacts
-#      uses: actions/download-artifact@v4
-#      with:
-#        name: phoenix-rtos-${{ matrix.target }}
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: phoenix-rtos-${{ matrix.target }}
 
 #    - name: Unpack build artifacts
 #      run: |
@@ -192,7 +188,7 @@ jobs:
     - name: Run cpptestcli
       run: |
         chmod +x scripts/ci/parasoft_cpptestcli.py
-        scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} phoenix-rtos-kernel/proc/cond.c
+        scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
     # ${{ steps.changed_files.outputs.files }}
 
     # Setup reviewdog
