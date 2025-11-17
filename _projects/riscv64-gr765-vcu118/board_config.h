@@ -109,4 +109,7 @@
 #define SPWRTR4_ACTIVE 0
 #define SPWRTR5_ACTIVE 0
 
+#define SPWRTR_SPW_CNT  2u
+#define SPWRTR_AMBA_CNT 2u
+
 #endif
