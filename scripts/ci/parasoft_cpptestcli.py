@@ -68,13 +68,15 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
     cmd = [
         "cpptestcli",
         "-config",
-        "user://MISRA C 2012",
+        "builtin://MISRA C 2023 (MISRA C 2012)",
         "-input",
         compile_commands,
         "-module",
         ".",
+        "-property",
+        "report.format=sarif"
     ]
-
+    # TODO - add other targets compilers
     if target.startswith("armv7"):
         cmd.extend(["-compiler", "gcc_14-aarch32"])
     else:
@@ -96,28 +98,6 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
         raise CpptestcliError("Failed to run cpptestcli - make sure it's installed") from e
 
     return proc.returncode, proc.stdout
-
-
-# def run_cpptestcli(compile_commands: str):
-#    with open("result.txt") as f:
-#        return 0, f.read(), ""
-
-
-# def iter_cpptest_result(output):
-#    # yield here diagnostic
-#
-#    #error_re = r"(?P<rule>[\w-]+): (?P<message>.+)\n(?P<path>[\w\/\.-]+): (?P<line>\d+)"
-#    # Try to find here and remove from text
-#    error_re = r"(?P<rule>[\w-]+): (?P<message>.+)\n(?P<path>.+): (?P<line>\d+)\n"
-#
-#    for m in re.finditer(error_re, output):
-#        d = m.groupdict()
-#        yield CpptestDiagnostic(
-#            path=d["path"],
-#            line=int(d["line"]),
-#            rule=d["rule"],
-#            message=d["message"],
-#        )
 
 
 def iter_sarif_result(data: Dict):
@@ -188,13 +168,6 @@ def run_cpptestcli_process(
     return iter_sarif_result(results)
 
 
-def convert_arguments_to_command(record):
-    # Propably we do not need this if here, check it later
-    if "arguments" in record:
-        record["command"] = " ".join(record["arguments"])
-        del record["arguments"]
-
-
 def fix_path_submodule(record, submodule, workdir):
     # For now base dir is hardcode but we can detect it reading db (but at least two times)
     # We have to find two paths, first
@@ -202,15 +175,15 @@ def fix_path_submodule(record, submodule, workdir):
     # And a project has /github/workspace/.buildroot/phoenix-rtos-project
 
     basedir = "/github/workspace/.buildroot/phoenix-rtos-project"
-    record["command"] = record["command"].replace(basedir, workdir)
+    #record["command"] = record["command"].replace(basedir, workdir)
 
     if record["directory"] == "/github/workspace":
         # That means this record is from submodule
         basedir = record["directory"]
         submoduledir = workdir + "/" + submodule
         record["directory"] = record["directory"].replace(basedir, submoduledir)
-        record["command"] = record["command"].replace(basedir, submoduledir)
-        record["command"] = record["command"].replace("workspace", submodule)
+        #record["command"] = record["command"].replace(basedir, submoduledir)
+        #record["command"] = record["command"].replace("workspace", submodule)
     else:
         record["directory"] = record["directory"].replace(basedir, workdir)
 
@@ -218,7 +191,7 @@ def fix_path_submodule(record, submodule, workdir):
 def fix_path_project(record, workdir):
     # subdir is usually submodule but it can be also _user dir
     basedir, _ = os.path.split(record["directory"])
-    record["command"] = record["command"].replace(basedir, workdir)
+    #record["command"] = record["command"].replace(basedir, workdir)
     record["directory"] = record["directory"].replace(basedir, workdir)
 
 
@@ -230,7 +203,6 @@ def fix_compile_db(compile_db: str, submodule: Optional[str] = None):
         data = json.load(f)
 
     for record in data:
-        convert_arguments_to_command(record)
         if submodule:
             fix_path_submodule(record, submodule, workdir)
         else:
@@ -238,18 +210,6 @@ def fix_compile_db(compile_db: str, submodule: Optional[str] = None):
 
     with open(compile_db, "w") as f:
         f.write(json.dumps(data, indent=4))
-
-
-def diagnostics_to_rdfjson(diagnostics: Set[CpptestDiagnostic]) -> str:
-    rdf = {
-        "source": {
-            "name": "cpptestcli",
-        },
-        "severity": "WARNING",
-        "diagnostics": [d.rdf() for d in diagnostics],
-    }
-
-    return json.dumps(rdf, indent=4, sort_keys=True)
 
 
 def parse_opts() -> argparse.Namespace:
