@@ -10,22 +10,15 @@
  *
  * This file is part of Phoenix-RTOS.
  *
- * 
  * %LICENSE%
  */
 
-int add(int a, int b) {
-	int c = a + b;
-	
-	return c;
-}
+#include <stdio.h>
 
 
 int main(void)
 {
-
-
-	add(1, 2);
+	printf("Hello World!!\n");
 
 	return 0;
 }

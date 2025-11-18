@@ -175,15 +175,15 @@ def fix_path_submodule(record, submodule, workdir):
     # And a project has /github/workspace/.buildroot/phoenix-rtos-project
 
     basedir = "/github/workspace/.buildroot/phoenix-rtos-project"
-    record["command"] = record["command"].replace(basedir, workdir)
+    #record["command"] = record["command"].replace(basedir, workdir)
 
     if record["directory"] == "/github/workspace":
         # That means this record is from submodule
         basedir = record["directory"]
         submoduledir = workdir + "/" + submodule
         record["directory"] = record["directory"].replace(basedir, submoduledir)
-        record["command"] = record["command"].replace(basedir, submoduledir)
-        record["command"] = record["command"].replace("workspace", submodule)
+        #record["command"] = record["command"].replace(basedir, submoduledir)
+        #record["command"] = record["command"].replace("workspace", submodule)
     else:
         record["directory"] = record["directory"].replace(basedir, workdir)
 
@@ -191,7 +191,7 @@ def fix_path_submodule(record, submodule, workdir):
 def fix_path_project(record, workdir):
     # subdir is usually submodule but it can be also _user dir
     basedir, _ = os.path.split(record["directory"])
-    record["command"] = record["command"].replace(basedir, workdir)
+    #record["command"] = record["command"].replace(basedir, workdir)
     record["directory"] = record["directory"].replace(basedir, workdir)
 
 
@@ -262,7 +262,7 @@ def main() -> None:
     diagnostics = set()
 
     for target in opts.targets:
-        #fix_compile_db(compile_db_path(target), opts.fix_compile_db)
+        fix_compile_db(compile_db_path(target), opts.fix_compile_db)
         result_generator = run_cpptestcli_process(target, compile_db_path(target), opts.files)
 #        diagnostics.update(result_generator)
 #
