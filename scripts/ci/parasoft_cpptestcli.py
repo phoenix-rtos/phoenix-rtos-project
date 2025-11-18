@@ -232,7 +232,6 @@ def fix_compile_db(compile_db: str, submodule: Optional[str] = None):
         data = json.load(f)
 
     for record in data:
-        convert_arguments_to_command(record)
         if submodule:
             fix_path_submodule(record, submodule, workdir)
         else:
