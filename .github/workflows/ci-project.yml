@@ -69,7 +69,7 @@ jobs:
 #          - 'sparcv8leon-gr740-mini'
         include:
           - target: 'armv7a9-zynq7000-qemu'
-            additional_params: 'all'
+            additional_params: 'all bear'
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
