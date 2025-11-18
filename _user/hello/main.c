@@ -14,11 +14,8 @@
  * %LICENSE%
  */
 
-#include <stdio.h>
-
 int add(int a, int b) {
 	int c = a + b;
-	printf("Add: %d\n", c);
 	
 	return c;
 }
@@ -26,7 +23,7 @@ int add(int a, int b) {
 
 int main(void)
 {
-	printf("Hello World!!\n");
+
 
 	add(1, 2);
 
