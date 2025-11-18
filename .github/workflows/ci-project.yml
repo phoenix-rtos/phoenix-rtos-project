@@ -188,7 +188,7 @@ jobs:
     - name: Run cpptestcli
       run: |
         chmod +x scripts/ci/parasoft_cpptestcli.py
-        scripts/ci/parasoft_cpptestcli.py _user/hello/main.c
+        scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
     # ${{ steps.changed_files.outputs.files }}
 
     # Setup reviewdog
