@@ -206,7 +206,7 @@ jobs:
         cat reports/report.sarif | reviewdog -f=sarif \
           -name=cpptest \
           -reporter=github-pr-review \
-          -fail-on-error=false
+      #    -fail-on-error=false
 
     # Uploads an archive that includes all report files (.xml, .html, .sarif).
     - name: Archive reports
