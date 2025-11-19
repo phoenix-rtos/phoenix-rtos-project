@@ -207,7 +207,7 @@ jobs:
               echo ${{ github.event.repository.name }}
 
       - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: phoenix-rtos-kernel
+        # working-directory: phoenix-rtos-kernel
         run: |
           git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
           git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
