@@ -194,77 +194,45 @@ jobs:
       actions: read
       contents: read
 
-    # Steps represent a sequence of tasks that will be executed as part of the job.
     steps:
+      - name: Checkout phoenix-rtos-project
+        uses: actions/checkout@v4
+        with:
+          repository: bartekpaczek/phoenix-rtos-project-fork
+          submodules: recursive
 
-    - name: Checkout phoenix-rtos-project
-      uses: actions/checkout@v3
-      with:
-        repository: bartekpaczek/phoenix-rtos-project-fork
-        ref: master
-        submodules: recursive
+      - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
+        run: |
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
 
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: phoenix-rtos-${{ matrix.target }}
-    
-    - name: Get changed and added files
-      working-directory: ${{ github.event.repository.name }}
-      id: debug
-      run: pwd
+      - name: Download compile database artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: compile-db-artifacts
+          path: _build
 
-    - name: Get changed and added files
-      working-directory: ${{ github.event.repository.name }}
-      id: changed_files
-      run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
-    
-    # Runs code analysis with C/C++test.
-    - name: Run C/C++test
-      # Use the 'run-cpptest-action' GitHub action.
-      #uses: parasoft/run-cpptest-action@2.0.2
-      ## Optional parameters for 'run-cpptest-action'.
-      #with:
-      #  # For CMake-based projects, use a compile_commands.json file as the input for analysis. 
-      #  input: _build/${{ matrix.target }}/compile_commands.json
-      #  testConfig: 'builtin://MISRA C 2023 (MISRA C 2012)'
-      #  compilerConfig: 'gcc_14-aarch32'
-      #  # Uncomment if you are using C/C++test 2020.2 to generate a SARIF report:
-      #  # reportFormat: xml,html,custom
-      #  # additionalParams: '-property report.custom.extension=sarif -property report.custom.xsl.file=${PARASOFT_SARIF_XSL}'
-      #  commandLinePattern: |
-      #    ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
-      #    -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
-      run: ../scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
-    
-    # Setup reviedog
-    - name: ReviewDog setup
-      uses: reviewdog/action-setup@v1
-      if: true
+      - name: Get changed and added files
+        working-directory: ${{ github.event.repository.name }}
+        id: changed_files
+        run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
 
-    # Run Reviewdog
-    - name: Run Reviewdog
-      if: always()
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: reports/report.sarif
+      - name: Run cpptestcli
+        run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db ${{ github.event.repository.name }} ${{ steps.changed_files.outputs.files }}
 
-    # Uploads analysis results in the SARIF format, so that they are displayed as GitHub code scanning alerts.
-    - name: Upload results (SARIF)
-      if: always()
-      shell: bash  # will enforce -o pipefail
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cat reports/report.sarif | reviewdog -f=sarif -diff="git diff -U0 HEAD^" -name=cpptest-pr -reporter=github-pr-review -fail-on-error
+      - name: Install reviewdog
+        run: |
+          wget http://misc.nalajcie.org/reviewdog -O /tmp/reviewdog 2>/dev/null
+          chmod +x /tmp/reviewdog
 
-    # Uploads an archive that includes all report files (.xml, .html, .sarif).
-    - name: Archive reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: CpptestReports
-        path: reports/*.*
+      - name: Post results using reviewdog
+        working-directory: ${{ github.event.repository.name }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cat ../rdf.json | /tmp/reviewdog -f=rdjson -diff="git diff -U0 HEAD^" -name=cpptestcli -reporter=github-pr-review -fail-on-error
+
 
   ## runs on self-hosted runners with HW targets attached
   #test-hw:
