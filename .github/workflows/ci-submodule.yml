@@ -65,7 +65,7 @@ jobs:
 #          - 'sparcv8leon-gr740-mini'
         include:
           - target: 'armv7a9-zynq7000-qemu'
-            additional_params: 'ports'
+            additional_params: 'all bear'
     steps:
       # step 1 : checkout submodule
       - name: Checkout submodule
@@ -111,10 +111,6 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}/_fs
         run: tar -cvf ../rootfs-${{ matrix.target }}.tar ${{ matrix.target }}/root
 
-      # step 5: tar project boot directory
-      - name: Tar build directory
-        working-directory: ${{env.BUILD_DIRECTORY}}/_build
-        run: tar -cvf ../build-${{ matrix.target }}.tar ${{ matrix.target }}/compile_commands.json
 
       # step 6: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
