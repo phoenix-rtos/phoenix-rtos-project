@@ -216,8 +216,7 @@ jobs:
       - name: Download compile database artifacts
         uses: actions/download-artifact@v4
         with:
-          name: compile-db-artifacts
-          path: _build
+          name: phoenix-rtos-${{ matrix.target }}
 
       - name: Get changed and added files
         working-directory: phoenix-rtos-kernel
