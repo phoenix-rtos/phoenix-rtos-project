@@ -234,13 +234,21 @@ jobs:
         uses: reviewdog/action-setup@v1.4.0
 
       - name: Post results using reviewdog
-        working-directory: phoenix-rtos-kernel
+        #working-directory: phoenix-rtos-kernel
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cat reports/report.sarif | reviewdog -f=sarif \
           -name=cpptest \
           -reporter=github-pr-review \
           -fail-on-error=false
+
+      # Uploads an archive that includes all report files (.xml, .html, .sarif).
+      - name: Archive reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CpptestReports
+          path: reports/*.*
 
 
   ## runs on self-hosted runners with HW targets attached
