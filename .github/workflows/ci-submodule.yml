@@ -200,6 +200,10 @@ jobs:
         with:
           repository: bartekpaczek/phoenix-rtos-project-fork
           submodules: recursive
+      - name: debug
+        run: |
+              pwd
+              ls -la
 
       - name: Update submodule ${{ github.event.repository.name }}
         working-directory: ${{ github.event.repository.name }}
