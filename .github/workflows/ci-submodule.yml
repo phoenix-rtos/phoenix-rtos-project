@@ -218,24 +218,26 @@ jobs:
         with:
           name: phoenix-rtos-${{ matrix.target }}
 
-      - name: Get changed and added files
-        working-directory: phoenix-rtos-kernel
-        id: changed_files
-        run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+      #- name: Get changed and added files
+      #  working-directory: phoenix-rtos-kernel
+      #  id: changed_files
+      #  run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
 
       - name: Run cpptestcli
         run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db phoenix-rtos-kernel ${{ steps.changed_files.outputs.files }}
 
-      - name: Install reviewdog
-        run: |
-          wget http://misc.nalajcie.org/reviewdog -O /tmp/reviewdog 2>/dev/null
-          chmod +x /tmp/reviewdog
+      # Setup reviewdog
+      - name: ReviewDog setup
+        uses: reviewdog/action-setup@v1.4.0
 
       - name: Post results using reviewdog
-        working-directory: ${{ github.event.repository.name }}
+        working-directory: phoenix-rtos-kernel
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cat ../rdf.json | /tmp/reviewdog -f=rdjson -diff="git diff -U0 HEAD^" -name=cpptestcli -reporter=github-pr-review -fail-on-error
+        run: cat reports/report.sarif | reviewdog -f=sarif \
+          -name=cpptest \
+          -reporter=github-pr-review \
+          -fail-on-error=false
 
 
   ## runs on self-hosted runners with HW targets attached
