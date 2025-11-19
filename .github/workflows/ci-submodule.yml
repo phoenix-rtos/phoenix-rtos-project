@@ -224,7 +224,8 @@ jobs:
       #  run: ../scripts/ci/changed_files.sh ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
 
       - name: Run cpptestcli
-        run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db phoenix-rtos-kernel ${{ steps.changed_files.outputs.files }}
+        run: scripts/ci/parasoft_cpptestcli.py --fix-compile-db phoenix-rtos-kernel phoenix-rtos-kernel/proc/cond.c
+        # scripts/ci/parasoft_cpptestcli.py --fix-compile-db phoenix-rtos-kernel ${{ steps.changed_files.outputs.files }}
 
       # Setup reviewdog
       - name: ReviewDog setup
