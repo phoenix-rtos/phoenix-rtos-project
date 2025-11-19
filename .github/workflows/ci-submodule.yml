@@ -216,7 +216,7 @@ jobs:
     - name: Get changed and added files
       working-directory: ${{ github.event.repository.name }}
       id: debug
-      run: echo dupa; pwd; ls -la
+      run: pwd
 
     - name: Get changed and added files
       working-directory: ${{ github.event.repository.name }}
