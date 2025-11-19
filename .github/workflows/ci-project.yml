@@ -181,6 +181,7 @@ jobs:
 #          ${cpptestcli} -compiler "${compilerConfig}" -config "${testConfig}" -property report.format=${reportFormat} -report "${reportDir}" \
 #          -module . -resource ${{ github.workspace }}/phoenix-rtos-kernel -exclude ${{ github.workspace }}/phoenix-rtos-kernel/test/\*.c -input "${input}" ${additionalParams}
 
+
     - name: Get changed and added files
       id: changed_files
       run: scripts/ci/changed_files.sh
