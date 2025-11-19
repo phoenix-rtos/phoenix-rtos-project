@@ -122,58 +122,6 @@ jobs:
             ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
             ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/compile_commands.json
             
-#  test-emu:
-#    needs: build
-#    name: test EMU
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu']
-#
-#    steps:
-#      - name: Checkout phoenix-rtos-project
-#        uses: actions/checkout@v4
-#        with:
-#          repository: phoenix-rtos/phoenix-rtos-project
-#          submodules: recursive
-#
-#      - name: Update submodule ${{ github.event.repository.name }}
-#        working-directory: ${{ github.event.repository.name }}
-#        run: |
-#          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-#          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-#          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
-#
-#      - name: Download build artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: phoenix-rtos-${{ matrix.target }}
-#
-#      - name: Untar rootfs
-#        working-directory: _fs
-#        run: tar -xvf ../rootfs-${{ matrix.target }}.tar
-#
-#      - name: Add sanitizers problem matcher
-#        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
-#
-#      - name: Test runner
-#        id: runner
-#        uses: ./.github/actions/phoenix-runner
-#        with:
-#          image-tag: ${{ inputs.image-tag }}
-#          target: ${{ matrix.target }}
-#          nightly: ${{ inputs.nightly }}
-#
-#      - name: Upload runner results
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: test-results-${{ matrix.target }}
-#          path: |
-#            results.csv
-#            results.xml
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
 
   run-cpptest:
     needs: build
@@ -200,14 +148,9 @@ jobs:
         with:
           repository: bartekpaczek/phoenix-rtos-project-fork
           submodules: recursive
-      - name: debug
-        run: |
-              pwd
-              ls -la
-              echo ${{ github.event.repository.name }}
 
       - name: Update submodule ${{ github.event.repository.name }}
-        # working-directory: phoenix-rtos-kernel
+        working-directory: ${{ github.event.repository.name }}
         run: |
           git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
           git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
