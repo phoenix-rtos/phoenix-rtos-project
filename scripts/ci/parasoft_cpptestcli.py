@@ -174,7 +174,7 @@ def fix_path_submodule(record, submodule, workdir):
     # First submodule have path /github/workspace
     # And a project has /github/workspace/.buildroot/phoenix-rtos-project
 
-    basedir = "/github/workspace/.buildroot/phoenix-rtos-project"
+    basedir, _ = os.path.split(record["directory"])
     #record["command"] = record["command"].replace(basedir, workdir)
 
 
@@ -182,6 +182,7 @@ def fix_path_submodule(record, submodule, workdir):
     path_no_sub, submodule_in_dir = os.path.split(record["directory"])
     if submodule_in_dir == submodule:
         record["directory"] = path_no_sub
+    print(record["directory"])
 
 
 def fix_path_project(record, workdir):
