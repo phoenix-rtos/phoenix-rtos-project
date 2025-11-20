@@ -150,6 +150,7 @@ jobs:
           submodules: recursive
 
       - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
         run: |
           git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
           git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
@@ -169,8 +170,8 @@ jobs:
         run: |
           ls -la
           ls -la ..
-          chmod +x ../scripts/ci/parasoft_cpptestcli.py
-          ../scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
+          chmod +x scripts/ci/parasoft_cpptestcli.py
+          scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
         # scripts/ci/parasoft_cpptestcli.py --fix-compile-db phoenix-rtos-kernel ${{ steps.changed_files.outputs.files }}
 
       # Setup reviewdog
