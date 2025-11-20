@@ -177,15 +177,11 @@ def fix_path_submodule(record, submodule, workdir):
     basedir = "/github/workspace/.buildroot/phoenix-rtos-project"
     #record["command"] = record["command"].replace(basedir, workdir)
 
-    if record["directory"] == "/github/workspace":
-        # That means this record is from submodule
-        basedir = record["directory"]
-        submoduledir = workdir + "/" + submodule
-        record["directory"] = record["directory"].replace(basedir, submoduledir)
-        #record["command"] = record["command"].replace(basedir, submoduledir)
-        #record["command"] = record["command"].replace("workspace", submodule)
-    else:
-        record["directory"] = record["directory"].replace(basedir, workdir)
+
+    record["directory"] = record["directory"].replace(basedir, workdir)
+    path_no_sub, submodule_in_dir = os.path.split(record["directory"])
+    if submodule_in_dir == submodule:
+        record["directory"] = path_no_sub
 
 
 def fix_path_project(record, workdir):
