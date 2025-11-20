@@ -146,7 +146,7 @@ jobs:
       - name: Checkout phoenix-rtos-project
         uses: actions/checkout@v4
         with:
-          repository: bartekpaczek/phoenix-rtos-project-fork
+          repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
 
       - name: Update submodule ${{ github.event.repository.name }}
