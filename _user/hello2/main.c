@@ -21,6 +21,11 @@
 void busyMem(void)
 {
 	int **x = malloc(1024 * sizeof(int *));
+	if (x == NULL) {
+		printf("Memory allocation failed\n");
+		return;
+	}
+	int h = 0;
 	printf("I'm busying memory...\n");
 	while (1) {
 		int i;
@@ -31,7 +36,13 @@ void busyMem(void)
 			}
 		}
 		for (int j = 0; j < i; j++) {
-			*(x[j]) = i * i + *x[j - 1];
+			*(x[j]) = i * i + *x[j - 1] * h;
+		}
+		for (int j = 0; j < i; j++) {
+			if (*(x[j]) != i * i + *x[j - 1] * h) {
+				printf("Memory corruption detected!\n");
+				return;
+			}
 		}
 		// for (i = i-1; i >= 0; i--) {
 		for (int j = 0; j < i; j++) {

@@ -1,4 +1,4 @@
-size: 0x200
+size: 0x2a0
 is_relative: False
 
 contents:
@@ -7,7 +7,18 @@ contents:
   - map flash0 0x00000000 0x00100000 rxcb
   - map flash1 0x00100000 0x00200000 rxcb
   - map ramx 0x14000000 0x14020000 rxcb
-  - map ram 0x20000000 0x20068000 rwxcb # RAM A ... RAM H
+  - map ram 0x20000000 0x20050000 rwxcb # RAM A ... RAM H
+  - map ram1 0x20050000 0x20060000 rwxcb # RAM A ... RAM H
+  - map ram2 0x20060000 0x20061000 rwxcb
+  - map ram3 0x20061000 0x20068000 rwxcb
+  # - map ram4 0x20062000 0x20063000 rwxcb
+  # - map ram5 0x20063000 0x20064000 rwxcb
+  # - map ram6 0x20064000 0x20065000 rwxcb
+  # - map ram7 0x20065000 0x20066000 rwxcb
+  # - map ram8 0x20066000 0x20067000 rwxcb
+  # - map ram9 0x20067000 0x20068000 rwxcb
+  # - map ram1 0x20035000 0x20045000 rwxcb # RAM A ... RAM H
+  # - map ram2 0x20045000 0x20068000 rwxcb # RAM A ... RAM H
   - map io 0x40000000 0x80000000 rw
   - phfs flash0 2.0 raw
   - phfs flash1 2.1 raw

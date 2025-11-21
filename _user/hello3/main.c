@@ -51,13 +51,12 @@ int main(int argc, char **argv)
 
 	// x = (int *)0x202d0000;
 	// for (;;)
-	// 	sleep(1);
+	sleep(1);
 
 	x = (int *)atol(argv[1]);
-	printf("Changed stack value\n");
-
-
+	printf("Changed stack value to %p\n", x);
 	sleep(1);
+
 	printf("value of %p is %x\n", x, *x);
 
 	sleep(1);
