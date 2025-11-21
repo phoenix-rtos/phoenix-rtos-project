@@ -171,7 +171,7 @@ jobs:
           ls -la
           ls -la ..
           chmod +x scripts/ci/parasoft_cpptestcli.py
-          scripts/ci/parasoft_cpptestcli.py --fix-compile-db phoenix-rtos-kernel phoenix-rtos-kernel/proc/cond.c
+          scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
         #  scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
          
 
