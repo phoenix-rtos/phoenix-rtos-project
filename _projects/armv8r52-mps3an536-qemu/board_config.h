@@ -26,7 +26,7 @@
 #define UART_BAUDRATE 115200
 
 /* UART0 accessible only by CPU0 */
-#define UART0_BASE ((void *)0xe7c00000)
+#define UART0_BASE ((void *)0xe7c00000U)
 /* CPU0 private interrupts */
 #define UART0_RX_IRQ   16
 #define UART0_TX_IRQ   17
@@ -44,32 +44,32 @@
 #define UART1_ACTIVE   0
 
 /* UARTs accessible by both CPUs */
-#define UART2_BASE     ((void *)0xe0205000)
+#define UART2_BASE     ((void *)0xe0205000U)
 #define UART2_RX_IRQ   (32 + 5)
 #define UART2_TX_IRQ   (32 + 6)
 #define UART2_COMB_IRQ (32 + 13)
 #define UART2_ACTIVE   1
 
-#define UART3_BASE     ((void *)0xe0206000)
+#define UART3_BASE     ((void *)0xe0206000U)
 #define UART3_RX_IRQ   (32 + 7)
 #define UART3_TX_IRQ   (32 + 8)
 #define UART3_COMB_IRQ (32 + 14)
 #define UART3_ACTIVE   0
 
-#define UART4_BASE     ((void *)0xe0207000)
+#define UART4_BASE     ((void *)0xe0207000U)
 #define UART4_RX_IRQ   (32 + 9)
 #define UART4_TX_IRQ   (32 + 10)
 #define UART4_COMB_IRQ (32 + 15)
 #define UART4_ACTIVE   0
 
-#define UART5_BASE     ((void *)0xe0208000)
+#define UART5_BASE     ((void *)0xe0208000U)
 #define UART5_RX_IRQ   (32 + 11)
 #define UART5_TX_IRQ   (32 + 12)
 #define UART5_COMB_IRQ (32 + 16)
 #define UART5_ACTIVE   0
 
 
-#define TIMER_BASE ((void *)0xe0101000)
+#define TIMER_BASE ((void *)0xe0101000U)
 #define TIMER_IRQ  (32 + 1)
 
 
