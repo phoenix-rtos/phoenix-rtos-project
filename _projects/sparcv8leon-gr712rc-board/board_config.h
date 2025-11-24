@@ -20,12 +20,12 @@
 
 #define UART_BAUDRATE 115200
 
-#define UART0_BASE ((void *)0x80000100)
-#define UART1_BASE ((void *)0x80100100)
-#define UART2_BASE ((void *)0x80100200)
-#define UART3_BASE ((void *)0x80100300)
-#define UART4_BASE ((void *)0x80100400)
-#define UART5_BASE ((void *)0x80100500)
+#define UART0_BASE ((void *)0x80000100U)
+#define UART1_BASE ((void *)0x80100100U)
+#define UART2_BASE ((void *)0x80100200U)
+#define UART3_BASE ((void *)0x80100300U)
+#define UART4_BASE ((void *)0x80100400U)
+#define UART5_BASE ((void *)0x80100500U)
 
 #define UART0_IRQ 2
 #define UART1_IRQ 17
@@ -75,15 +75,15 @@
 
 /* Interrupts */
 
-#define INT_CTRL_BASE ((void *)0x80000200)
+#define INT_CTRL_BASE ((void *)0x80000200U)
 #define EXTENDED_IRQN 12
 
 /* Timers */
 
 #define TIMER0_1_IRQ  8
 #define TIMER0_2_IRQ  9
-#define GPTIMER0_BASE ((void *)0x80000300)
-#define GPTIMER1_BASE ((void *)0x80100600)
+#define GPTIMER0_BASE ((void *)0x80000300U)
+#define GPTIMER1_BASE ((void *)0x80100600U)
 
 /* ADC */
 
@@ -127,9 +127,9 @@
 
 /* Flash */
 
-#define ADDR_FLASH 0x00000000
+#define ADDR_FLASH 0x00000000U
 
-#define FTMCTRL_BASE 0x80000000
+#define FTMCTRL_BASE 0x80000000U
 
 
 #endif

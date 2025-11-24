@@ -17,7 +17,7 @@
 /* GRLIB UART configuration */
 #define UART_BAUDRATE 115200
 
-#define UART0_BASE ((void *)0xff900000)
+#define UART0_BASE ((void *)0xff900000U)
 #define UART1_BASE ((void *)-1)
 #define UART2_BASE ((void *)-1)
 #define UART3_BASE ((void *)-1)

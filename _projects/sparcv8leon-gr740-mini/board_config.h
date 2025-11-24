@@ -24,8 +24,8 @@
 
 #define UART_BAUDRATE 115200
 
-#define UART0_BASE ((void *)0xff900000)
-#define UART1_BASE ((void *)0xff901000)
+#define UART0_BASE ((void *)0xff900000U)
+#define UART1_BASE ((void *)0xff901000U)
 #define UART2_BASE ((void *)-1)
 #define UART3_BASE ((void *)-1)
 #define UART4_BASE ((void *)-1)
@@ -79,15 +79,15 @@
 
 /* Interrupts */
 
-#define INT_CTRL_BASE ((void *)0xff904000)
+#define INT_CTRL_BASE ((void *)0xff904000U)
 #define EXTENDED_IRQN 10
 
 /* Timers */
 
 #define TIMER0_1_IRQ  1
 #define TIMER0_2_IRQ  2
-#define GPTIMER0_BASE ((void *)0xff908000)
-#define GPTIMER1_BASE ((void *)0xff909000)
+#define GPTIMER0_BASE ((void *)0xff908000U)
+#define GPTIMER1_BASE ((void *)0xff909000U)
 
 /* ADC */
 
@@ -151,13 +151,13 @@
 #define MCFG5_VAL 0x00000180 /* 3 lead out cycles (12ns @ 250MHz) */
 #define MCFG7_VAL 0x0
 
-#define ADDR_FLASH 0xc0000000
+#define ADDR_FLASH 0xc0000000U
 
-#define FTMCTRL_BASE 0xff903000
+#define FTMCTRL_BASE 0xff903000U
 
 /* GRETH configuration */
 
 #define GRETH_EDCL  0
-#define GRETH_EUI48 0x862u
+#define GRETH_EUI48 0x862U
 
 #endif
