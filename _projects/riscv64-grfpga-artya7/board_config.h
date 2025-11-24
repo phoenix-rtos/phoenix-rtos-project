@@ -17,8 +17,8 @@
 /* GRLIB UART configuration */
 #define UART_BAUDRATE 115200
 
-#define UART0_BASE ((void *)0xfc001000)
-#define UART1_BASE ((void *)0xfc0d0000)
+#define UART0_BASE ((void *)0xfc001000U)
+#define UART1_BASE ((void *)0xfc0d0000U)
 #define UART2_BASE ((void *)-1)
 #define UART3_BASE ((void *)-1)
 #define UART4_BASE ((void *)-1)
@@ -80,8 +80,8 @@
 
 #define FLASH_CNT 1
 
-#define SPIMCTRL0_BASE ((void *)0xffff0000)
-#define FLASH0_ADDR    0x90000000u
+#define SPIMCTRL0_BASE ((void *)0xffff0000U)
+#define FLASH0_ADDR    0x90000000U
 
 
 #endif
