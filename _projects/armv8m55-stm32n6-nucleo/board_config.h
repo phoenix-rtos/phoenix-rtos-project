@@ -20,7 +20,14 @@
 #define UART_PIN_TX  5
 #define UART_PIN_RX  6
 
-#define XSPI2 1
+#define XSPI2           1
+#define XSPI2_CLOCK_DIV 1 /* 200 MHz */
+
+#define VDDIO3_RANGE_MV 1800 /* XSPI port 2 - Flash */
+
+#define I2C1 1
+
+#define SPI5 1
 
 #define TTY1                1
 #define UART_CONSOLE_PLO    1
