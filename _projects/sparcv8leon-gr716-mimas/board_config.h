@@ -20,8 +20,8 @@
 
 #define UART_BAUDRATE 115200
 
-#define UART0_BASE ((void *)0x80302000)
-#define UART1_BASE ((void *)0x80303000)
+#define UART0_BASE ((void *)0x80302000U)
+#define UART1_BASE ((void *)0x80303000U)
 #define UART2_BASE ((void *)-1)
 #define UART3_BASE ((void *)-1)
 #define UART4_BASE ((void *)-1)
@@ -78,15 +78,15 @@
 /* Interrupts */
 
 #define TLB_IRQ       0
-#define INT_CTRL_BASE ((void *)0x80002000)
+#define INT_CTRL_BASE ((void *)0x80002000U)
 #define EXTENDED_IRQN 1
 
 /* Timers */
 
 #define TIMER0_1_IRQ  9
 #define TIMER0_2_IRQ  10
-#define GPTIMER0_BASE ((void *)0x80003000)
-#define GPTIMER1_BASE ((void *)0x80004000)
+#define GPTIMER0_BASE ((void *)0x80003000U)
+#define GPTIMER1_BASE ((void *)0x80004000U)
 
 /* ADC */
 
