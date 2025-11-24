@@ -9,6 +9,7 @@ contents:
   - map axi_kernel 0x34014000 0x34100000 cb    # Kernel data
   # Note: PLO is loaded by BootROM at 0x34180000, inside axi_app
   - map axi_app    0x34100000 0x343c0000 rwxcb # Applications code/data
+  - map dmamem     0x38000000 0x38008000 rwb   # Uncached DMA memory
   - map per        0x50000000 0x60000000 rw    # Shared peripherals
   - map flash0     0x70000000 0x74000000 rwxcb # External Flash
   - map cpu_per    0xe0000000 0xe0100000 rw    # CPU internal peripherals
