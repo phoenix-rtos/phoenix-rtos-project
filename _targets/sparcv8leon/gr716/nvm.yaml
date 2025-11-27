@@ -6,6 +6,6 @@ flash0:
     - name: plo
       offs: 0x0
     - name: kernel
-      offs: 0xe400
+      offs: 0x11000
       # if size not set - last non-virtual partition will be extnded to the end of flash
       # TODO: add explicit/virtual partition for BCH
