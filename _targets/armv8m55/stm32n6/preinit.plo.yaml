@@ -7,7 +7,7 @@ contents:
   - map itcm       0x10000000 0x10020000 rxcb  # ITCM
   - map dtcm       0x30000000 0x3001ef00 rwcb  # DTCM
   - map rtt        0x3001ef00 0x30020000 rw    # RTT buffers
-  - map axi_kernel 0x34014000 0x34100000 cb    # Kernel data
+  - map axi_kernel 0x34014000 0x34100000 cbk    # Kernel data
   # Note: PLO is loaded by BootROM at 0x34180000, inside axi_app
   - map axi_app    0x34100000 0x343c0000 rwxcb # Applications code/data
   - map dmamem     0x38000000 0x38008000 rwb   # Uncached DMA memory
