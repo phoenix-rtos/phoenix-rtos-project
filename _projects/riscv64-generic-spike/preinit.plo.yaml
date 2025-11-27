@@ -2,7 +2,7 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map ddr 0x80200000 0x87ffffff rwx
+  - map ddr 0x80200000 0x87ffffff rwxk
   - phfs ram0 4.0 raw
   - console 0.0
   - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'

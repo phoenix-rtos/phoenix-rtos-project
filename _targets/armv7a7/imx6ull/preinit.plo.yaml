@@ -3,7 +3,7 @@ is_relative: False
 
 contents:
   #TODO: add SRAM
-  - map ddr 0x80000000 0x87ffffff rwx
+  - map ddr 0x80000000 0x87ffffff rwxk
   - phfs usb0 1.2 phoenixd
   - phfs {{ env.BOOT_DEVICE }} 2.0 raw
   - console 0.0

@@ -2,7 +2,7 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map sram 0x40000000 0x7fffffff rwx
+  - map sram 0x40000000 0x7fffffff rwxk
   - console 0.0
   - phfs uart1 0.1 phoenixd
   - phfs flash0 2.0 raw

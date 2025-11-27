@@ -2,7 +2,7 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map ram 0x0 0xffffffff rwx
+  - map ram 0x0 0xffffffff rwxk
   - phfs com2 0.1 phoenixd
   - phfs floppy 2.0 raw
   - phfs hd0 2.1 raw

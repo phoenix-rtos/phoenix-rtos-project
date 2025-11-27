@@ -2,7 +2,7 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map sdram 0x00000000 0x07ffffff rwx
+  - map sdram 0x00000000 0x07ffffff rwxk
   - map flash 0xc0000000 0xcfffffff rwx
   - console 0.0
   - phfs flash0 2.0 raw
