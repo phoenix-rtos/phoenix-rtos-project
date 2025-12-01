@@ -168,7 +168,7 @@ def iter_sarif_result(data: Dict, submodule: str):
 
 
 def run_cpptestcli_process(
-    target: str, compile_commands: str, files: Sequence[str]
+    target: str, compile_commands: str, files: Sequence[str], submodule
 ) -> Generator[CpptestDiagnostic, None, None]:
 
     rc, output = run_cpptestcli(target, compile_commands, files)
@@ -178,7 +178,7 @@ def run_cpptestcli_process(
     with open("reports/report.sarif", "r") as f:
         results = json.load(f)
 
-    return iter_sarif_result(results)
+    return iter_sarif_result(results, "phoenix-rtos-kernel")
 
 
 def fix_path_submodule(record, submodule, workdir):
@@ -234,6 +234,7 @@ def parse_opts() -> argparse.Namespace:
     parser.add_argument("--fix-compile-db", type=str)
     parser.add_argument("-j", type=int, default=2)
     parser.add_argument("files", nargs="*", default=None)
+    parser.add_argument("--submodule", type=str, default='')
 
     opts = parser.parse_args()
     opts.targets = opts.targets.split(",")
@@ -273,7 +274,7 @@ def main() -> None:
 
     for target in opts.targets:
         fix_compile_db(compile_db_path(target), opts.fix_compile_db)
-        result_generator = run_cpptestcli_process(target, compile_db_path(target), opts.files)
+        result_generator = run_cpptestcli_process(target, compile_db_path(target), opts.files, opts.submodule)
 #        diagnostics.update(result_generator)
 #
 #    print(f"Total: {len(diagnostics)}")
