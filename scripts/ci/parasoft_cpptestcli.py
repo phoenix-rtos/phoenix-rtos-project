@@ -100,11 +100,22 @@ def run_cpptestcli(target: str, compile_commands: str, files: Sequence[str]):
     return proc.returncode, proc.stdout
 
 
-def iter_sarif_result(data: Dict):
+def iter_sarif_result(data: Dict, submodule: str):
     def remove_platform_prefix(s):
         prefix = f"file://{platform.node()}"
         return s[len(prefix) :]
+    
+    def remove_submodule(s, submodule):
+        parts = s.split("/")
 
+        # Find the last occurrence
+        for i in range(len(parts) - 1, -1, -1):
+            if parts[i] == submodule:
+                del parts[i]
+                break  # only remove the last one
+
+        return prefix + "/".join(parts)
+        
     # Cpptestcli should generate only one run as a result
     try:
         run = data["runs"][0]
@@ -127,6 +138,8 @@ def iter_sarif_result(data: Dict):
             location = result["locations"][0]
             # Cpptest use single uri for location
             path = remove_platform_prefix(location["physicalLocation"]["artifactLocation"]["uri"])
+            if submodule:
+                path = remove_submodule(path,submodule)
             # TODO: is there always startCol?
             # If there is no region then the scope is the entire artifact
             region = location["region"]
