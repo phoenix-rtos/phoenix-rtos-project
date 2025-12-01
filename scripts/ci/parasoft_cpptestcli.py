@@ -273,7 +273,7 @@ def main() -> None:
     diagnostics = set()
 
     for target in opts.targets:
-        fix_compile_db(compile_db_path(target), opts.fix_compile_db)
+        fix_compile_db(compile_db_path(target), 'phoenix-rtos-kernel')
         result_generator = run_cpptestcli_process(target, compile_db_path(target), opts.files, opts.submodule)
 #        diagnostics.update(result_generator)
 #
