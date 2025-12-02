@@ -112,6 +112,7 @@ b_build_project() {
 	mkdir -p "${PREFIX_ROOTFS}/cognit/"
 	install -m 644 "${PREFIX_PROJECT}/_user/cognit_app/scripts/decision.py" "${PREFIX_ROOTFS}/cognit"
 	install -m 644 "${PREFIX_PROJECT}/_user/cognit_app/scripts/train.py" "${PREFIX_ROOTFS}/cognit"
+	install -m 644 "${PREFIX_PROJECT}/_user/cognit_app/scripts/eval.py" "${PREFIX_ROOTFS}/cognit"
 	install -m 644 "${PREFIX_PROJECT}/_user/cognit_app/config/config.json" "${PREFIX_ROOTFS}/cognit"
 }
 
