@@ -8,8 +8,7 @@
 	},
 	"besmartOffload": {
 		"workspace_key": "",
-		"login": "",
-		"password": "",
+		"token": "",
 		"pv_generation": {
 			"cid": 68,
 			"mid": 84,
@@ -37,27 +36,27 @@
 		"training": {
 			"flavour": "EnergyTorch",
 			"max_latency": 100,
-			"min_renewable": 85,
+			"min_renewable": 50,
 			"max_fnexec_time": 3.5,
 			"geolocation": {
-				"latitude": 40.4168,
-				"longitude": -3.7038
+				"latitude": 52.0,
+				"longitude": 21.0
 			}
 		},
 		"decision": {
 			"flavour": "EnergyTorch",
 			"max_latency": 100,
-			"min_renewable": 85,
+			"min_renewable": 50,
 			"max_fnexec_time": 3.5,
 			"geolocation": {
-				"latitude": 40.4168,
-				"longitude": -3.7038
+				"latitude": 52.0,
+				"longitude": 21.0
 			}
 		}
 	},
 	"trainParams": {
 		"history_timedelta_days": 90,
-		"num_episodes": 500,
+		"num_episodes": 3000,
 		"critic_lr": 0.001,
 		"actor_lr": 0.001,
 		"gamma": 0.2,
@@ -79,8 +78,10 @@
 	"app": {
 		"decisionPath": "/cognit/decision.py",
 		"trainPath": "/cognit/train.py",
-		"trainTimeOut": 240000,
-		"decisionTimeOut": 30000,
+		"evalPath": "/cognit/eval.py",
+		"trainTimeOut": 900000,
+		"decisionTimeOut": 60000,
+		"evalTimeOut": 120000,
 		"userPrefUpdFreqSec": 5
 	}
 }
