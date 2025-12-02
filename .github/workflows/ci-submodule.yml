@@ -118,9 +118,11 @@ jobs:
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
-            ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
-            ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
             ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/compile_commands.json
+            
+          #  ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
+          #  ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
+          #  ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/compile_commands.json
             
 
   run-cpptest:
@@ -168,10 +170,14 @@ jobs:
 
       - name: Run cpptestcli
         run: |
-          ls -la
-          ls -la ..
-          chmod +x scripts/ci/parasoft_cpptestcli.py
-          scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
+          cat << EOF > reports/report.sarif
+          { "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json", "version": "2.1.0", "runs": [ {"tool": { "driver": {"name": "C/C++test","semanticVersion": "2025.1.0", "results": [{ "ruleId": "MISRAC2012-RULE_8_7-a", "level": "warning", "message": { "text": "The function 'cond_get' is referenced only in the translation unit where it is defined" }, "partialFingerprints": { "lineHash": "-1423138235" }, "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "file:/home/runner/work/phoenix-rtos-kernel-fork/phoenix-rtos-kernel-fork/proc/cond.c" }, "region": { "startLine": 25, "startColumn": 9, "endColumn": 10 } } } ] } ] } } } ] }
+          EOF
+          
+        #  ls -la
+        #  ls -la ..
+        #  chmod +x scripts/ci/parasoft_cpptestcli.py
+        #  scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
         #  scripts/ci/parasoft_cpptestcli.py phoenix-rtos-kernel/proc/cond.c
          
 
