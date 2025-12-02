@@ -81,7 +81,7 @@ static int prepareDecisionAlgoInput(offload_ctx_t *ctx, const offload_decisionIn
 	addSTRINGParam(&ctx->faas, in->S3);
 	addSTRINGParam(&ctx->faas, in->besmart);
 
-	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel, in->stateRangeJson);
+	TRY_ADD_STRING_PARAM(devicesJson_homeModelInfoToJson, &in->devInfo->homeModel, NULL);
 	TRY_ADD_STRING_PARAM(devicesJson_storageInfoToJson, &in->devInfo->storage[0]);
 	TRY_ADD_STRING_PARAM(devicesJson_EVInfoToJson, in->devInfo->ev, in->devInfo->evCount);
 	TRY_ADD_STRING_PARAM(devicesJson_heatingInfoToJson, &in->devInfo->heating[0]);
@@ -133,14 +133,10 @@ static int parseDecisionAlgoOutput(devices_config_t *out, char **response)
 }
 
 
-static int parseTrainingOutput(json_t **stageRange, char **response)
+static int parseEvalResponse(bool *result, char **response)
 {
-	int ret = devicesJson_stateRangeFromJson(stageRange, response[0], strlen(response[0]));
-	if (ret < 0) {
-		log_warn("Parsing stage range response failed");
-		return OFFLOAD_RESULT_ERROR;
-	}
-	return OFFLOAD_RESULT_OK;
+	*result = *((bool *)response[0]);
+	return 0;
 }
 
 
@@ -282,8 +278,52 @@ int offload_getTrainingnResult(offload_ctx_t *ctx, json_t **stageRange)
 		return OFFLOAD_RESULT_ERROR;
 	}
 
+	freeResponse(ctx->response, 1);
+	setState(ctx, offload_stateNone);
+	return OFFLOAD_RESULT_OK;
+}
+
+
+int offload_evaluation(offload_ctx_t *ctx, const offload_trainingInput_t *in)
+{
+	if (getState(ctx) == offload_stateInputReady) {
+		return OFFLOAD_RESULT_ERROR;
+	}
+
+	/* Load eval function if not cached */
+	if (ctx->currentFunction != offload_functionEvaluation) {
+		if (loadFunction(ctx, ctx->config->evalPath) < 0) {
+			return OFFLOAD_RESULT_ERROR;
+		}
+		ctx->currentFunction = offload_functionEvaluation;
+	}
+
+	/* Add function arguments to FaaS context */
+	addFC(&ctx->faas, ctx->functionBuffer);
+	ctx->faas.timeout_ms = ctx->config->evalTimeoutMs;
+	if (prepareTrainingInput(ctx, in) < 0) {
+		return -1;
+	}
+
+	setState(ctx, offload_stateInputReady);
+	return OFFLOAD_RESULT_OK;
+}
+
+
+int offload_getEvaluationResult(offload_ctx_t *ctx, bool *result)
+{
+	offload_state_t state = getState(ctx);
+	if (state == offload_stateInputReady) {
+		return OFFLOAD_RESULT_BUSY;
+	}
+
+	if (state != offload_stateResultReady) {
+		setState(ctx, offload_stateNone);
+		return OFFLOAD_RESULT_ERROR;
+	}
+
 	/* Parse response */
-	if (parseTrainingOutput(stageRange, (char **)ctx->response) < 0) {
+	if (parseEvalResponse(result, (char **)ctx->response) < 0) {
 		freeResponse(ctx->response, 1);
 		setState(ctx, offload_stateNone);
 		return OFFLOAD_RESULT_ERROR;

@@ -45,9 +45,11 @@ typedef enum {
 typedef struct {
 	const char *decisionPath;
 	const char *trainingPath;
+	const char *evalPath;
 
 	uint32_t trainingTimeoutMs;
 	uint32_t decisionTimeoutMs;
+	uint32_t evalTimeoutMs;
 
 	scheduling_t decisionReqs;
 	scheduling_t trainingReqs;
@@ -59,6 +61,7 @@ typedef enum {
 	offload_functionNone,
 	offload_functionDecision,
 	offload_functionTraining,
+	offload_functionEvaluation,
 } offload_function_t;
 
 
@@ -111,6 +114,12 @@ int offload_training(offload_ctx_t *ctx, const offload_trainingInput_t *in);
 
 
 int offload_getTrainingnResult(offload_ctx_t *ctx, json_t **stageRange);
+
+
+int offload_evaluation(offload_ctx_t *ctx, const offload_trainingInput_t *in);
+
+
+int offload_getEvaluationResult(offload_ctx_t *ctx, bool *result);
 
 
 int offload_deinitDR(offload_ctx_t *ctx);

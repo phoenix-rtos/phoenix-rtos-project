@@ -43,13 +43,14 @@ static struct {
 
 	uint16_t historyTimeDeltaDays; /* for besmart */
 	json_t *besmartOffloadParams;
-	json_t *stateRange;
 
 	modbus_t modbus;
 	devices_ctx_t devices;
 	devices_info_t devInfo;
 	devices_config_t devConfig;
 	devices_userPref_t userPref;
+
+	bool isModelValid; /* Response from last evaluation function. */
 
 	uint16_t userPrefUpdFreqSec;
 
@@ -59,6 +60,7 @@ static struct {
 		char pwd[128];
 		char decisionPath[PATH_MAX + 1];
 		char trainPath[PATH_MAX + 1];
+		char evalPath[PATH_MAX + 1];
 	} cognitConfig;
 
 	struct {
@@ -171,7 +173,6 @@ static int runDecision(void)
 		.S3 = common.offloadFunParams.S3,
 		.besmart = common.offloadFunParams.besmart,
 		.userPref = &common.userPref,
-		.stateRangeJson = common.stateRange,
 	};
 
 	if (offload_decisionAlgo(&common.offload, &in) < 0) {
@@ -231,7 +232,6 @@ static int runTraining(uint64_t now)
 		.besmart = common.offloadFunParams.besmart,
 		.userPref = &common.userPref,
 		.trainingParams = common.offloadFunParams.training,
-		.stateRangeJson = common.stateRange,
 	};
 
 	if (offload_training(&common.offload, &in) < 0) {
@@ -242,6 +242,36 @@ static int runTraining(uint64_t now)
 	devices_simulationSetTrainingState(&common.devices, true);
 
 	log_info("Training algorithm offloaded");
+	return 0;
+}
+
+
+static int runEval(uint64_t now)
+{
+	if (devices_getInfo(&common.devices, &common.devInfo) < 0) {
+		log_warn("devices_getInfo failed");
+		return -1;
+	}
+
+	if (dumpBesmartOffloadParams(now) < 0) {
+		log_warn("dumpBesmartOffloadParams failed");
+		return -1;
+	}
+
+	offload_trainingInput_t in = {
+		.devInfo = &common.devInfo,
+		.S3 = common.offloadFunParams.S3,
+		.besmart = common.offloadFunParams.besmart,
+		.userPref = &common.userPref,
+		.trainingParams = common.offloadFunParams.training,
+	};
+
+	if (offload_evaluation(&common.offload, &in) < 0) {
+		log_warn("offload_evaluation failed");
+		return -1;
+	}
+
+	log_info("Evaluation algorithm offloaded");
 	return 0;
 }
 
@@ -272,24 +302,39 @@ static int executeDecisionResult(void)
 
 static int getTrainingResult(void)
 {
-	json_t *tmp;
-	int ret = offload_getTrainingnResult(&common.offload, &tmp);
+	int ret = offload_getTrainingnResult(&common.offload, NULL);
+	if (ret > 0) {
+		return 1; /* Still waiting for the result */
+	}
+
+	common.isModelValid = true;
+	if (ret < 0) {
+		log_warn("Obtaining training result failed");
+	}
+	else {
+		log_success("Training finished successfully");
+	}
+
+	devices_simulationSetTrainingState(&common.devices, false);
+	return 0;
+}
+
+
+static int getEvaluationResult(void)
+{
+	int ret = offload_getEvaluationResult(&common.offload, &common.isModelValid);
 	if (ret > 0) {
 		return 1; /* Still waiting for the result */
 	}
 
 	if (ret < 0) {
-		log_warn("Obtaining training result failed");
+		common.isModelValid = false;
+		log_warn("Obtaining evaluation result failed");
 	}
 	else {
-		if (common.stateRange != NULL) {
-			json_decref(common.stateRange);
-		}
-		common.stateRange = tmp;
-		log_success("Training finished successfully");
+		log_success("Evaluation finished successfully with result: %s", common.isModelValid ? "valid" : "invalid");
 	}
 
-	devices_simulationSetTrainingState(&common.devices, false);
 	return 0;
 }
 
@@ -300,10 +345,13 @@ static void mainLoop(void)
 	uint64_t lastDecision = 0;
 	uint64_t lastBesmart = 0;
 	uint64_t lastUserPref = 0;
-	uint64_t lastTraining = 0; /* Wait till we have enough data to train */
+	uint64_t lastEval = 0;
 
 	bool decisionOffloaded = false;
 	bool trainingOffloaded = false;
+	bool evaluationOffloaded = false;
+
+	common.isModelValid = true;
 
 	while (1) { /* TODO: maybe state machine? */
 		usleep(MAIN_LOOP_SLEEP_US);
@@ -323,16 +371,29 @@ static void mainLoop(void)
 			trainingOffloaded = false;
 		}
 
+		if (evaluationOffloaded) {
+			if (getEvaluationResult() == 1) {
+				continue; /* Still waiting for results */
+			}
+			evaluationOffloaded = false;
+		}
+
 		if (lastUserPref == 0 || now - lastUserPref > common.userPrefUpdFreqSec * common.devices.simData.speedup) {
 			updateUserPref();
 			lastUserPref = now;
 		}
 
-		if (common.userPref.offloadTrainingNow || now - lastTraining > common.userPref.trainingFrequency) {
+		if (common.userPref.offloadTrainingNow || !common.isModelValid) {
 			runTraining(now);
-			lastTraining = now;
 			trainingOffloaded = true;
 			common.userPref.offloadTrainingNow = false;
+			continue;
+		}
+
+		if (now - lastEval > common.userPref.trainingFrequency) {
+			runEval(now);
+			lastEval = now;
+			evaluationOffloaded = true;
 			continue;
 		}
 
@@ -416,6 +477,11 @@ static int readScheduling(json_t *json, scheduling_t *reqs)
 	}
 	reqs->geolocation.longitude = json_real_value(obj);
 
+	reqs->device_id = "sem_mk_test";
+
+	reqs->confidential_computing = false;
+	reqs->provider = NULL;
+
 	return 0;
 }
 
@@ -483,6 +549,7 @@ static int readAppConfig(json_t *app)
 {
 	TRY_RAISE(jsonGetString(app, "decisionPath", common.cognitConfig.decisionPath, sizeof(common.cognitConfig.decisionPath)));
 	TRY_RAISE(jsonGetString(app, "trainPath", common.cognitConfig.trainPath, sizeof(common.cognitConfig.trainPath)));
+	TRY_RAISE(jsonGetString(app, "evalPath", common.cognitConfig.evalPath, sizeof(common.cognitConfig.evalPath)));
 
 	json_t *obj = json_object_get(app, "trainTimeOut");
 	if (obj == NULL) {
@@ -706,6 +773,7 @@ int main(int argc, char **argv)
 	/* Initialize COGNIT Device Runtime */
 	common.offloadConfig.decisionPath = common.cognitConfig.decisionPath;
 	common.offloadConfig.trainingPath = common.cognitConfig.trainPath;
+	common.offloadConfig.evalPath = common.cognitConfig.evalPath;
 	common.offloadConfig.cognit = (cognit_config_t) {
 		.cognit_frontend_endpoint = common.cognitConfig.url,
 		.cognit_frontend_usr = common.cognitConfig.user,
