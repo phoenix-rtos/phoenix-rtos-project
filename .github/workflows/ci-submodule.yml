@@ -145,23 +145,23 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v4
-        with:
-          repository: bartekpaczek/phoenix-rtos-project-fork
-          submodules: recursive
-
-      - name: Update submodule phoenix-rtos-kernel
-        working-directory: phoenix-rtos-kernel
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
-
-      - name: Download compile database artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: phoenix-rtos-${{ matrix.target }}
+      #- name: Checkout phoenix-rtos-project
+      #  uses: actions/checkout@v4
+      #  with:
+      #    repository: bartekpaczek/phoenix-rtos-project-fork
+      #    submodules: recursive
+#
+      #- name: Update submodule phoenix-rtos-kernel
+      #  working-directory: phoenix-rtos-kernel
+      #  run: |
+      #    git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+      #    git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+      #    git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+#
+      #- name: Download compile database artifacts
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: phoenix-rtos-${{ matrix.target }}
 
       #- name: Get changed and added files
       #  working-directory: phoenix-rtos-kernel
