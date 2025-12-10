@@ -25,6 +25,12 @@
 #define BUILTIN_POSIXSRV 1
 
 
+/* Clocks */
+#define CLOCK_SYS_PLL1_ENABLE     1
+#define CLOCK_SYS_PLL1DIV2_ENABLE 1 /* used by ENET */
+/* #define CLOCK_SYS_PLL1DIV5_ENABLE 1 */
+
+
 /* Peripherals */
 
 
