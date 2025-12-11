@@ -9,7 +9,7 @@ flash0:
       offs: 0x20000
     - name: rootfs
       offs: 0x100000
-      size: 0x500000
+      size: 0x1000000
     - name: ptable
       offs: 0x7fe0000
       size: 0x20000
