@@ -18,6 +18,8 @@ struct {
 
 
 #define RETRIES 10000
+// #define RETRIES 1000
+// #define RETRIES 100
 
 #define BUF_SIZE   (200 << 10) /* 2000 KiB */
 #define CHUNK_SIZE (BUF_SIZE / 16)
@@ -34,17 +36,28 @@ int main(int argc, char **argv)
 	void *utcb = msgConfigure();
 	if (utcb == NULL) {
 		fprintf(stderr, "server msgConfigure failed\n");
+		return 1;
 	}
 
-	char path[128];
+	char inPath[64], outPath[64];
 
-	if (argc != 3) {
-		fprintf(stderr, "usage: %s IN_ID OUT_ID\n", argv[0]);
+	if (argc < 3 || 4 < argc) {
+		fprintf(stderr, "usage: %s IN_ID OUT_ID [PRIO]\n", argv[0]);
 		return 1;
 	}
 
 	uint32_t inId = strtoul(argv[1], NULL, 10);
 	uint32_t outId = strtoul(argv[2], NULL, 10);
+
+	size_t prio = 3;
+
+	if (argc == 4) {
+		prio = strtoul(argv[3], NULL, 10);
+		if (prio > 7) {
+			fprintf(stderr, "bad prio: %zu\n", prio);
+			return 1;
+		}
+	}
 
 	ipc_buf_t *ipcBuf = (ipc_buf_t *)utcb;
 	uint32_t *ipcU32Buf = (uint32_t *)ipcBuf->raw;
@@ -55,10 +68,10 @@ int main(int argc, char **argv)
 	}
 
 	if (inId != 0) {
-		snprintf(path, sizeof(path), "/dev/msgcor%d", inId);
+		snprintf(inPath, sizeof(inPath), "/dev/msgcor%d", inId);
 
 		oid_t oid;
-		while (lookup(path, NULL, &oid) < 0) {
+		while (lookup(inPath, NULL, &oid) < 0) {
 			usleep(100 * 1000);
 		}
 		inPort = oid.port;
@@ -70,26 +83,25 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		snprintf(path, sizeof(path), "/dev/msgcor%d", outId);
+		snprintf(outPath, sizeof(outPath), "/dev/msgcor%d", outId);
 
 		oid_t oid;
 
 		oid.port = outPort;
 		oid.id = 0;
-		if (create_dev(&oid, path) != 0) {
+		if (create_dev(&oid, outPath) != 0) {
 			fprintf(stderr, "create_dev");
 			return 1;
 		}
 	}
 
-	fprintf(stderr, "(%u, %u) init ok\n", inId, outId);
+	fprintf(stderr, "(%u, %u) init ok (port=%d)\n", inId, outId, outPort);
 
 	msg_t msg = { 0 };
 
 	struct timespec ts[2];
 	uint64_t rtt = 0;
 	uint64_t ms;
-	size_t prio = 3;
 
 	priority(prio);
 
@@ -97,6 +109,7 @@ int main(int argc, char **argv)
 	uint32_t maxDepth = 0;
 
 	size_t size = 0;
+	int err;
 
 	ipcBuf->size = 2 * sizeof(uint32_t);
 
@@ -108,10 +121,19 @@ int main(int argc, char **argv)
 		if (inId != 0) {
 			// msgRecv(inPort, &msg, &rid);
 			ipcU32Buf[0] = depth - 1;
-			msgRespondAndRecv(inPort, &msg, &rid);
+			err = msgRespondAndRecv(inPort, &msg, &rid);
+			if (err < 0) {
+				fprintf(stderr, "msgRespondAndRecv failed: %d\n", err);
+				break;
+			}
+			if (ipcBuf->err < 0) {
+				fprintf(stderr, "ipc on recv buf err: %d\n", ipcBuf->err);
+				break;
+			}
 			if (ipcBuf->size != 2 * sizeof(uint32_t)) {
 				fprintf(stderr, "bad size: %zu\n", ipcBuf->size);
-				exit(1);
+				err = -1;
+				break;
 			}
 			depth = ipcU32Buf[0];
 		}
@@ -122,16 +144,26 @@ int main(int argc, char **argv)
 
 			ipcU32Buf[0] = ipcU32Buf[1] = depth + 1;
 			clock_gettime(CLOCK_MONOTONIC_RAW, &ts[0]);
-			msgCall(outPort, &msg);
+			err = msgCall(outPort, &msg);
+			fprintf(stderr, "doing nontrivial shit");
 			clock_gettime(CLOCK_MONOTONIC_RAW, &ts[1]);
+			if (err < 0) {
+				fprintf(stderr, "msgCall failed: %d\n", err);
+				break;
+			}
+
+			if (ipcBuf->err < 0) {
+				fprintf(stderr, "ipc buf err: %d\n", ipcBuf->err);
+				break;
+			}
 
 			if (ipcBuf->size != 2 * sizeof(uint32_t)) {
 				fprintf(stderr, "bad size: %zu\n", ipcBuf->size);
-				exit(1);
+				break;
 			}
 			if (ipcU32Buf[0] != depth) {
 				fprintf(stderr, "bad depth: %u\n", ipcU32Buf[0]);
-				exit(1);
+				break;
 			}
 
 			maxDepth = ipcU32Buf[1];
@@ -155,7 +187,14 @@ int main(int argc, char **argv)
 		fprintf(stderr, "(%u, %u) exiting - prio=%zu size=%zu rtt=%ju ms\n", inId, outId, prio, size, (uintmax_t)rtt);
 	}
 
+	fprintf(stderr, "A%u-%u\n", inId, outId);
 	portDestroy(outPort);
+	fprintf(stderr, "B%u-%u\n", inId, outId);
+
+	if (outId != 0) {
+		remove(outPath);
+	}
+	fprintf(stderr, "C%u-%u\n", inId, outId);
 
 	return 0;
 }
