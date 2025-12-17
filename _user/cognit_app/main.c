@@ -14,6 +14,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include <jansson.h>
 #include <curl/curl.h>
@@ -25,15 +26,23 @@
 #include "besmart.h"
 
 #define COGNIT_APP_LOG_TAG "cognit_app : "
-#define COGNIT_APP_LOG_LVL COGNIT_APP_LOG_LVL_DEBUG
+#define COGNIT_APP_LOG_LVL COGNIT_APP_LOG_LVL_INFO
 #include "logger.h"
 
 
 #define MAIN_LOOP_SLEEP_US            (500 * 1000)
 #define MODBUS_READ_WRITE_TIMEOUT_MS  (3000)
 #define USER_PREF_UPDATE_FREQ_SEC_RTC (5)
+#define STATS_PRINT_FREQ_MSEC         (60 * 1000)
 
 #define SECONDS_IN_DAY (24 * 60 * 60)
+
+
+typedef struct {
+	uint16_t good;
+	uint16_t bad;
+} stats_t;
+
 
 static struct {
 	offload_ctx_t offload;
@@ -76,6 +85,13 @@ static struct {
 		char userPref[1024];
 		char training[2048];
 	} offloadFunParams;
+
+	struct {
+		bool enabled;
+		stats_t train;
+		stats_t decision;
+		stats_t eval;
+	} stats;
 } common;
 
 
@@ -88,14 +104,12 @@ static struct {
 	} while (0)
 
 
-#if 0
 static uint64_t getTimeMonoMs(void)
 {
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	return (uint64_t)ts.tv_sec * 1000 + (uint64_t)ts.tv_nsec / (1000 * 1000);
 }
-#endif
 
 
 static uint64_t getTimeMetersim(void)
@@ -145,7 +159,7 @@ static int sendBesmartData(void)
 		return -1;
 	}
 
-	log_info("Sent energy data to besmart.energy");
+	log_debug("Sent energy data to besmart.energy");
 	return 0;
 }
 
@@ -177,6 +191,7 @@ static int runDecision(void)
 
 	if (offload_decisionAlgo(&common.offload, &in) < 0) {
 		log_warn("offload_decisionAlgo failed");
+		common.stats.decision.bad++;
 		return -1;
 	}
 
@@ -236,6 +251,7 @@ static int runTraining(uint64_t now)
 
 	if (offload_training(&common.offload, &in) < 0) {
 		log_warn("offload_training failed");
+		common.stats.train.bad++;
 		return -1;
 	}
 
@@ -268,6 +284,7 @@ static int runEval(uint64_t now)
 
 	if (offload_evaluation(&common.offload, &in) < 0) {
 		log_warn("offload_evaluation failed");
+		common.stats.eval.bad++;
 		return -1;
 	}
 
@@ -287,8 +304,10 @@ static int executeDecisionResult(void)
 	}
 	else if (ret < 0) {
 		log_warn("Obtaining decision algorithm results failed");
+		common.stats.decision.bad++;
 		return -1;
 	}
+	common.stats.decision.good++;
 
 	if (devices_setParams(&common.devices, config) < 0) {
 		log_warn("devices_setParams failed");
@@ -310,9 +329,11 @@ static int getTrainingResult(void)
 	common.isModelValid = true;
 	if (ret < 0) {
 		log_warn("Obtaining training result failed");
+		common.stats.train.bad++;
 	}
 	else {
 		log_success("Training finished successfully");
+		common.stats.train.good++;
 	}
 
 	devices_simulationSetTrainingState(&common.devices, false);
@@ -330,12 +351,28 @@ static int getEvaluationResult(void)
 	if (ret < 0) {
 		common.isModelValid = false;
 		log_warn("Obtaining evaluation result failed");
+		common.stats.eval.bad++;
 	}
 	else {
 		log_success("Evaluation finished successfully with result: %s", common.isModelValid ? "valid" : "invalid");
+		common.stats.eval.good++;
 	}
 
 	return 0;
+}
+
+
+static void printStats(void)
+{
+	if (common.stats.enabled) {
+		log_info("STATS:\tD: %u/%u,\tE: %u/%u,\tT: %u/%u",
+				common.stats.decision.good,
+				common.stats.decision.good + common.stats.decision.bad,
+				common.stats.eval.good,
+				common.stats.eval.good + common.stats.eval.bad,
+				common.stats.train.good,
+				common.stats.train.good + common.stats.train.bad);
+	}
 }
 
 
@@ -346,6 +383,7 @@ static void mainLoop(void)
 	uint64_t lastBesmart = 0;
 	uint64_t lastUserPref = 0;
 	uint64_t lastEval = 0;
+	uint64_t lastStatsPrint = 0;
 
 	bool decisionOffloaded = false;
 	bool trainingOffloaded = false;
@@ -356,6 +394,12 @@ static void mainLoop(void)
 	while (1) { /* TODO: maybe state machine? */
 		usleep(MAIN_LOOP_SLEEP_US);
 		now = getTimeMetersim();
+		uint64_t nowMonoMs = getTimeMonoMs();
+
+		if (nowMonoMs >= lastStatsPrint + STATS_PRINT_FREQ_MSEC) {
+			lastStatsPrint = nowMonoMs;
+			printStats();
+		}
 
 		if (decisionOffloaded) {
 			if (executeDecisionResult() == 1) {
@@ -477,7 +521,11 @@ static int readScheduling(json_t *json, scheduling_t *reqs)
 	}
 	reqs->geolocation.longitude = json_real_value(obj);
 
-	reqs->device_id = "sem_mk_test";
+	obj = json_object_get(json, "id");
+	if (obj == NULL) {
+		return -1;
+	}
+	reqs->device_id = strdup(json_string_value(obj));
 
 	reqs->confidential_computing = false;
 	reqs->provider = NULL;
@@ -688,7 +736,7 @@ int main(int argc, char **argv)
 	const char *serverIpAddr = NULL;
 	const char *serverIpPort = NULL;
 
-	while ((opt = getopt(argc, argv, "c:p:s:a:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:p:s:a:x")) != -1) {
 		switch (opt) {
 			case 'c':
 				configFile = optarg;
@@ -704,6 +752,10 @@ int main(int argc, char **argv)
 
 			case 's':
 				serialDev = optarg;
+				break;
+
+			case 'x':
+				common.stats.enabled = true;
 				break;
 
 			default:

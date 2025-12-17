@@ -22,7 +22,7 @@
 #include "besmart.h"
 
 #define COGNIT_APP_LOG_TAG "cognit_app/besmart : "
-#define COGNIT_APP_LOG_LVL COGNIT_APP_LOG_LVL_INFO
+#define COGNIT_APP_LOG_LVL COGNIT_APP_LOG_LVL_WARN
 #include "logger.h"
 
 
