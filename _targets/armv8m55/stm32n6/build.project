@@ -11,9 +11,6 @@
 
 CROSS=arm-phoenix-
 
-# Path to STM32_SigningTool_CLI. User may wish to set a custom path.
-STM32SIGNTOOL=${STM32SIGNTOOL:="STM32_SigningTool_CLI"}
-
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 export DROPBEAR_CUSTOM_CFLAGS="-DLTC_NO_BSWAP"
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
@@ -75,23 +72,12 @@ b_create_signed_bootloader() {
 	fi
 
 	b_log "Creating signed PLO image"
-	# STM32_SigningTool_CLI requires the binary to have ".bin" file extension,
-	# otherwise it will not be recognized as a flat binary file
-	PLO_UNSIGNED="${PREFIX_BOOT}/plo_unsigned.bin"
-	PLO_SIGNED="${PREFIX_BOOT}/part_plo.img"
-	cp "${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "${PLO_UNSIGNED}"
-	# Bit 0 - add authentication
-	# Bit 1 - add encryption
-	# Bit 31 - add padding
-	OUTPUT_FLAGS=0x80000000
-	${STM32SIGNTOOL} \
-		-bin "${PLO_UNSIGNED}" \
-		-nk \
-		-of ${OUTPUT_FLAGS} \
-		-t fsbl \
-		-o "${PLO_SIGNED}" \
-		-hv 2.3 \
-		-s
+	local plo_unsigned="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	local plo_signed="${PREFIX_BOOT}/part_plo.img"
+	stm32n6_sign_fsbl.py \
+		-i "${plo_unsigned}" \
+		-o "${plo_signed}" \
+		-nk
 }
 
 
