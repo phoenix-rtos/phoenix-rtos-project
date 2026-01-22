@@ -8,5 +8,32 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr;devs
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-printf ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-scanf-basic ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-scanf-advanced ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-pthread ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-misc ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-stdio ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-stdlib ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-string ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-signal ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-math ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-time ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libc-unix-socket ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-ioctl ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-initfini ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libalgo ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libcache ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libtinyaes ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-libuuid ddr ddr
+  - app {{ env.BOOT_DEVICE }} test_thread_rand ddr ddr
+  - app {{ env.BOOT_DEVICE }} test_priority ddr ddr
+  - app {{ env.BOOT_DEVICE }} test_mmap_new ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-unity ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-echo ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-setjmp ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-sys-mutex ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-sys-cond ddr ddr
+  - app {{ env.BOOT_DEVICE }} test-thread-local ddr ddr
   - wait 1500
   - go!
