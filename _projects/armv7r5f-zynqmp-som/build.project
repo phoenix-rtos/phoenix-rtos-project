@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Shell script for building armv7r5f-zynqmp-som project
+#
+# Copyright 2025 Phoenix Systems
+# Author: Jacek Maksymowicz
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+export FS_WRITE_CLEANMARKERS=y
+
+# No networking
+export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}
