@@ -44,6 +44,7 @@ jobs:
           - 'ia32-generic-pc'
           - 'ia32-generic-qemu'
           - 'riscv64-generic-qemu'
+          - 'riscv64-gr765-vcu118'
           - 'riscv64-grfpga-artya7'
           - 'sparcv8leon-generic-qemu'
           - 'sparcv8leon-gr712rc-board'
