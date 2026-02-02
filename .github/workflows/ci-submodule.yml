@@ -20,6 +20,23 @@ on:
         default: false
         required: false
 
+      cpptest_enabled:
+        type: boolean
+        description: "enable cpptest analysis"
+        default: false
+        required: false
+      cpptest_targets:
+        type: string
+        description: "comma separated list of targets to run cpptest on"
+        # NOTE: ia32, RISC-V and SPARC targets are not suppoted by parasoft cpptest
+        default: 'armv7a7-imx6ull-evk, armv7m7-imxrt117x-evk, armv7r5f-zynqmp-qemu, aarch64a53-zynqmp-qemu'
+        required: false
+      cpptest_ruleset:
+        type: string
+        description: "cpptest ruleset to use (builtin or user)"
+        default: "user://MISRA C 2012 Phoenix"
+        required: false
+
 
 jobs:
   build:
@@ -106,6 +123,121 @@ jobs:
           path: |
             ${{env.BUILD_DIRECTORY}}/_boot/${{ matrix.target }}
             ${{env.BUILD_DIRECTORY}}/rootfs-${{ matrix.target }}.tar
+
+      - name: Upload compilation database artifacts
+        if: ${{ inputs.cpptest_enabled && contains(inputs.cpptest_targets, matrix.target) }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-db-artifacts-${{ matrix.target }}
+          retention-days: 1 # only to pass between jobs
+          path: |
+            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/sysroot
+            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/include
+            ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/compile_commands.json
+
+
+  # convert cpptest_targets input into matrix format
+  cpptest_setup_targets:
+    if: inputs.cpptest_enabled
+    name: cpptest setup targets
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-targets: ${{ steps.set-matrix.outputs.matrix-targets }}
+    steps:
+      - name: Set matrix targets
+        id: set-matrix
+        run: |
+          echo "matrix-targets=$(jq 'split(",") | map(sub("^\\s+"; "") | sub("\\s+$"; ""))' -Rc <(echo '${{ inputs.cpptest_targets }}'))" >> $GITHUB_OUTPUT
+
+  # run Parasoft CppTest on changed files only, using compile_commands.json from build job to get correct include paths and defines for accurate analysis
+  cpptest:
+    needs:
+      - build
+      - cpptest_setup_targets
+    name: cpptest
+    if: inputs.cpptest_enabled
+    runs-on: cpptest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.cpptest_setup_targets.outputs.matrix-targets) }}
+
+    steps:
+      - name: Checkout phoenix-rtos-project
+        uses: actions/checkout@v4
+        with:
+          repository: phoenix-rtos/phoenix-rtos-project
+          submodules: recursive
+
+      - name: Update submodule ${{ github.event.repository.name }}
+        working-directory: ${{ github.event.repository.name }}
+        run: |
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
+          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/merge:refs/remotes/origin/pr/*"
+          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v47.0.1
+        with:
+          path: ${{ github.event.repository.name }}
+          files: |
+            **.c
+            **.h
+
+      - name: Download compile db artifacts
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: compile-db-artifacts-${{ matrix.target }}
+          path: _build/${{ matrix.target }}
+
+      - name: List all changed files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
+
+      - name: Fix compile_commands.json paths
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          python3 ./scripts/ci/fix_compile_commands.py _build/${{ matrix.target }}/compile_commands.json > _build/${{ matrix.target }}/compile_commands-fixed.json
+          mv _build/${{ matrix.target }}/compile_commands-fixed.json _build/${{ matrix.target }}/compile_commands.json
+
+      # NOTE: this step will only analyze changed files - so code flow analysis quality is lower, but it will be much faster and more focused on changes in PRs.
+      - name: Run cpptest
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          # use ENV variables to pass inputs - resolves quoting/escaping issues
+          CPPTEST_CONFIG: ${{ inputs.cpptest_ruleset }}
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          CPPTEST_COMPILER: ${{ case(contains(matrix.target, 'aarch64'), 'gcc_14-aarch64', 'gcc_14-aarch32') }}
+        run: |
+          resources=()
+          for file in $ALL_CHANGED_FILES; do
+            resources+=("-resource" "$file")
+          done
+          cpptestcli -config "$CPPTEST_CONFIG" -input "_build/${{ matrix.target }}/compile_commands.json" \
+            -compiler "$CPPTEST_COMPILER" -module . -property report.format=sarif,html "${resources[@]}"
+
+      - name: Upload SARIF report
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/report.sarif
+          checkout_path: ${{ github.workspace }}/${{ github.event.repository.name }}
+
+      - name: "Upload cpptest results"
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          path: reports/*
+          name: cpptest-reports-${{ matrix.target }}
+
 
   test-emu:
     needs: build
