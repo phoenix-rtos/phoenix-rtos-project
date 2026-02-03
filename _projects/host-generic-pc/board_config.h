@@ -14,4 +14,6 @@
 #ifndef _BOARD_CONFIG_H_
 #define _BOARD_CONFIG_H_
 
+#define METERFS_DEBUG_UTILS 1
+
 #endif
