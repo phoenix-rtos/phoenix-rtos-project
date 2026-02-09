@@ -219,7 +219,7 @@ jobs:
         run: |
           resources=()
           for file in $ALL_CHANGED_FILES; do
-            resources+=("-resource" "$file")
+            resources+=("-resource" "${{ github.event.repository.name }}/$file")
           done
           cpptestcli -config "$CPPTEST_CONFIG" -input "_build/${{ matrix.target }}/compile_commands.json" \
             -compiler "$CPPTEST_COMPILER" -module . -property report.format=sarif,html "${resources[@]}"
