@@ -39,8 +39,65 @@ on:
 
 
 jobs:
+  # ── Resolve cross-repo dependencies (runs once, outputs consumed by all jobs) ──
+  resolve-deps:
+    name: resolve deps
+    runs-on: ubuntu-latest
+    outputs:
+      project-ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - name: Resolve phoenix-rtos-project ref
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_BODY=""
+          if [ -n "${PR_NUMBER}" ]; then
+            PR_BODY=$(gh pr view "${PR_NUMBER}" --repo "${{ github.repository }}" --json body --jq '.body') || true
+          fi
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          DEFAULT_REF="master"
+          PROJECT_REPO="https://github.com/phoenix-rtos/phoenix-rtos-project"
+          RESOLVED_REF="${DEFAULT_REF}"
+
+          if [ "${BRANCH}" != "master" ] && [ "${BRANCH}" != "main" ]; then
+            # Check Depends-On: phoenix-rtos-project:<branch> in PR body
+            if [ -n "${PR_BODY}" ]; then
+              DEP_BRANCH=$(printf '%s' "${PR_BODY}" | tr -d '\r' | sed -n 's/^[[:space:]]*[Dd]epends-[Oo]n:[[:space:]]*phoenix-rtos-project:\([^[:space:]]*\)$/\1/p' | head -1)
+              if [ -n "${DEP_BRANCH}" ]; then
+                # Validate branch name (alphanumeric, -, _, /, ., @)
+                if ! git check-ref-format --branch "${DEP_BRANCH}" >/dev/null 2>&1; then
+                  echo "::error::[resolve-project-ref] Depends-On branch '${DEP_BRANCH}' contains invalid characters"
+                  exit 1
+                fi
+                if git ls-remote --exit-code --heads "${PROJECT_REPO}" "${DEP_BRANCH}" > /dev/null 2>&1; then
+                  echo "[resolve-project-ref] Using explicit Depends-On branch: ${DEP_BRANCH}"
+                  RESOLVED_REF="${DEP_BRANCH}"
+                else
+                  echo "::error::[resolve-project-ref] Depends-On branch '${DEP_BRANCH}' not found in phoenix-rtos-project"
+                  exit 1
+                fi
+              fi
+            fi
+
+            # If no explicit override, try same-branch matching
+            if [ "${RESOLVED_REF}" = "${DEFAULT_REF}" ]; then
+              if git ls-remote --exit-code --heads "${PROJECT_REPO}" "${BRANCH}" > /dev/null 2>&1; then
+                echo "[resolve-project-ref] Same-branch match: ${BRANCH}"
+                RESOLVED_REF="${BRANCH}"
+              fi
+            fi
+          fi
+
+          echo "[resolve-project-ref] Resolved ref: ${RESOLVED_REF}"
+          echo "ref=${RESOLVED_REF}" >> $GITHUB_OUTPUT
+
+
+  # ── Build ──────────────────────────────────────────────────────────────────
   build:
     name: build
+    needs: [resolve-deps]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -86,14 +143,26 @@ jobs:
         # we need to use relative paths here so they would work in docker env
         run: |
           mkdir .buildroot && cd .buildroot
-          git clone https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
+          git clone -b ${{ needs.resolve-deps.outputs.project-ref }} https://github.com/phoenix-rtos/phoenix-rtos-project --recurse-submodules
           cd phoenix-rtos-project
           echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
           echo "CI_CUSTOM_BUILDROOT=.buildroot/phoenix-rtos-project" >> $GITHUB_ENV
           git log -1 --pretty=oneline
           git submodule
-          rm -rf ${{ github.event.repository.name }}
-          ln -s ../.. ${{ github.event.repository.name }}
+
+      # step 2a: resolve cross-repo dependencies (same-branch matching + Depends-On directives from PR body)
+      - name: Resolve cross-repo dependencies
+        uses: ./.buildroot/phoenix-rtos-project/.github/actions/resolve-submodule-deps
+        with:
+          project-dir: ${{ env.BUILD_DIRECTORY }}
+          update-submodule: 'false'
+
+      # step 2b: replace current submodule dir with symlink to PR checkout
+      - name: Replace submodule with symlink to PR checkout
+        run: |
+          cd "${{ env.BUILD_DIRECTORY }}"
+          rm -rf "${{ github.event.repository.name }}"
+          ln -s ../.. "${{ github.event.repository.name }}"
 
       # attach GCC problem matcher - will pin problems to files only in current submodule
       - name: Add GCC problem matcher
@@ -136,6 +205,7 @@ jobs:
             ${{env.BUILD_DIRECTORY}}/_build/${{ matrix.target }}/compile_commands.json
 
 
+  # ── CppTest setup ─────────────────────────────────────────────────────────
   # convert cpptest_targets input into matrix format
   cpptest_setup_targets:
     if: inputs.cpptest_enabled
@@ -149,11 +219,10 @@ jobs:
         run: |
           echo "matrix-targets=$(jq 'split(",") | map(sub("^\\s+"; "") | sub("\\s+$"; ""))' -Rc <(echo '${{ inputs.cpptest_targets }}'))" >> $GITHUB_OUTPUT
 
+  # ── CppTest analysis ──────────────────────────────────────────────────────
   # run Parasoft CppTest on changed files only, using compile_commands.json from build job to get correct include paths and defines for accurate analysis
   cpptest:
-    needs:
-      - build
-      - cpptest_setup_targets
+    needs: [resolve-deps, build, cpptest_setup_targets]
     name: cpptest
     if: inputs.cpptest_enabled
     runs-on: cpptest
@@ -168,14 +237,10 @@ jobs:
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
+          ref: ${{ needs.resolve-deps.outputs.project-ref }}
 
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/merge:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+      - name: Resolve submodule dependencies
+        uses: ./.github/actions/resolve-submodule-deps
 
       - name: Get changed files
         id: changed-files
@@ -239,8 +304,9 @@ jobs:
           name: cpptest-reports-${{ matrix.target }}
 
 
+  # ── Emulator tests ────────────────────────────────────────────────────────
   test-emu:
-    needs: build
+    needs: [resolve-deps, build]
     name: test EMU
     runs-on: ubuntu-latest
     strategy:
@@ -254,13 +320,10 @@ jobs:
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
+          ref: ${{ needs.resolve-deps.outputs.project-ref }}
 
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+      - name: Resolve submodule dependencies
+        uses: ./.github/actions/resolve-submodule-deps
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -319,9 +382,10 @@ jobs:
             results.csv
             results.xml
 
+  # ── Hardware tests ─────────────────────────────────────────────────────────
   # runs on self-hosted runners with HW targets attached
   test-hw:
-    needs: build
+    needs: [resolve-deps, build]
     name: test HW
     runs-on: ${{ matrix.target }}
     strategy:
@@ -335,13 +399,10 @@ jobs:
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
+          ref: ${{ needs.resolve-deps.outputs.project-ref }}
 
-      - name: Update submodule ${{ github.event.repository.name }}
-        working-directory: ${{ github.event.repository.name }}
-        run: |
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/heads/*:refs/remotes/origin/*"
-          git fetch --recurse-submodules=no --force ${{ github.event.repository.clone_url }} "+refs/pull/*/head:refs/remotes/origin/pr/*"
-          git checkout ${{ github.sha }} || git checkout ${{ github.event.pull_request.head.sha }}
+      - name: Resolve submodule dependencies
+        uses: ./.github/actions/resolve-submodule-deps
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -366,6 +427,7 @@ jobs:
             results.csv
             results.xml
 
+  # ── Test results summary ───────────────────────────────────────────────────
   tests-summary:
     if: success() || failure()   # don't care about cancelled runs
     needs: ['test-emu', 'test-hw']

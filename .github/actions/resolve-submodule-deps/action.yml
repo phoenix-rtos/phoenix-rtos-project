@@ -1,0 +1,60 @@
+# vim:sw=2:ts=2
+name: 'resolve-submodule-deps'
+description: 'Resolve cross-repo submodule dependencies and optionally update the current submodule to CI commit'
+author: 'Marek Białowąs <marek.bialowas@phoenix-rtos.com>'
+
+# NOTE: this action expects to run AFTER actions/checkout (or git clone) with phoenix-rtos-project
+
+inputs:
+  project-dir:
+    description: 'Path to phoenix-rtos-project checkout (absolute or relative to workspace root)'
+    default: '.'
+  update-submodule:
+    description: 'Whether to fetch and checkout the current submodule at CI commit'
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Resolve cross-repo dependencies
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      # NOTE: getting newest PR body to resolve dependencies based on the latest PR description (workflow rerun receives original event == old PR body)
+      run: |
+        set -euo pipefail
+        PR_NUMBER="${{ github.event.pull_request.number }}"
+        PR_BODY=""
+        if [ -n "${PR_NUMBER}" ]; then
+          PR_BODY=$(gh pr view "${PR_NUMBER}" --repo "${{ github.repository }}" --json body --jq '.body') || true
+        fi
+
+        BRANCH="${{ github.head_ref || github.ref_name }}"
+        PROJECT_DIR="${{ inputs.project-dir }}"
+        RESOLVE_SCRIPT="${PROJECT_DIR}/scripts/ci/resolve-deps.sh"
+        if [ -x "${RESOLVE_SCRIPT}" ]; then
+          PR_BODY_FILE=""
+          trap 'rm -f -- "${PR_BODY_FILE}"' EXIT
+          if [ -n "${PR_BODY}" ]; then
+            PR_BODY_FILE=$(mktemp)
+            printf '%s' "${PR_BODY}" > "${PR_BODY_FILE}"
+          fi
+          "${RESOLVE_SCRIPT}" \
+            "${PROJECT_DIR}" \
+            "${{ github.event.repository.name }}" \
+            "${BRANCH}" \
+            ${PR_BODY_FILE:+"${PR_BODY_FILE}"}
+        else
+          echo "[resolve-deps] Script not found at ${RESOLVE_SCRIPT}, skipping submodule dependency resolution"
+        fi
+
+    - name: Update submodule ${{ github.event.repository.name }}
+      if: ${{ inputs.update-submodule == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.project-dir }}/${{ github.event.repository.name }}
+      run: |
+        git fetch --recurse-submodules=no --force "${{ github.event.repository.clone_url }}" \
+          "+refs/heads/*:refs/remotes/origin/*" \
+          "+refs/pull/*/head:refs/remotes/origin/pr/*" \
+          "+refs/pull/*/merge:refs/remotes/origin/pr/merge/*"
+        git checkout ${{ github.event.pull_request.head.sha || github.sha }}
