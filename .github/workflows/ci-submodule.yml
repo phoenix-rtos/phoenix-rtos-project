@@ -220,7 +220,9 @@ jobs:
           echo "matrix-targets=$(jq 'split(",") | map(sub("^\\s+"; "") | sub("\\s+$"; ""))' -Rc <(echo '${{ inputs.cpptest_targets }}'))" >> $GITHUB_OUTPUT
 
   # ── CppTest analysis ──────────────────────────────────────────────────────
-  # run Parasoft CppTest on changed files only, using compile_commands.json from build job to get correct include paths and defines for accurate analysis
+  # Full module-level Parasoft CppTest analysis with incremental caching.
+  # On master: always runs to build .cpptest cache baseline (accessible to all PRs).
+  # On PRs: restores master cache for fast incremental analysis; skips if no .c/.h changed.
   cpptest:
     needs: [resolve-deps, build, cpptest_setup_targets]
     name: cpptest
@@ -242,7 +244,9 @@ jobs:
       - name: Resolve submodule dependencies
         uses: ./.github/actions/resolve-submodule-deps
 
+      # For PRs: skip analysis entirely if no source files changed
       - name: Get changed files
+        if: github.event_name == 'pull_request'
         id: changed-files
         uses: tj-actions/changed-files@v47.0.1
         with:
@@ -251,53 +255,80 @@ jobs:
             **.c
             **.h
 
+      - name: Check if analysis needed
+        id: should-analyze
+        run: |
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            # Always run on push (e.g. master) to keep .cpptest cache fresh
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No source files changed - skipping cpptest analysis"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Restore .cpptest cache from a previous run for incremental analysis.
+      # GH Actions cache scoping: master caches are readable by all branches,
+      # so PRs automatically get the latest master baseline via restore-keys.
+      - name: Restore cpptest cache
+        if: steps.should-analyze.outputs.run == 'true'
+        id: cpptest-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cpptest
+          key: cpptest-${{ github.event.repository.name }}-${{ matrix.target }}-${{ github.sha }}
+          restore-keys: |
+            cpptest-${{ github.event.repository.name }}-${{ matrix.target }}-
+
       - name: Download compile db artifacts
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.should-analyze.outputs.run == 'true'
         uses: actions/download-artifact@v4
         with:
           name: compile-db-artifacts-${{ matrix.target }}
           path: _build/${{ matrix.target }}
 
-      - name: List all changed files
-        if: steps.changed-files.outputs.any_changed == 'true'
-        env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: |
-          for file in ${ALL_CHANGED_FILES}; do
-            echo "$file was changed"
-          done
-
       - name: Fix compile_commands.json paths
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.should-analyze.outputs.run == 'true'
         run: |
           python3 ./scripts/ci/fix_compile_commands.py _build/${{ matrix.target }}/compile_commands.json > _build/${{ matrix.target }}/compile_commands-fixed.json
           mv _build/${{ matrix.target }}/compile_commands-fixed.json _build/${{ matrix.target }}/compile_commands.json
 
-      # NOTE: this step will only analyze changed files - so code flow analysis quality is lower, but it will be much faster and more focused on changes in PRs.
+      # Module-level analysis: cpptestcli uses .cpptest cache to re-analyze only
+      # what changed since the last cached run, making incremental analysis fast.
       - name: Run cpptest
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.should-analyze.outputs.run == 'true'
         env:
           # use ENV variables to pass inputs - resolves quoting/escaping issues
           CPPTEST_CONFIG: ${{ inputs.cpptest_ruleset }}
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
           CPPTEST_COMPILER: ${{ case(contains(matrix.target, 'aarch64'), 'gcc_14-aarch64', 'gcc_14-aarch32') }}
         run: |
-          resources=()
-          for file in $ALL_CHANGED_FILES; do
-            resources+=("-resource" "${{ github.event.repository.name }}/$file")
-          done
-          cpptestcli -config "$CPPTEST_CONFIG" -input "_build/${{ matrix.target }}/compile_commands.json" \
-            -compiler "$CPPTEST_COMPILER" -module . -property report.format=sarif,html "${resources[@]}"
+          cpptestcli -config "$CPPTEST_CONFIG" \
+            -input "_build/${{ matrix.target }}/compile_commands.json" \
+            -compiler "$CPPTEST_COMPILER" \
+            -module ${{ github.event.repository.name }} \
+            -property report.format=sarif,html \
+            -resource ${{ github.event.repository.name }}
+
+      # Save .cpptest cache after analysis. Critical on master (builds baseline
+      # for all PRs). Uses !cancelled() to save even if cpptestcli found violations.
+      # Skipped when exact cache key already exists (re-run of same commit).
+      - name: Save cpptest cache
+        if: "!cancelled() && steps.should-analyze.outputs.run == 'true' && steps.cpptest-cache.outputs.cache-hit != 'true'"
+        uses: actions/cache/save@v4
+        with:
+          path: .cpptest
+          key: cpptest-${{ github.event.repository.name }}-${{ matrix.target }}-${{ github.sha }}
 
       - name: Upload SARIF report
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: "!cancelled() && steps.should-analyze.outputs.run == 'true'"
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: reports/report.sarif
           checkout_path: ${{ github.workspace }}/${{ github.event.repository.name }}
 
       - name: "Upload cpptest results"
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: "!cancelled() && steps.should-analyze.outputs.run == 'true'"
         uses: actions/upload-artifact@v4
         with:
           path: reports/*
