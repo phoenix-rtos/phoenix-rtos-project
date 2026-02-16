@@ -40,6 +40,7 @@ jobs:
           - 'armv7r5f-zynqmp-qemu'
           - 'armv8r52-mps3an536-qemu'
           - 'armv8m33-mcxn94x-frdm'
+          - 'armv8m55-stm32n6-nucleo'
           - 'aarch64a53-zynqmp-qemu'
           - 'host-generic-pc'
           - 'ia32-generic-pc'
