@@ -38,6 +38,7 @@ b_set_default_path() {
 b_set_default_path "NVM_CONFIG" "nvm.yaml"
 b_set_default_path "PLO_SCRIPT_PREINIT" "preinit.plo.yaml"
 b_set_default_path "PLO_SCRIPT_USER" "user.plo.yaml"
+b_set_default_path "PORTS_CONFIG" "ports.yaml"
 
 
 b_le32hex() {
