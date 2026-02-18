@@ -37,7 +37,7 @@ runs:
   - name: Run phoenix-build container
     shell: bash
     run: |
-      IMAGE="ghcr.io/phoenix-rtos/build:${{ inputs.image-tag }}"
+      IMAGE="ghcr.io/adamgreloch/build:${{ inputs.image-tag }}"
       echo "Using Docker image: $IMAGE"
 
       # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
