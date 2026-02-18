@@ -8,6 +8,7 @@
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+PROJ_PATH="_projects/$TARGET"
 
 # If path variable $1 is unset or empty - set it to project-specific or target-specific path based on the existence of file $2
 # NOTE: empty variable case will be treated as error in future
@@ -25,10 +26,9 @@ b_set_default_path() {
 	fi
 
 	if [ -z "${!varname:-}" ]; then
-		local projpath="_projects/$TARGET/$fname"
-		if [ -e "$projpath" ]; then
+		if [ -e "$PROJ_PATH/$fname" ]; then
 			# indirect assignment to the variable with varname
-			printf -v "$varname" "%s" "$projpath"
+			printf -v "$varname" "%s" "$PROJ_PATH/$fname"
 		else
 			printf -v "$varname" "%s" "_targets/$TARGET_FAMILY/$TARGET_SUBFAMILY/$fname"
 		fi
@@ -38,6 +38,12 @@ b_set_default_path() {
 b_set_default_path "NVM_CONFIG" "nvm.yaml"
 b_set_default_path "PLO_SCRIPT_PREINIT" "preinit.plo.yaml"
 b_set_default_path "PLO_SCRIPT_USER" "user.plo.yaml"
+
+PORTS_CONFIG="${PREFIX_PROJECT}/_targets/${TARGET_FAMILY}/${TARGET_SUBFAMILY}/ports.yaml"
+
+if [ -e "${PROJ_PATH}" ]; then
+  PORTS_CONFIG="${PORTS_CONFIG}:${PREFIX_PROJECT}/${PROJ_PATH}/ports.yaml"
+fi
 
 
 b_le32hex() {
