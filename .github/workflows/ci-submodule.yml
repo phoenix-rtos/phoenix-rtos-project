@@ -423,7 +423,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
+        target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo', 'armv8m33-mcxn94x-frdm', 'armv8m33-mcxn94x-frdm_cpu1']
 
     steps:
       - name: Checkout phoenix-rtos-project
