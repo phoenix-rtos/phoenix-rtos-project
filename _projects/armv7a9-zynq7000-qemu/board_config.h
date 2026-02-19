@@ -168,6 +168,6 @@
 #define GPIO1_21 -1
 
 /* Trace configuration */
-#define TRACE_EVENT_CHANNEL_BUFSIZE (1 << 20) /* 1 MB */
+#define TRACE_EVENT_CHANNEL_BUFSIZE (1UL << 20) /* 1 MB */
 
 #endif
