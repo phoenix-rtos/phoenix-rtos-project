@@ -1,0 +1,18 @@
+tests: True
+ports:
+  - name: vsx_phoenix
+    tests: True
+  - name: lighttpd
+  - name: lua
+    use: [safe]
+  - name: busybox
+    tests: True
+  - name: mbedtls
+    tests: True
+  - name: curl
+  - name: sscep
+  - name: dropbear
+  - name: openvpn
+  - name: wpa_supplicant
+  - name: lighttpd
+  - name: azure_sdk

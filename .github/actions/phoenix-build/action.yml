@@ -37,7 +37,7 @@ runs:
   - name: Run phoenix-build container
     shell: bash
     run: |
-      IMAGE="ghcr.io/phoenix-rtos/build:${{ inputs.image-tag }}"
+      IMAGE="ghcr.io/adamgreloch/build:${{ inputs.image-tag }}"
       echo "Using Docker image: $IMAGE"
 
       # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
@@ -56,6 +56,7 @@ runs:
         -e RUNNER_TEMP \
         -e CONSOLE=serial \
         -e DEBUG=1 \
+        -e RAW_LOG=1 \
         -e TARGET="${{ inputs.target }}" \
         -e CI_CUSTOM_BUILDROOT="${{ inputs.buildroot }}" \
         -e LONG_TEST="${{ inputs.nightly == 'true' && 'y' || 'n' }}" \
