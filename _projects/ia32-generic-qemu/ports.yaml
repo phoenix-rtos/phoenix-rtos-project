@@ -1,0 +1,4 @@
+ports:
+  - name: mbedtls
+  - name: coremark_pro
+    if: '{{ env.LONG_TEST | default(false) }}'

@@ -11,13 +11,6 @@
 export PLO_DEVICES="ram-storage uart-16550"
 export RISCV_ISA_STRING="rv64gch_zicbom_zicboz_zicntr_zihintntl_zihintpause_zihpm_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_sstc"
 
-#
-# Ports configuration - additional to the one from _targets
-#
-if [ "$LONG_TEST" = "y" ]; then
-	export PORTS_COREMARK_PRO=y
-fi
-
 b_image_project () {
 	b_log "Adding PLO to Phoenix SBI"
 	# WARN: the plo embedded in SBI is being run, not the one in loader.disk
