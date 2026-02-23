@@ -1,0 +1,12 @@
+tests: '{{ env.LONG_TEST | default(false) }}'
+ports:
+  - name: busybox
+    tests: True
+  - name: curl
+  - name: dropbear
+  - name: jansson
+  - name: lighttpd
+  - name: lzo
+  - name: openssl
+  - name: openvpn
+  - name: pcre
