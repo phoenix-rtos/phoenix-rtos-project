@@ -1,0 +1,7 @@
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: '{{ nvm.flash0.kernel.offs - nvm.flash0.user.offs }}'
+is_relative: True
+
+contents:
+  - wait 1000
+  - stop Hello World!
