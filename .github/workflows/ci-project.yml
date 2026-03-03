@@ -101,7 +101,7 @@ jobs:
     name: test EMU
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         target: ['armv7a9-zynq7000-qemu', 'host-generic-pc', 'ia32-generic-qemu', 'riscv64-generic-qemu', 'sparcv8leon-generic-qemu', 'aarch64a53-zynqmp-qemu', 'armv7r5f-zynqmp-qemu']
 
@@ -180,7 +180,7 @@ jobs:
     name: test HW
     runs-on: ${{ matrix.target }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         target: ['armv7a7-imx6ull-evk', 'armv7m7-imxrt106x-evk', 'armv7m7-imxrt117x-evk', 'armv7a9-zynq7000-zedboard', 'armv7m4-stm32l4x6-nucleo']
 

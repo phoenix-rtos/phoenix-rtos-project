@@ -1,0 +1,22 @@
+tests: '{{ env.LONG_TEST | default(false) }}'
+ports:
+  - name: azure_sdk
+    {% if env.LONG_TEST %}
+    use: [longtest]
+    tests: True
+    {% endif %}
+  - name: busybox
+    tests: True
+  - name: curl
+  - name: dropbear
+  - name: fs_mark
+  - name: lighttpd
+  - name: lzo
+  - name: micropython
+    use: {{ ["longtest"] if env.LONG_TEST }}
+    tests: True
+  - name: openvpn
+  - name: pcre
+  - name: sscep
+  - name: wpa_supplicant
+  - name: heatshrink
