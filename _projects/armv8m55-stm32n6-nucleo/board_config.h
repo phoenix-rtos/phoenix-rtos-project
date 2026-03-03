@@ -34,6 +34,10 @@
 #define UART_CONSOLE_KERNEL 1
 #define UART_CONSOLE_USER   1
 
+/* Trace configuration */
+#define TRACE_EVENT_CHANNEL_BUFSIZE (256 << 10) /* 256 kB */
+#define TRACE_META_CHANNEL_BUFSIZE  (256 << 10) /* 256 kB */
+
 /*
  * libpseudodev and libposixsrv shall be used exclusively, libpseudodev uses
  * less resources, but libposixsrv provides POSIX support and may be resource
