@@ -1,6 +1,10 @@
 flash0:
-  # internal flash - 2 banks 512 KB - assume the target image can't exceed one bank
-  size: 0x80000 # 512 KB
+  # internal flash - assume the target image can't exceed one bank
+  # size: 0x20000 # 128 KB on STM32U335xx / STM32U345xx
+  # size: 0x40000 # 256 KB on STM32U356xx / STM32U366xx
+  size: 0x80000 # 512 KB on STM32U375xx / STM32U385xx
+  # size: 0xC0000 # 768 KB on STM32U396xx / STM32U3A6xx
+  # size: 0x100000 # 1 MB on STM32U3B5xx / STM32U3C5xx
   block_size: 0x100 # program page size
   padding_byte: 0xff
   partitions:
