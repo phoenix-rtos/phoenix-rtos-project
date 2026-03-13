@@ -11,8 +11,6 @@
 
 export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
-#export PORTS_BUSYBOX=y
-
 #
 # Default platform dependent parameters
 #
