@@ -2,3 +2,6 @@ ports:
   - name: mbedtls
   - name: coremark_pro
     if: '{{ env.LONG_TEST | default(false) }}'
+  - name: vsx_phoenix
+    if: '{{ env.LONG_TEST | default(false) }}'
+    tests: true
