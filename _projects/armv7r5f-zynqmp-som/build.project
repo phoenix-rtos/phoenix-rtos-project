@@ -14,5 +14,8 @@ export FS_WRITE_CLEANMARKERS=y
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
 b_image_project () {
+	cp "${PROJECT_PATH}/xilinx_zynqmp.cfg" "${PREFIX_BOOT}/"
+	b_log "Copied openocd.cfg to _boot/${TARGET}"
+
 	b_log "The images have been built for the ${TARGET} platform"
 }
