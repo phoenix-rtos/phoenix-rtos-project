@@ -41,9 +41,8 @@ export KERNEL_DATA_PHADDR
 
 
 b_build_project() {
-	b_log "User applications skipped on STM32U3"
-	# b_log "Building user applications"
-	# make -C "_user" all install
+	b_log "Building user applications"
+	make -C "_user" all install
 }
 
 
@@ -56,10 +55,9 @@ b_build_target() {
 
 	make -C plo all
 
-	b_log "Kernel skipped on STM32U3"
-	# b_log "Creating kernel binary image"
-	# KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
-	# ${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_ELF/.elf/.bin}"
+	b_log "Creating kernel binary image"
+	KERNEL_ELF="phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
+	${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_ELF/.elf/.bin}"
 
 	# Copy plo.elf with symbols to provide loading plo using gdb
 	cp "${PREFIX_PROG}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf" "$PREFIX_BOOT/plo.elf"
@@ -73,7 +71,6 @@ b_image_target() {
 }
 
 b_test_target() {
-	b_log "Tests skipped on STM32U3"
-	# b_log "Build and install tests in the phoenix-rtos filesystem"
-	# make -C "phoenix-rtos-tests" all install
+	b_log "Build and install tests in the phoenix-rtos filesystem"
+	make -C "phoenix-rtos-tests" all install
 }
