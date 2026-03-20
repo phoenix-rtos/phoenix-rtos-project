@@ -1,0 +1,17 @@
+flash0:
+  # internal flash - assume the target image can't exceed one bank
+  # refer to _targets/armv8m33/stm32u3/nvm.yaml for other sizes
+  size: 0x100000 # 1 MB on STM32U3B5xx / STM32U3C5xx
+  block_size: 0x100 # program page size
+  padding_byte: 0xff
+  partitions:
+    - name: plo
+      offs: 0x0
+    - name: user
+      offs: 0xc800
+      # if size not set - last non-virtual partition will be extnded to the end of flash
+
+    # virtual offset [user.offs] + [user.script.size]
+    - name: kernel
+      offs: 0xd000
+      virtual: True
