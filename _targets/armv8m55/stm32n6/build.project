@@ -87,6 +87,12 @@ b_build_target() {
 
 
 b_image_target() {
+	image_builder.py -v ptable --nvm "$NVM_CONFIG"
+	local erase_sz=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0._meta.block_size }}')
+	local fs_sz=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.storage.size }}')
+	local storage_img="$PREFIX_BOOT/part_storage.img"
+	local storage_dir="$PREFIX_ROOTFS/mnt/storage/"
+	littlefs-image-create.py -t -S -s $fs_sz -b $erase_sz -i 4 -o $storage_img $storage_dir
 	image_builder.py -v partition --nvm "$NVM_CONFIG" --name user --script "$PLO_SCRIPT_USER"
 	# STM32_Programmer_CLI requires the binary to have ".bin" file extension,
 	# otherwise it will not be recognized as a flat binary file
