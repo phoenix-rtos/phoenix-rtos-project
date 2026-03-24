@@ -59,6 +59,9 @@ b_build_target() {
 	if [ -f "${PROJECT_PATH}/bitstream.bin" ]; then
 		cp "${PROJECT_PATH}/bitstream.bin" "${PREFIX_BOOT}/part_bitstr.img"
 	fi
+
+	b_log "Copying OpenOCD configuration"
+	cp "_targets/${TARGET_FAMILY}/${TARGET_SUBFAMILY}/xilinx_zynqmp.cfg" "${PREFIX_BOOT}/"
 }
 
 
