@@ -9,6 +9,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x imxrt-multi xip1 ocram2;aips14;aips5
   - app {{ env.BOOT_DEVICE }} -x psh xip1 ocram2
   - app {{ env.BOOT_DEVICE }} imxrt-flash ocram2 ocram2;aips14
-  - app {{ env.BOOT_DEVICE }} -xn lwip;enet:0x402D8000:130:PHY:ksz8081rnb:0.2:irq:-10:/dev/gpio1:reset:-9:/dev/gpio1 xip1 dtcm;aips14
+  - part lwip -m dtcm;dtcm2 xip1;aips14 0 0
+  - app {{ env.BOOT_DEVICE }} -xn lwip;enet:0x402D8000:130:PHY:ksz8081rnb:0.2:irq:-10:/dev/gpio1:reset:-9:/dev/gpio1 xip1 dtcm lwip
   - wait 2000
   - go!
