@@ -1,8 +1,8 @@
 ports:
   - name: mbedtls
-    tests: '{{ env.LONG_TEST | default(false) }}'
+    tests: '{{ bool(env.LONG_TEST) }}'
   - name: coremark_pro
-    if: '{{ env.LONG_TEST | default(false) }}'
+    if: '{{ bool(env.LONG_TEST) }}'
   - name: vsx_phoenix
-    if: '{{ env.LONG_TEST | default(false) }}'
+    if: '{{ bool(env.LONG_TEST) }}'
     tests: true

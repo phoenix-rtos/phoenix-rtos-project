@@ -1,4 +1,4 @@
-tests: '{{ env.LONG_TEST | default(false) }}'
+tests: '{{ bool(env.LONG_TEST) }}'
 ports:
   - name: busybox
     tests: true
