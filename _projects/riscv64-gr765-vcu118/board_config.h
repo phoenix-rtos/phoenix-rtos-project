@@ -109,4 +109,23 @@
 #define SPWRTR4_ACTIVE 0
 #define SPWRTR5_ACTIVE 0
 
+
+/* NAND configuration */
+
+#define NANDFCTRL2_BASE ((void *)0xff520000)
+
+#define NAND_DIE_CNT 4
+
+/* NAND mapping table:
+ * { CE Mask, R/~B Mask, Channel Mask }
+ * Dies 0, 1 on Channel 0, Dies 2, 3 on Channel 1.
+ */
+#define NAND_DIE_MAP { \
+	{ (1U << 0), (1U << 0), (1U << 0) }, \
+	{ (1U << 1), (1U << 1), (1U << 0) }, \
+	{ (1U << 2), (1U << 2), (1U << 1) }, \
+	{ (1U << 3), (1U << 3), (1U << 1) }, \
+}
+
+
 #endif

@@ -1,9 +1,39 @@
 flash0:
-  size: 0x10000000 # 8 MB
-  block_size: 0x100 # program page size
+  size: 0x20000000 # 512 MB
+  block_size: 0x40000
   padding_byte: 0x00
   partitions:
     - name: plo
       offs: 0x0
-      size: 0x40000
     - name: kernel
+      offs: 0x40000
+    - name: rootfs
+      offs: 0x100000
+      size: 0x600000
+      type: jffs2
+    - name: ptable
+      offs: 0x1ffc0000
+
+flash1:
+  size: 0x20000000
+  block_size: 0x40000
+  padding_byte: 0x00
+  partitions:
+    - name: ptable
+      offs: 0x1ffc0000
+
+flash2:
+  size: 0x20000000
+  block_size: 0x40000
+  padding_byte: 0x00
+  partitions:
+    - name: ptable
+      offs: 0x1ffc0000
+
+flash3:
+  size: 0x20000000
+  block_size: 0x40000
+  padding_byte: 0x00
+  partitions:
+    - name: ptable
+      offs: 0x1ffc0000
