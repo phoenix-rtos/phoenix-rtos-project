@@ -1,3 +1,6 @@
 ports:
   - name: coremark_pro
     if: '{{ env.LONG_TEST | default(false) }}'
+  - name: micropython
+    if: '{{ env.LONG_TEST | default(false) }}'
+    tests: True
