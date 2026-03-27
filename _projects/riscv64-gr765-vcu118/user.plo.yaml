@@ -6,7 +6,8 @@ is_relative: True
 contents:
   - wait 500
   - kernel {{ env.BOOT_DEVICE }}
-  - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
   - app {{ env.BOOT_DEVICE }} -x grlib-uart ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x grlib-nandfctrl2;-p;0:0x4:0x18:rootfs;-r;0:rootfs:jffs2 ddr ddr
   - go!
