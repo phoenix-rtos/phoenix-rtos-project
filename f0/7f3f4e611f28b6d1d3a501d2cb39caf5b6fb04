@@ -1,0 +1,25 @@
+.github/workflows/ci-project.yml
+  dc9ac620fe94dcf5 133-135,212-213
+.github/workflows/_send_google_chat.yml
+  dc9ac620fe94dcf5 23-81,83,85-94,96-140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.23",
+  "base_commit_sha": "f07f3f4e611f28b6d1d3a501d2cb39caf5b6fb04",
+  "prompts": {
+    "dc9ac620fe94dcf5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f5147a74-d0a7-4730-b183-6e266d4a60fe",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 120,
+      "overriden_lines": 0
+    }
+  }
+}
