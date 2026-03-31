@@ -130,6 +130,9 @@ jobs:
       - name: Add sanitizers problem matcher
         run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
 
+      - name: Add test runner problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/test-runner.json"
+
       - name: Test runner
         id: runner
         uses: ./.github/actions/phoenix-runner
@@ -205,6 +208,9 @@ jobs:
       - name: Untar boot
         working-directory: _boot
         run: tar -xvf ../boot-${{ matrix.target }}.tar
+
+      - name: Add test runner problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/test-runner.json"
 
       - name: Test runner
         id: runner
