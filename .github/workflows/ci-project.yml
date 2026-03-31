@@ -260,7 +260,10 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          check_name: Unit Test Results
+          check_name: >-
+            ${{ inputs.nightly && 'Unit Test Results (nightly)'
+                || github.event_name == 'schedule' && 'Unit Test Results (nightly-quick)'
+                || 'Unit Test Results' }}
           files: "junit.xml"
 
 
