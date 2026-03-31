@@ -1,0 +1,15 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "phoenix-test-runner",
+            "severity": "error",
+            "pattern": [
+                {
+                    "__comment": "Matches test result lines from phoenix-rtos-tests runner, with or without ANSI color codes",
+                    "regexp": "^(?:\\u001b\\[[0-9;]*m)?(\\S+?)(?:\\u001b\\[[0-9;]*m)?:\\s*(?:\\u001b\\[[0-9;]*m)?FAIL(?:\\u001b\\[[0-9;]*m)?\\s*$",
+                    "message": 1
+                }
+            ]
+        }
+    ]
+}
