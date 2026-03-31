@@ -132,7 +132,7 @@ jobs:
     steps:
       # step 1 : checkout submodule
       - name: Checkout submodule
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -187,7 +187,7 @@ jobs:
 
       # step 5: upload project boot directory and tarball of rootfs as build artifacts
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: phoenix-rtos-${{ matrix.target }}
           path: |
@@ -196,7 +196,7 @@ jobs:
 
       - name: Upload compilation database artifacts
         if: ${{ inputs.cpptest_enabled && contains(inputs.cpptest_targets, matrix.target) }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: compile-db-artifacts-${{ matrix.target }}
           retention-days: 1 # only to pass between jobs
@@ -236,7 +236,7 @@ jobs:
 
     steps:
       - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
@@ -275,7 +275,7 @@ jobs:
       - name: Restore cpptest cache
         if: steps.should-analyze.outputs.run == 'true'
         id: cpptest-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .cpptest
           key: cpptest-${{ github.event.repository.name }}-${{ matrix.target }}-${{ github.sha }}
@@ -284,7 +284,7 @@ jobs:
 
       - name: Download compile db artifacts
         if: steps.should-analyze.outputs.run == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: compile-db-artifacts-${{ matrix.target }}
           path: _build/${{ matrix.target }}
@@ -316,7 +316,7 @@ jobs:
       # Skipped when exact cache key already exists (re-run of same commit).
       - name: Save cpptest cache
         if: "!cancelled() && steps.should-analyze.outputs.run == 'true' && steps.cpptest-cache.outputs.cache-hit != 'true'"
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .cpptest
           key: cpptest-${{ github.event.repository.name }}-${{ matrix.target }}-${{ github.sha }}
@@ -330,7 +330,7 @@ jobs:
 
       - name: "Upload cpptest results"
         if: "!cancelled() && steps.should-analyze.outputs.run == 'true'"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: reports/*
           name: cpptest-reports-${{ matrix.target }}
@@ -348,7 +348,7 @@ jobs:
 
     steps:
       - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
@@ -358,7 +358,7 @@ jobs:
         uses: ./.github/actions/resolve-submodule-deps
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: phoenix-rtos-${{ matrix.target }}
 
@@ -402,7 +402,7 @@ jobs:
 
       - name: Upload resulting traces
         if: matrix.target == 'ia32-generic-qemu' || matrix.target == 'riscv64-generic-qemu'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trace-${{ matrix.target }}
           path: |
@@ -410,7 +410,7 @@ jobs:
 
       - name: Upload runner results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.target }}
           path: |
@@ -430,7 +430,7 @@ jobs:
 
     steps:
       - name: Checkout phoenix-rtos-project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: phoenix-rtos/phoenix-rtos-project
           submodules: recursive
@@ -440,7 +440,7 @@ jobs:
         uses: ./.github/actions/resolve-submodule-deps
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: phoenix-rtos-${{ matrix.target }}
 
@@ -458,7 +458,7 @@ jobs:
 
       - name: Upload runner results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.target }}
           path: |
@@ -472,7 +472,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
           pattern: test-results-*
@@ -489,7 +489,7 @@ jobs:
           PIP_BREAK_SYSTEM_PACKAGES: 1  # NOTE: we're running on emphemeral GH VMs, install packages globally
 
       - name: Upload Merged Unit Test Results in HTML
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Merged Unit Test Results
           if-no-files-found: ignore
