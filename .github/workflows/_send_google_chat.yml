@@ -5,73 +5,157 @@ name: send-notif
 # on events
 on:
   workflow_call:
+  workflow_dispatch:  # allow manual trigger for testing
 
 jobs:
   send-notif:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Debug details
+    - name: Collect failed jobs
+      id: failed-jobs
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
-          echo "Workflow name: ${{ github.workflow }}"
-          echo "Event name: ${{ github.event_name }}"
-          echo "Repo: ${{ github.repository	}}"
-          echo "Repo URL: ${{ github.repositoryUrl }}"
-          echo "Repo URL: ${{ github.server_url }}/${{ github.repository }}"
-          echo "Actions URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          FAILED_JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+            --paginate --jq '[.jobs[] | select(.conclusion == "failure") | {name: .name, url: .html_url}]' \
+            2>/dev/null | jq -s 'add // []') || FAILED_JOBS="[]"
+
+          echo "::group::Failed jobs JSON"
+          echo "$FAILED_JOBS" | jq .
+          echo "::endgroup::"
+
+          COUNT=$(echo "$FAILED_JOBS" | jq 'length')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+          # Build HTML bullet list — bold the target name in parentheses
+          echo "$FAILED_JOBS" | jq -r '.[] | "• " + (.name | gsub("\\((?<t>[^)]+)\\)"; "(<b>\(.t)</b>)"))' > /tmp/failed_jobs.txt
+
+          echo "::group::Failed jobs text"
+          cat /tmp/failed_jobs.txt
+          echo "::endgroup::"
+
+    - name: Download test results
+      id: download-results
+      uses: actions/download-artifact@v8
+      with:
+        name: Merged Unit Test Results
+        path: /tmp/results
+      continue-on-error: true
+
+    - name: Parse failed tests
+      id: failed-tests
+      if: steps.download-results.outcome == 'success'
+      run: |
+          echo "::group::Downloaded files"
+          ls -la /tmp/results/
+          echo "::endgroup::"
+
+          pip3 -q install junitparser
+          python3 << 'PYEOF' > /tmp/failed_tests.txt
+          import junitparser
+
+          xml = junitparser.JUnitXml.fromfile("/tmp/results/junit.xml")
+          failures = []
+          for suite in xml:
+              for case in suite:
+                  if case.result and any(isinstance(r, junitparser.Failure) for r in case.result):
+                      failures.append(case.name)
+          for name in failures[:20]:
+              # Format TARGET:TEST_PATH — bold the target for visual distinction
+              if ':' in name:
+                  target, test = name.split(':', 1)
+                  print(f"• <b>{target}</b>: {test}")
+              else:
+                  print(f"• {name}")
+          if len(failures) > 20:
+              print(f"  ... and {len(failures) - 20} more")
+          PYEOF
+
+          COUNT=$(wc -l < /tmp/failed_tests.txt)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+          echo "::group::Failed tests"
+          cat /tmp/failed_tests.txt
+          echo "::endgroup::"
+      env:
+        PIP_BREAK_SYSTEM_PACKAGES: 1
 
     - name: Send Google Chat Notification
+      env:
+        WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_CI_WEBHOOK }}
       run: |
-          curl --fail --location --request POST '${{ secrets.GOOGLE_CHAT_CI_WEBHOOK }}' \
-          --header 'Content-Type: application/json' \
-          --data-raw '{
-                          "cards": [
-                              {
-                                  "sections": [
-                                      {
-                                          "widgets": [
-                                              {
-                                                  "textParagraph": {
-                                                      "text": "Workflow '\''<b>${{ github.workflow }}</b>'\'' <b><font color='\''#ff0000'\''>FAILED</font></b>"
-                                                  }
-                                              }
-                                          ]
-                                      },
-                                      {
-                                          "widgets": [
-                                              {
-                                                  "keyValue": {
-                                                      "topLabel": "Repo",
-                                                      "content": "${{ github.repository }}",
-                                                      "iconUrl": "https://git-scm.com/images/logos/logomark-black@2x.png"
-                                                  }
-                                              },
-                                              {
-                                                  "keyValue": {
-                                                      "topLabel": "Event",
-                                                      "icon": "TICKET",
-                                                      "content": "${{ github.event_name }}"
-                                                  }
-                                              },
-                                              {
-                                                  "buttons": [
-                                                      {
-                                                          "textButton": {
-                                                              "text": "OPEN FAILED RUN",
-                                                              "onClick": {
-                                                                  "openLink": {
-                                                                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                                                                  }
-                                                              }
-                                                          }
-                                                      }
-                                                  ]
-                                              }
-                                          ]
-                                      }
-                                  ]
-                              }
-                          ]
-                      }'
+          FAILED_JOBS=$(cat /tmp/failed_jobs.txt 2>/dev/null || true)
+          FAILED_TESTS=$(cat /tmp/failed_tests.txt 2>/dev/null || true)
 
+          # Build the base sections array
+          BASE_SECTIONS=$(jq -n \
+            --arg workflow "${{ github.workflow }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg event "${{ github.event_name }}" \
+            --arg run_url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            '[
+              {
+                widgets: [{
+                  textParagraph: {
+                    text: ("Workflow \u0027<b>" + $workflow + "</b>\u0027 <b><font color=\u0027#ff0000\u0027>FAILED</font></b>")
+                  }
+                }]
+              },
+              {
+                widgets: [
+                  {
+                    keyValue: {
+                      topLabel: "Repo",
+                      content: $repo,
+                      iconUrl: "https://git-scm.com/images/logos/logomark-black@2x.png"
+                    }
+                  },
+                  {
+                    keyValue: {
+                      topLabel: "Event",
+                      icon: "TICKET",
+                      content: $event
+                    }
+                  },
+                  {
+                    buttons: [{
+                      textButton: {
+                        text: "OPEN FAILED RUN",
+                        onClick: {
+                          openLink: {
+                            url: $run_url
+                          }
+                        }
+                      }
+                    }]
+                  }
+                ]
+              }
+            ]')
+
+          # Append failed jobs as a separate section (sections get auto-dividers)
+          if [ -n "$FAILED_JOBS" ]; then
+            JOBS_HTML=$(printf '<b>Failed jobs:</b>\n%s' "$FAILED_JOBS")
+            BASE_SECTIONS=$(echo "$BASE_SECTIONS" | jq --arg text "$JOBS_HTML" \
+              '. + [{"widgets": [{"textParagraph": {"text": $text}}]}]')
+          fi
+
+          # Append failed tests as a separate section
+          if [ -n "$FAILED_TESTS" ]; then
+            TESTS_HTML=$(printf '<b>Failed tests:</b>\n%s' "$FAILED_TESTS")
+            BASE_SECTIONS=$(echo "$BASE_SECTIONS" | jq --arg text "$TESTS_HTML" \
+              '. + [{"widgets": [{"textParagraph": {"text": $text}}]}]')
+          fi
+
+          # Wrap into cards payload
+          PAYLOAD=$(echo "$BASE_SECTIONS" | jq '{cards: [{sections: .}]}')
+
+          echo "::group::Payload"
+          echo "$PAYLOAD" | jq .
+          echo "::endgroup::"
+
+          curl --fail --location --request POST "$WEBHOOK_URL" \
+            --header 'Content-Type: application/json' \
+            --data "$PAYLOAD"
 
