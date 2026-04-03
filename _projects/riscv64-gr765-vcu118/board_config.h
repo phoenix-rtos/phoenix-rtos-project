@@ -109,6 +109,8 @@
 #define SPWRTR4_ACTIVE 0
 #define SPWRTR5_ACTIVE 0
 
+#define SPWRTR_SPW_CNT  2
+#define SPWRTR_AMBA_CNT 2
 
 /* NAND configuration */
 
