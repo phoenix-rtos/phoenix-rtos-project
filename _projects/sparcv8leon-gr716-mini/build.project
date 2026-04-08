@@ -8,7 +8,7 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
-export PLO_DEVICES="gpio-gr716 uart-grlib flash-gr716"
+export PLO_DEVICES="gpio-gr716 uart-grlib flash-spimctrl"
 
 prepare_plo_img() {
 	#FIXME: img file already produced by the plo make, change the output filename
