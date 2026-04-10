@@ -1,9 +1,16 @@
 flash0:
   size: 0x4000000 # 64 MB
-  block_size: 0x10000 # program page size
+  # Erase sector size used by storage drivers on this platform (4 KB)
+  block_size: 0x1000
   padding_byte: 0xff
+  # Add 16 ptable blocks (16 * `block_size` == 64 KB) to align partition table with
+  # erase sector size used by STM32Programmer_CLI
+  ptable_blocks: 16
   partitions:
     - name: plo
       offs: 0x0
     - name: user
       offs: 0x10000
+    - name: storage
+      offs: 0x100000
+      size: 0x200000 # 2 MB

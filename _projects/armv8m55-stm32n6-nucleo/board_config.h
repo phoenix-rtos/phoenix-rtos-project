@@ -22,6 +22,7 @@
 
 #define XSPI2           1
 #define XSPI2_CLOCK_DIV 1 /* 200 MHz */
+#define XSPI2_STORAGE   1
 
 #define VDDIO3_RANGE_MV 1800 /* XSPI port 2 - Flash */
 
