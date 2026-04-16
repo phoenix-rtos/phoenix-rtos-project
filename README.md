@@ -23,6 +23,12 @@ To launch the created image on target architecture please see [docs.phoenix-rtos
 
 Phoenix-RTOS philosophy, architecture and internals are described in [docs.phoenix-rtos.com](https://docs.phoenix-rtos.com).
 
+## Licenses
+
+`phoenix-rtos-project` is licensed under the BSD 3-Clause License.
+
+It includes configuration scripts for external utilities, which are included solely for convenience and constitute a mere aggregation and do not form an integral part of the Phoenix-RTOS codebase. As such, they do not affect the licensing of the core project. The licensing terms for these specific scripts are declared within the files themselves and are accompanied by their respective license files.
+
 ## Product website
 
 Phoenix-RTOS website: [phoenix-rtos.com](https://phoenix-rtos.com).
