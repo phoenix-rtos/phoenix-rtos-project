@@ -9,7 +9,7 @@ flash0:
       offs: 0x40000
     - name: rootfs
       offs: 0x400000
-      size: 0x400000
+      size: 0xc00000
       type: jffs2
     # provide empty virtual bitstr region for _target generic approach  to work
     - name: bitstr
