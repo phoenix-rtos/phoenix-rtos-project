@@ -6,7 +6,7 @@
 # Author: Lukasz Kosinski
 #
 
-exec qemu-system-i386 \
+exec qemu-system-i386 -s\
 	-cpu pentium3 \
 	-smp 1 \
 	-serial stdio \

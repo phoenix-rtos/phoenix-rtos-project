@@ -1,0 +1,11 @@
+# kernel + initrd
+magic: '{{ env.MAGIC_USER_SCRIPT }}'
+size: 0x1000
+is_relative: True
+
+contents:
+  - kernel {{ env.BOOT_DEVICE }}
+#  - app {{ env.BOOT_DEVICE }} -xn psh flash0 ram
+#  - app {{ env.BOOT_DEVICE }} -xn stm32l4-multi flash0 ram
+  - wait 1000
+#  - go!
