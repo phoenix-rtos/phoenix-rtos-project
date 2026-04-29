@@ -116,7 +116,7 @@ jobs:
       - run: go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
       - run: |
-          git diff -z --name-only --ignore-submodules=all HEAD^ -- '*.sh' '*.project' '*.subr' | xargs -0 -r shfmt -i 0 -w
+          git diff -z --name-only --ignore-submodules=all --diff-filter=d HEAD^ -- '*.sh' '*.project' '*.subr' | xargs -0 -r shfmt -i 0 -w
 
       - uses: reviewdog/action-suggester@v1
         with:
