@@ -56,6 +56,9 @@ jobs:
         include:
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
+          - target: 'ia32-generic-qemu'
+            build_all_ports: 'true'
+
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -76,6 +79,7 @@ jobs:
           target: ${{ matrix.target }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
+          build_all_ports: ${{ matrix.build_all_ports == 'true' && 'true' || 'false' }}
 
       # step 3: tar rootfs
       - name: Tar rootfs
