@@ -39,8 +39,8 @@
 /* UART configuration */
 #define UART0_BAUDRATE 115200
 
-#define UART0_RX 42
-#define UART0_TX 43
+#define UART0_RX 14
+#define UART0_TX 15
 #define UART1_RX 33
 #define UART1_TX 32
 
@@ -74,6 +74,8 @@
 #define QSPI_IO0  4
 #define QSPI_CS   5
 #define QSPI_FCLK 6
+
+#define QSPI_SCLK_DIV 1
 
 /* SD card configuration */
 #define SD_CARD_CLK -1
