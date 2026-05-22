@@ -15,7 +15,7 @@ export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 
 export PORTS_BUSYBOX=y
 export PORTS_COREMARK=n
-export PORTS_COREMARK_PRO=n
+export PORTS_COREMARK_PRO=y
 
 #
 # Default platform dependent parameters

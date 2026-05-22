@@ -10,6 +10,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
   - app {{ env.BOOT_DEVICE }} -x zynq-i2c;0 ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
+  - app {{ env.BOOT_DEVICE }} rh_msg_latency ddr ddr
   - if: True
     name: app
     device: '{{ env.BOOT_DEVICE }}'
