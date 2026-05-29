@@ -38,10 +38,14 @@ b_set_default_path "NVM_CONFIG" "nvm.yaml"
 b_set_default_path "PLO_SCRIPT_PREINIT" "preinit.plo.yaml"
 b_set_default_path "PLO_SCRIPT_USER" "user.plo.yaml"
 
-PORTS_CONFIG="${PREFIX_PROJECT}/_targets/${TARGET_FAMILY}/${TARGET_SUBFAMILY}/ports.yaml"
+if [ -f "${PREFIX_PROJECT}/ports.yaml" ]; then
+  PORTS_CONFIG="${PREFIX_PROJECT}/ports.yaml"
+else
+  PORTS_CONFIG="${PREFIX_PROJECT}/_targets/${TARGET_FAMILY}/${TARGET_SUBFAMILY}/ports.yaml"
 
-if [ -e "${PROJECT_PATH}" ]; then
-  PORTS_CONFIG="${PORTS_CONFIG}:${PROJECT_PATH}/ports.yaml"
+  if [ -e "${PROJECT_PATH}" ]; then
+    PORTS_CONFIG="${PORTS_CONFIG}:${PROJECT_PATH}/ports.yaml"
+  fi
 fi
 
 
