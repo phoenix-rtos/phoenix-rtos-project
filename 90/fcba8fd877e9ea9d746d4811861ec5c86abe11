@@ -1,0 +1,12 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "90fcba8fd877e9ea9d746d4811861ec5c86abe11",
+  "prompts": {},
+  "humans": {
+    "h_fc26ad17182140": {
+      "author": "Lukasz Leczkowski <lukasz.leczkowski@phoenix-rtos.com>"
+    }
+  }
+}
