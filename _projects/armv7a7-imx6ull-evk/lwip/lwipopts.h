@@ -23,11 +23,11 @@
 #define LWIP_DNS_API_DECLARE_STRUCTS 0
 #define LWIP_DNS_API_DECLARE_H_ERRNO 0
 #define MEMP_NUM_NETCONN             1024
-#define PPP_SUPPORT                  0
-#define PPPOS_SUPPORT                0
-#define PAP_SUPPORT                  0
-#define CHAP_SUPPORT                 0
-#define MSCHAP_SUPPORT               0
+#define PPP_SUPPORT                  1
+#define PPPOS_SUPPORT                1
+#define PAP_SUPPORT                  1
+#define CHAP_SUPPORT                 1
+#define MSCHAP_SUPPORT               1
 #define LWIP_TIMEVAL_PRIVATE         0
 
 #if 0  // debugging LWiP PPPoS
