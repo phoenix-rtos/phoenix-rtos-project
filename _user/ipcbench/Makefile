@@ -14,6 +14,10 @@ ifneq ($(IPCBENCH_NO_RR),)
 LOCAL_CFLAGS := -DIPCBENCH_NO_RR
 endif
 
+ifneq ($(IPCBENCH_NO_EXT_BUF),)
+LOCAL_CFLAGS := -DIPCBENCH_NO_EXT_BUF
+endif
+
 LOCAL_CFLAGS += -Wno-error
 
 include $(binary.mk)

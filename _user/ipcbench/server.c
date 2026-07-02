@@ -74,7 +74,7 @@ static void echo_loop(uint32_t port, int use_rr)
 		}
 
 		if (err < 0) {
-			exit(0);
+			exit(0); /* FIXME? */
 		}
 
 		/* Minimal work: just acknowledge the message */
@@ -110,6 +110,11 @@ pid_t server_spawn_echo(const char *dev_path, int use_respond_and_recv, int prio
 			_exit(3);
 		}
 		priority(prio);
+#ifndef IPCBENCH_NO_EXT_BUF
+		if (msgSetup(2 * _PAGE_SIZE) < 0) {
+			_exit(4);
+		}
+#endif
 		echo_loop(port, use_respond_and_recv);
 		_exit(0);
 	}
@@ -141,6 +146,13 @@ pid_t server_spawn_forwarder(const char *dev_path, uint32_t backend_port)
 		if (setup_port(dev_path, &port) < 0) {
 			_exit(3);
 		}
+
+#ifndef IPCBENCH_NO_EXT_BUF
+		/* TODO: make this a benchmark parameter */
+		if (msgSetup(2 * _PAGE_SIZE) < 0) {
+			_exit(4);
+		}
+#endif
 
 		for (;;) {
 			if (msgRecv(port, &msg, &rid) < 0) {

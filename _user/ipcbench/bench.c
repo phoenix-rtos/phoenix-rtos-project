@@ -252,7 +252,20 @@ static int bench_raw_ipc(int depth, size_t payload_sz, int iterations, int use_r
 	}
 
 	if (payload_sz > 0) {
-		buf = malloc(payload_sz);
+#ifndef IPCBENCH_NO_EXT_BUF
+		if (payload_sz <= 2 * _PAGE_SIZE) {
+			buf = msgSetup(2 * _PAGE_SIZE);
+			if (buf == NULL) {
+				fprintf(stderr, "  ERROR: msgSetup failed\n");
+			}
+		}
+		else {
+#endif
+			buf = malloc(payload_sz);
+#ifndef IPCBENCH_NO_EXT_BUF
+		}
+#endif
+
 		if (buf == NULL) {
 			kill_chain(pids, npids);
 			return -1;
@@ -308,7 +321,10 @@ static int bench_raw_ipc(int depth, size_t payload_sz, int iterations, int use_r
 			dir_str, depth, payload_sz, use_rr);
 	report(label, iterations, end - start);
 
-	free(buf);
+#ifndef IPCBENCH_NO_EXT_BUF
+	if (payload_sz > 2 * _PAGE_SIZE)
+#endif
+		free(buf);
 	kill_chain(pids, npids);
 
 	return 0;
@@ -642,7 +658,6 @@ static int bench_portregister_unregister(int iterations)
 
 
 struct raw_bench_spec {
-	int depth;
 	size_t payload;
 	int iterations;
 	int use_rr;
@@ -650,52 +665,86 @@ struct raw_bench_spec {
 };
 
 
+static const int raw_depths[] = { 1, 3 };
+
+
 static const struct raw_bench_spec raw_specs[] = {
 /* Zero payload (no buffers mapped, pure IPC overhead) */
 #if 1
-	{ 1, 0, 1000, 0, 0 },
+	{ 0, 1000, 0, 0 },
+	{ 0, 500, 0, 0 },
 #ifndef IPCBENCH_NO_RR
-	{ 1, 0, 1000, 1, 0 },
+	{ 0, 1000, 1, 0 },
+	{ 0, 500, 1, 0 },
 #endif
-	{ 2, 0, 500, 0, 0 },
-	{ 3, 0, 500, 0, 0 },
-	{ 5, 0, 200, 0, 0 },
 
 	/* Small payload read direction (64 bytes, single buffer map) */
-	{ 1, 64, 1000, 0, 0 },
+	{ 64, 1000, 0, 0 },
+	{ 64, 500, 0, 0 },
 #ifndef IPCBENCH_NO_RR
-	{ 1, 64, 1000, 1, 0 },
+	{ 64, 1000, 1, 0 },
+	{ 64, 500, 1, 0 },
 #endif
-	{ 2, 64, 500, 0, 0 },
-	{ 3, 64, 500, 0, 0 },
-	{ 5, 64, 200, 0, 0 },
 
 	/* Small payload write direction */
-	{ 1, 64, 1000, 0, 1 },
-
-	/* Large SHM payload read direction (4096 bytes) */
-	{ 1, 4096, 500, 0, 0 },
+	{ 64, 1000, 0, 1 },
+	{ 64, 500, 0, 1 },
 #ifndef IPCBENCH_NO_RR
-	{ 1, 4096, 500, 1, 0 },
+	{ 64, 1000, 1, 1 },
+	{ 64, 500, 1, 1 },
 #endif
-	{ 2, 4096, 200, 0, 0 },
-	{ 3, 4096, 200, 0, 0 },
-	{ 5, 4096, 100, 0, 0 },
+
+	/* Medium payload read direction */
+	{ 2048, 1000, 0, 0 },
+	{ 2048, 500, 0, 0 },
+#ifndef IPCBENCH_NO_RR
+	{ 2048, 1000, 1, 0 },
+	{ 2048, 500, 1, 0 },
+#endif
+
+	/* Medium payload write direction */
+	{ 2048, 1000, 0, 1 },
+	{ 2048, 500, 0, 1 },
+#ifndef IPCBENCH_NO_RR
+	{ 2048, 1000, 1, 1 },
+	{ 2048, 500, 1, 1 },
+#endif
+
+	/* Large (full-page) payload read direction */
+	/* TODO: stress the alignment */
+	{ 4096, 500, 0, 0 },
+	{ 4096, 200, 0, 0 },
+#ifndef IPCBENCH_NO_RR
+	{ 4096, 500, 1, 0 },
+	{ 4096, 200, 1, 0 },
+#endif
 
 	/* Large SHM payload write direction */
-	{ 1, 4096, 500, 0, 1 },
+	{ 4096, 1000, 0, 1 },
+	{ 4096, 500, 0, 1 },
+#ifndef IPCBENCH_NO_RR
+	{ 4096, 1000, 1, 1 },
+	{ 4096, 500, 1, 1 },
+#endif
 
 	/* Large SHM payload bidirectional (both buffers mapped) */
-	{ 1, 4096, 500, 0, 2 },
+	{ 4096, 500, 0, 2 },
+
+	/* Large+ (over-page) payload read/write/bidi */
+	{ 4096 + 8, 500, 0, 0 },
+	{ 4096 + 8, 1000, 0, 1 },
+	{ 4096 + 8, 500, 0, 2 },
 
 	/* Very large SHM payload (32KB) */
-	{ 1, 32768, 200, 0, 0 },
-	{ 1, 32768, 200, 0, 1 },
-	{ 1, 32768, 200, 0, 2 },
-	{ 2, 32768, 100, 0, 0 },
+	{ 32768, 200, 0, 0 },
+	{ 32768, 200, 0, 1 },
+	{ 32768, 200, 0, 2 },
+	{ 32768, 100, 0, 0 },
 #else
-	{ 1, 0, 1000, 0, 0 },
-	{ 1, 0, 1000, 1, 0 },
+	{ 64, 500, 0, 0 },
+	{ 64, 500, 1, 0 },
+	{ 2048, 500, 0, 0 },
+	{ 2048, 500, 1, 0 },
 #endif
 };
 
@@ -1017,7 +1066,7 @@ static int bench_rt_three_task(int iterations)
 
 	priority(RT_P_LOW);
 
-	report_latency("rt 3-task inversion (IPC+mutex+interferer)", samples, iterations);
+	report_latency("rt 3-task", samples, iterations);
 
 	free(samples);
 	server_kill(srv_pid);
@@ -1075,7 +1124,7 @@ static int bench_rt_three_task_baseline(int iterations)
 
 	priority(RT_P_LOW);
 
-	report_latency("rt 3-task baseline (no interferer)", samples, iterations);
+	report_latency("rt 3-task baseline", samples, iterations);
 
 	free(samples);
 	server_kill(srv_pid);
@@ -1338,7 +1387,7 @@ static int bench_rt_cascaded(int iterations, int with_interferer)
 
 	priority(RT_P_LOW);
 
-	const char *label = with_interferer ? "rt cascaded IPC->lock->IPC (with interferer)" : "rt cascaded IPC->lock->IPC (baseline)";
+	const char *label = with_interferer ? "rt IPC->lock->IPC" : "rt IPC->lock->IPC (baseline)";
 	report_latency(label, samples, iterations);
 
 	free(samples);
@@ -1448,7 +1497,7 @@ static int bench_rt_multi_client(int iterations)
 
 	priority(RT_P_LOW);
 
-	report_latency("rt multi-client (hi-prio vs med-prio load)", samples, iterations);
+	report_latency("rt multi-client", samples, iterations);
 
 	free(samples);
 	for (i = 0; i < 2; i++) {
@@ -1656,7 +1705,7 @@ static int bench_rt_nested_lock_ipc(int iterations, int with_interferer)
 
 	resourceDestroy(rt_nested.mutex);
 
-	const char *label = with_interferer ? "rt nested lock->IPC (with interferer)" : "rt nested lock->IPC (baseline)";
+	const char *label = with_interferer ? "rt nested lock->IPC" : "rt nested lock->IPC (baseline)";
 	report_latency(label, samples, iterations);
 
 	free(samples);
@@ -1698,7 +1747,7 @@ static void run_rt_benchmarks(void)
 
 int bench_run_all(int csv)
 {
-	size_t i;
+	size_t d, i;
 
 	csv_output = csv;
 
@@ -1711,9 +1760,11 @@ int bench_run_all(int csv)
 
 #if 1
 	fprintf(stderr, "\n=== Raw IPC round-trip benchmarks ===\n");
-	for (i = 0; i < sizeof(raw_specs) / sizeof(raw_specs[0]); i++) {
-		const struct raw_bench_spec *s = &raw_specs[i];
-		bench_raw_ipc(s->depth, s->payload, s->iterations, s->use_rr, s->direction);
+	for (d = 0; d < sizeof(raw_depths) / sizeof(raw_depths[0]); d++) {
+		for (i = 0; i < sizeof(raw_specs) / sizeof(raw_specs[0]); i++) {
+			const struct raw_bench_spec *s = &raw_specs[i];
+			bench_raw_ipc(raw_depths[d], s->payload, s->iterations, s->use_rr, s->direction);
+		}
 	}
 
 	// return 0;
