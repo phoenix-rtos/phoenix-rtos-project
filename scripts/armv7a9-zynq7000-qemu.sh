@@ -18,6 +18,7 @@ for FILE in "$IMG_PLO_ZYNQ7000" "$IMG_FLASH_QEMU" "$DTB_ZYNQ7000"; do
 done
 
 exec qemu-system-aarch64 \
+	-smp 2 \
 	-M arm-generic-fdt-7series \
 	-dtb "$DTB_ZYNQ7000" \
 	-serial null \
