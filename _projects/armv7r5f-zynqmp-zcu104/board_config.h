@@ -3,12 +3,12 @@
  *
  * Board config for armv7r5f-zynqmp-som
  *
- * Copyright 2022, 2024, 2026 Phoenix Systems
- * Author: Lukasz Kosinski, Jacek Maksymowicz, Kamil Ber
+ * Copyright 2022, 2024 Phoenix Systems
+ * Author: Lukasz Kosinski, Jacek Maksymowicz
  *
  * This file is part of Phoenix-RTOS.
  *
- * BSD-3-Clause
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef _BOARD_CONFIG_H_
@@ -44,10 +44,10 @@
 /* UART configuration */
 #define UART0_BAUDRATE 115200
 
-#define UART0_RX 14
-#define UART0_TX 15
-#define UART1_RX 33
-#define UART1_TX 32
+#define UART0_RX 18
+#define UART0_TX 19
+#define UART1_RX 21
+#define UART1_TX 22
 
 #define UART_CONSOLE_KERNEL 0
 #define UART_CONSOLE_USER   0
