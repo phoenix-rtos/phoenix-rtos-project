@@ -2,14 +2,14 @@
 #
 # Shell script for building armv7r5f-zynqmp-som project
 #
-# Copyright 2025 Phoenix Systems
-# Author: Jacek Maksymowicz
+# Copyright 2025, 2026 Phoenix Systems
+# Author: Damian Loewnau, Kamil Ber
 #
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
 # By default watchdog is enabled, to disable it set WATCHDOG=0, for example below.
-# Watchdog is also disabled when DEBUFG flag is defined.
+# Watchdog is also disabled when DEBUG flag is defined.
 : "${WATCHDOG:=0}"
 export WATCHDOG
 
@@ -18,6 +18,6 @@ export FS_WRITE_CLEANMARKERS=y
 # No networking
 export BUSYBOX_CONFIG="${PROJECT_PATH}/busybox_config"
 
-b_image_project () {
-	b_log "The images have been built for the ${TARGET} platform"
+b_image_project() {
+  b_log "The images have been built for the ${TARGET} platform"
 }
