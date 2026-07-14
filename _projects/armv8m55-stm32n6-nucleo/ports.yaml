@@ -1,0 +1,3 @@
+ports:
+  - name: coremark_pro
+    if: {{ bool(env.LONG_TEST) }}
