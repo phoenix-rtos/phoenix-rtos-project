@@ -20,3 +20,4 @@ ports:
   - name: sscep
   - name: wpa_supplicant
   - name: heatshrink
+  - name: wamr
