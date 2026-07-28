@@ -8,6 +8,11 @@
 
 [ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
 
+# By default watchdog is enabled, to disable it set WATCHDOG=0, for example below.
+# Watchdog is also disabled when DEBUG flag is defined.
+: "${WATCHDOG:=0}"
+export WATCHDOG
+
 export FS_WRITE_CLEANMARKERS=y
 
 # No networking
