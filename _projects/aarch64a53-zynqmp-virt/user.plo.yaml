@@ -9,6 +9,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x posixsrv ddr ddr
   - app {{ env.BOOT_DEVICE }} rh_msg_latency ddr ddr
   - app {{ env.BOOT_DEVICE }} rh_task_switch ddr ddr
   - if: False
