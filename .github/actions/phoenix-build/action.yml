@@ -29,6 +29,10 @@ inputs:
     description: 'Build additional tests'
     default: 'false'
     required: false
+  build-all-ports:
+    description: 'Build all ports from phoenix-rtos-ports'
+    default: 'false'
+    required: false
 
 # we're using a composite action as `docker` action type doesn't allow non-static image specification
 runs:
@@ -59,6 +63,7 @@ runs:
         -e RAW_LOG=1 \
         -e TARGET="${{ inputs.target }}" \
         -e CI_CUSTOM_BUILDROOT="${{ inputs.buildroot }}" \
+        -e BUILD_ALL_PORTS="${{ inputs.build-all-ports == 'true' && 'y' || 'n' }}" \
         -e LONG_TEST="${{ inputs.nightly == 'true' && 'y' || 'n' }}" \
         $GH_ENV_ARGS \
         "$IMAGE" \
