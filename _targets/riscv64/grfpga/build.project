@@ -28,6 +28,10 @@ export SIZE_PAGE=$((0x1000))
 export BOOT_DEVICE="flash0"         # Default boot device
 export MAGIC_USER_SCRIPT="dabaabad" # User script magic value
 
+# the rootfs partition of this target is within tens of kilobytes of full, so it
+# has no room for unit tests - build them on a target that can hold them
+TEST_DIRS=()
+
 
 b_build_project() {
 	b_log "Building user applications"
