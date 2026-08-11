@@ -6,11 +6,13 @@ is_relative: True
 contents:
   - kernel {{ env.BOOT_DEVICE }}
   - blob {{ env.BOOT_DEVICE }} /etc/system.dtb ddr
-  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x zynqmp-can;-n;1;-b;1000 ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
-  - if: True
+  - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x posixsrv ddr ddr
+  - app {{ env.BOOT_DEVICE }} rh_msg_latency ddr ddr
+  - app {{ env.BOOT_DEVICE }} rh_task_switch ddr ddr
+  - if: False
     name: app
     device: '{{ env.BOOT_DEVICE }}'
     flags: EXEC
