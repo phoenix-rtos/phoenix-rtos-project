@@ -123,8 +123,7 @@ b_image_target() {
 	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "bitstr=$BITSTREAM_PART" --part "rootfs=$ROOTFS"
 }
 
-
-b_test_target() {
+b_build_test_target() {
 	b_log "Build and install tests in the phoenix-rtos filesystem"
 	make -C "phoenix-rtos-tests" all install
 }

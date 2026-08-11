@@ -124,12 +124,11 @@ b_image_target() {
 	# create full disk image
 	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "bitstr=$BITSTREAM_PART" --part "rootfs=$ROOTFS"
 
-    # TODO: remove? CI currently has the disk filename hardcoded - maybe it should use nvm.yaml?
-    cp -a "${PREFIX_BOOT}/flash0.disk" "${PREFIX_BOOT}/phoenix.disk"
+	# TODO: remove? CI currently has the disk filename hardcoded - maybe it should use nvm.yaml?
+	cp -a "${PREFIX_BOOT}/flash0.disk" "${PREFIX_BOOT}/phoenix.disk"
 }
 
-
-b_test_target() {
+b_build_test_target() {
 	b_log "Build and install tests in the phoenix-rtos filesystem"
 	make -C "phoenix-rtos-tests" all install
 }
