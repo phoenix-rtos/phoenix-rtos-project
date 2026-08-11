@@ -50,14 +50,11 @@ b_build_target() {
 	cp -a "${PREFIX_PROG_STRIPPED}plo-ram-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img" "$PREFIX_BOOT/plo-ram.img"
 }
 
-
-
 b_image_target() {
-	:;
+	:
 }
 
-
-b_test_target() {
+b_build_test_target() {
 	b_log "Build and install tests in the phoenix-rtos filesystem"
 	make -C "phoenix-rtos-tests" all install
 }

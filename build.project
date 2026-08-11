@@ -75,5 +75,5 @@ b_image() {
 # Project specific build test
 #
 b_build_test() {
-	b_test_target
+	b_build_test_target
 }
