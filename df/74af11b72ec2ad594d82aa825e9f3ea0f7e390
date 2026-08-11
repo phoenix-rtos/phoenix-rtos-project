@@ -1,0 +1,54 @@
+_targets/aarch64a53/zynqmp/build.project
+  h_edab809c32d497 127
+_targets/armv7a7/imx6ull/build.project
+  h_edab809c32d497 142
+_targets/armv7a9/zynq7000/build.project
+  h_edab809c32d497 132
+_targets/armv7m4/stm32l4x6/build.project
+  h_edab809c32d497 66
+_targets/armv7m7/imxrt105x/build.project
+  h_edab809c32d497 66
+_targets/armv7m7/imxrt106x/build.project
+  h_edab809c32d497 65
+_targets/armv7m7/imxrt117x/build.project
+  h_edab809c32d497 67
+_targets/armv7r5f/zynqmp/build.project
+  h_edab809c32d497 133
+_targets/armv8m33/mcxn94x/build.project
+  h_edab809c32d497 66
+_targets/armv8m55/stm32n6/build.project
+  h_edab809c32d497 106
+_targets/armv8r52/mps3an536/build.project
+  h_edab809c32d497 64
+_targets/host/generic/build.project
+  h_edab809c32d497 19
+_targets/ia32/generic/build.project
+  h_edab809c32d497 147
+_targets/riscv64/generic/build.project
+  h_edab809c32d497 91
+_targets/riscv64/gr765/build.project
+  h_edab809c32d497 94
+_targets/riscv64/grfpga/build.project
+  h_edab809c32d497 100
+_targets/sparcv8leon/generic/build.project
+  h_edab809c32d497 52
+_targets/sparcv8leon/gr712rc/build.project
+  h_edab809c32d497 84
+_targets/sparcv8leon/gr716/build.project
+  h_edab809c32d497 60
+_targets/sparcv8leon/gr740/build.project
+  h_edab809c32d497 83
+build.project
+  h_edab809c32d497 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "df74af11b72ec2ad594d82aa825e9f3ea0f7e390",
+  "prompts": {},
+  "humans": {
+    "h_edab809c32d497": {
+      "author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
