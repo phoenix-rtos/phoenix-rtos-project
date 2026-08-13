@@ -29,7 +29,7 @@ on:
         type: string
         description: "comma separated list of targets to run cpptest on"
         # NOTE: ia32, RISC-V and SPARC targets are not suppoted by parasoft cpptest
-        default: 'armv7a7-imx6ull-evk, armv7m7-imxrt117x-evk, armv7r5f-zynqmp-qemu, aarch64a53-zynqmp-qemu'
+        default: 'armv7a7-imx6ull-evk, armv7m7-imxrt117x-evk, armv7r5f-zynqmp-qemu, armv8m55-stm32n6-nucleo, aarch64a53-zynqmp-qemu'
         required: false
       cpptest_ruleset:
         type: string
