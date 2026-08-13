@@ -15,4 +15,4 @@ flash0:
     - name: rootfs
       type: jffs2
       offs: 0x500000
-      size: 0x500000
+      # use all remaining size
