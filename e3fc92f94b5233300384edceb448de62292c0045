@@ -1,0 +1,19 @@
+.github/workflows/ci-submodule.yml
+  s_b5f773088b022b::t_0500da21f8d8cf 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e3fc92f94b5233300384edceb448de62292c0045",
+  "prompts": {},
+  "sessions": {
+    "s_b5f773088b022b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9fe7c23c-3d89-4f7e-80d7-adbaf591538f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
