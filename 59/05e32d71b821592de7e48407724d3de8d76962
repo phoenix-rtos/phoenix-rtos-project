@@ -1,0 +1,29 @@
+_targets/riscv64/grfpga/build.project
+  s_64038140da5d7d::t_7437cb769d61c2 31-34
+build.project
+  s_cc349fbfe69f06::t_e68e6747b9be2e 51-57,85-91,93-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5905e32d71b821592de7e48407724d3de8d76962",
+  "prompts": {},
+  "sessions": {
+    "s_64038140da5d7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a492f2e-27d1-493b-8cda-8ac513fde7f4",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    },
+    "s_cc349fbfe69f06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf509191-06bd-4d74-b72e-5b23a7e1abee",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
