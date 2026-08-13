@@ -1,0 +1,14 @@
+_user/hello/main.c
+  h_3689a52f3dab5f 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "24b0da9891069a25972752bed99731dedbe80a79",
+  "prompts": {},
+  "humans": {
+    "h_3689a52f3dab5f": {
+      "author": "Damian Loewnau <damian.loewnau@phoenix-rtos.com>"
+    }
+  }
+}
