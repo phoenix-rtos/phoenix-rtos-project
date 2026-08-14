@@ -48,6 +48,13 @@ if [ ! -f "$PROJECT_FILE" ]; then
 	exit 1
 fi
 
+#
+# Repositories with unit tests declared through test-binary.mk. Set before the
+# target and project files are sourced, so that they can extend the list with
+# TEST_DIRS+=(...).
+#
+TEST_DIRS=(phoenix-rtos-corelibs)
+
 . "$TARGET_FILE"
 . "$PROJECT_FILE"
 
@@ -75,5 +82,44 @@ b_image() {
 # Project specific build test
 #
 b_build_test() {
-	b_test_target
+	# unity (a component of phoenix-rtos-tests) is linked by the tests of every
+	# repository, so it has to be installed before anything depends on it
+	b_log "Building the unit test framework"
+	make -C phoenix-rtos-tests unity-install
+
+	b_make_test "${TEST_DIRS[@]}"
+
+	b_build_test_target
+
+	if declare -F b_build_test_project >/dev/null; then
+		b_build_test_project
+	fi
+}
+
+#
+# Project specific test execution ("runtest")
+#
+# Distinct from b_build_test, which only builds. Unit tests of TEST_DIRS run here
+# when the build host is the target, a target or project hooks in whatever else
+# applies. Failures propagate: this is the CI gate.
+#
+b_run_test() {
+	local rc=0
+
+	if [ "$TARGET_FAMILY" = "host" ]; then
+		b_log "Running unit tests"
+		b_make_test_run "${TEST_DIRS[@]}" || rc=$?
+	else
+		b_log "Cross target - the unit tests are in the rootfs, run them with phoenix-rtos-tests/runner.py"
+	fi
+
+	if declare -F b_run_test_target >/dev/null; then
+		b_run_test_target || rc=$?
+	fi
+
+	if declare -F b_run_test_project >/dev/null; then
+		b_run_test_project || rc=$?
+	fi
+
+	return $rc
 }
