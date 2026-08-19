@@ -8,5 +8,7 @@ contents:
   - app {{ env.BOOT_DEVICE }} -xn psh axi_app axi_app
   - app {{ env.BOOT_DEVICE }} -xn stm32l4-multi axi_app axi_app;per;dmamem;flash0
   - app {{ env.BOOT_DEVICE }} -xn flashdrv;-c;1;-m;0;-d;stm32-extflash axi_app axi_app
+  # TODO: this is not the PHY that is present on either of the boards, also Nucleo doesn't have IRQ or reset pins connected
+  - app {{ env.BOOT_DEVICE }} -xn lwip;eth:1:PHY:ksz8081rna:0.0:irq:MAC:reset:-9:/dev/gpiof {{ env.BOOT_DEVICE }} axi_app;per
   - wait 1000
   - go!
