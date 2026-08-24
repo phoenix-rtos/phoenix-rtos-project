@@ -11,6 +11,12 @@ flash0:
       offs: 0x0
     - name: user
       offs: 0x10000
+      size: 0x70000
     - name: storage
       offs: 0x80000
       size: 0x80000 # 512 KB
+
+# virtual offset [user.offs] + [user.script.size]
+    - name: kernel
+      offs: 0x10000
+      virtual: True

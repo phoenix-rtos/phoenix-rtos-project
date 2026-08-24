@@ -31,8 +31,8 @@ export MAGIC_USER_SCRIPT=dabaabad
 
 
 # Physical kernel address
-KERNEL_PHBASE=$((0x0))
-KERNEL_PHOFFS=$((0x14000))
+KERNEL_PHBASE=$((0x08000000)) # flash0 start address
+KERNEL_PHOFFS=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.kernel.offs }}')
 KERNEL_PHADDR=$(printf "%08x" $((KERNEL_PHBASE + KERNEL_PHOFFS)))
 export KERNEL_PHADDR
 KERNEL_DATA_PHADDR=0x20000000
