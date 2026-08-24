@@ -49,15 +49,17 @@ b_build_project() {
 
 
 b_create_signed_bootloader() {
+	local plo_unsigned="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
+	local plo_signed="${PREFIX_BOOT}/part_plo.img"
+
 	# User may wish to skip signing the image if they intend to only use dev boot
 	if [ "$PLO_SKIP_IMAGE_SIGN" = "y" ]; then
 		b_log "Signing PLO image skipped"
+		cp "${plo_unsigned}" "${plo_signed}"
 		return
 	fi
 
 	b_log "Creating signed PLO image"
-	local plo_unsigned="${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
-	local plo_signed="${PREFIX_BOOT}/part_plo.img"
 	stm32n6_sign_fsbl.py \
 		-i "${plo_unsigned}" \
 		-o "${plo_signed}" \
