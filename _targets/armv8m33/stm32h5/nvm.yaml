@@ -18,5 +18,5 @@ flash0:
 
 # virtual offset [user.offs] + [user.script.size]
     - name: kernel
-      offs: 0x10000
+      offs: 0x11000
       virtual: True
