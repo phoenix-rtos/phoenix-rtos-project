@@ -1,0 +1,14 @@
+_targets/riscv64/grfpga/nvm.yaml
+  h_edab809c32d497 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9901a0c46d41a95a7b92989aebd52b4ce7a43293",
+  "prompts": {},
+  "humans": {
+    "h_edab809c32d497": {
+      "author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
