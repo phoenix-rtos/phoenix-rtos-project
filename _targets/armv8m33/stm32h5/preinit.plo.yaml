@@ -6,13 +6,12 @@ contents:
   # env.BOOT_DEVICE should correspond to one of the map names
   - map flash0     0x08000000 0x08080000 rxcb  # Flash bank 0
   - map flash1     0x08080000 0x08100000 rxcb  # Flash bank 1
-  - map sram       0x20000000 0x20050000 rwxcb # SRAM 1:3
+  - map sram       0x20000000 0x200a0000 rwxcb # SRAM 1:3
   - map periph     0x40000000 0x50000000 rw    # Peripherals
   - map fmc1       0x60000000 0x70000000 rw    # FMC Bank 1
   - map fmc3       0x80000000 0x90000000 rw    # FMC Bank 3
   - map octo1      0x90000000 0xa0000000 rwxcb # OCTOSPI1 bank
   - map sdram      0xc0000000 0xe0000000 rwxcb # FMC SDRAM
-#  - map cpu_per    0xe0000000 0xe0100000 rw    # Cortex M33 registers
   - phfs flash0 2.0
   - phfs ramdisk 4.0
   - console 0.4
