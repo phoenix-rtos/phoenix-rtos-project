@@ -1,0 +1,36 @@
+phoenix-rtos-corelibs
+  s_d74aef5a1d95d2::t_5ce344729412dc 1
+phoenix-rtos-doc
+  s_d74aef5a1d95d2::t_ed0abdae339459 1
+phoenix-rtos-build
+  s_8f841fccbda881::t_96b1824f2b2143 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "0693959856a57ba0f8b64c00cedb1b41091a291b",
+  "prompts": {},
+  "humans": {
+    "h_edab809c32d497": {
+      "author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  },
+  "sessions": {
+    "s_8f841fccbda881": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb73c861-2b39-434a-9a77-e2d92be4e7f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    },
+    "s_d74aef5a1d95d2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a68174a9-7f84-452b-9eac-3d6350c0d0ab",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
