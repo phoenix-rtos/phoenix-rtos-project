@@ -1,0 +1,21 @@
+phoenix-rtos-corelibs
+  s_bf9e194658e94e::t_1e64c97d03f23f 1
+phoenix-rtos-doc
+  s_bf9e194658e94e::t_391e8ce86cdb80 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d82dd686f2d29d5530fbefbff1c69cfe7d0e9f81",
+  "prompts": {},
+  "sessions": {
+    "s_bf9e194658e94e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a5fa1c9d-bf49-4729-b45a-c912dd70398f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
