@@ -10,3 +10,4 @@ ports:
   - name: openssl
   - name: openvpn
   - name: pcre
+  - name: wamr
