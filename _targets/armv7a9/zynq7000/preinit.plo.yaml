@@ -2,8 +2,8 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map kddr 0x100000 0x12ffff rwx
-  - map ddr 0x130000 0x900000 rwx
+  - map kddr 0x100000 0x140000 rwx
+  - map ddr 0x140000 0x900000 rwx
   - map ocram1 0x00000000 0x00030000 rwx
   - phfs usb0 1.2 phoenixd
   - phfs uart0 0.0 phoenixd
