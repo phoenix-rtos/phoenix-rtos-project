@@ -1,0 +1,18 @@
+size: 0x1000
+is_relative: False
+
+contents:
+  - map kddr 0x41000000 0x411fffff rwx # 0 ~ 2 MB
+  - map ddr 0x41200000 0x60ffffff rwx # 2 ~ 512 MB
+  - map ocram 0x40000000 0x4003ffff rwx
+  - phfs uart0 0.0 raw
+  - phfs ramdisk 4.0 raw
+  - console 0.0
+
+  - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
+    action: call
+    set_base: True
+    device: '{{ env.BOOT_DEVICE }}'
+    filename: user.plo
+    offset: '{{ nvm.flash0.kernel.offs }}'
+    target_magic: '{{ env.MAGIC_USER_SCRIPT }}'
