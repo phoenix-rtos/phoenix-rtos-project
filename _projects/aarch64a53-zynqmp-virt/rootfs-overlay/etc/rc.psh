@@ -1,0 +1,8 @@
+:{}:
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export HOME=/root
+W /bin/bind devfs /dev
+W /sbin/dummyfs -m /tmp -D
+X /bin/posixsrv
+T /dev/console
+X /bin/psh
