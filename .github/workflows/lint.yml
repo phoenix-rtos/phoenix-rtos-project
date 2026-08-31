@@ -112,8 +112,8 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.25'
-      - run: go install mvdan.cc/sh/v3/cmd/shfmt@latest
+          go-version: '1.26'
+      - run: go install mvdan.cc/sh/v3/cmd/shfmt@v3.14.0
 
       - run: |
           git diff -z --name-only --ignore-submodules=all --diff-filter=d HEAD^ -- '*.sh' '*.project' '*.subr' | xargs -0 -r shfmt -i 0 -w
