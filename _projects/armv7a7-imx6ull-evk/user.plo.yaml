@@ -6,8 +6,14 @@ is_relative: True
 contents:
   - wait 2000
   - kernel {{ env.BOOT_DEVICE }}
-  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
-  - app {{ env.BOOT_DEVICE }} -x imx6ull-uart ddr ddr
+  - sched 3 1:10000;2:10000;3:10000
+  - part critical ddr 1 0 -ic
+  - part user ddr 2 0x2000000
+  - part net ddr 3 0x2000000 -ic
+  - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr critical
+  - app {{ env.BOOT_DEVICE }} -x imx6ull-uart ddr ddr critical
+  - app {{ env.BOOT_DEVICE }} -x psh ddr ddr critical
+  - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr net
   - name: app
     device: '{{ env.BOOT_DEVICE }}'
     flags: EXEC
@@ -17,5 +23,7 @@ contents:
        - '-r;0;{{ nvm.flash0.rootfs.offs }};{{ nvm.flash0.rootfs.size }};jffs2'
     text_map: ddr
     data_maps: ddr
-  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
+    partition: net
+  - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr net
+  - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr user
   - go!
