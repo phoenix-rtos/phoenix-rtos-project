@@ -1,11 +1,12 @@
-size: 0x200
+size: 0x400
 is_relative: False
 
 contents:
   # NOTE: All data/code maps need to be cacheable to allow unaligned accesses
   # env.BOOT_DEVICE should correspond to one of the map names
   - map itcm       0x10000000 0x10020000 rxcb  # ITCM
-  - map dtcm       0x30000000 0x30020000 rwcb  # DTCM
+  - map dtcm       0x30000000 0x3001ef00 rwcb  # DTCM
+  - map rtt        0x3001ef00 0x30020000 rw    # RTT buffers
   - map axi_kernel 0x34014000 0x34100000 cb    # Kernel data
   # Note: PLO is loaded by BootROM at 0x34180000, inside axi_app
   - map axi_app    0x34100000 0x343c0000 rwxcb # Applications code/data
@@ -15,6 +16,7 @@ contents:
   - map cpu_per    0xe0000000 0xe0100000 rw    # CPU internal peripherals
   - phfs flash0 2.0
   - phfs ramdisk 4.0
+  - phfs rtt 8.0 phoenixd
   - console 0.0
 
   - if: '{{ not(env.RAM_SCRIPT) | default(false) }}'
