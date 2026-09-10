@@ -20,6 +20,8 @@
 #define UART_PIN_TX  5
 #define UART_PIN_RX  6
 
+#define RTT_ENABLED_PLO 1
+
 #define XSPI2           1
 #define XSPI2_CLOCK_DIV 1 /* 200 MHz */
 #define XSPI2_STORAGE   1
