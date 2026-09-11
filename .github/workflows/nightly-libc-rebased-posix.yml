@@ -1,0 +1,126 @@
+# vim:sw=2:ts=2
+# Standalone nightly campaign running the phoenix-rtos-tests libc suite from the
+# `lukkrusz/rebased_posix` branch on ia32-generic-qemu.
+#
+# The branch is checked out at runtime instead of bumping the phoenix-rtos-tests submodule, so
+# merging this workflow never changes the revision the rest of the project builds against.
+#
+# It does not reuse the shared phoenix-build/phoenix-runner actions because this campaign needs
+# a build with DEBUG unset (the shared action hardcodes DEBUG=1) and a libc-only test subset.
+name: nightly-libc-rebased-posix
+
+on:
+  # NOTE: uncomment before merging to master. GitHub evaluates cron only on the default branch,
+  # so the schedule starts firing once this file is on master.
+  # schedule:
+  #   # triggered every day at 3:00 UTC
+  #   - cron: '0 3 * * *'
+
+  # NOTE: remove before merging to master - serves only to verify this workflow from its own branch.
+  push:
+    branches:
+      - 'damianloew/ci_for_rebased_posix_branch'
+
+  workflow_dispatch:
+
+env:
+  TARGET: ia32-generic-qemu
+  TESTS_BRANCH: lukkrusz/rebased_posix
+  IMAGE_TAG: latest
+
+jobs:
+  nightly-libc:
+    name: build and test libc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Checkout phoenix-rtos-tests branch under test
+        working-directory: phoenix-rtos-tests
+        run: |
+          git fetch --depth=1 origin "$TESTS_BRANCH"
+          git checkout --detach FETCH_HEAD
+          git log -1 --pretty=oneline
+
+      - name: Add GCC problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/gcc.json"
+
+      - name: Build
+        run: |
+          IMAGE="ghcr.io/phoenix-rtos/build:${IMAGE_TAG}"
+          echo "Using Docker image: $IMAGE"
+
+          # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
+          GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
+
+          # NOTE: DEBUG is deliberately not passed here, so the image is built with -DNDEBUG.
+          docker run --rm --privileged \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -v "${HOME}:${HOME}" \
+            -v "${RUNNER_TEMP}:${RUNNER_TEMP}" \
+            -v "${GITHUB_ENV}:${GITHUB_ENV}" \
+            -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
+            -e CI=true \
+            -e HOME \
+            -e RUNNER_TEMP \
+            -e CONSOLE=serial \
+            -e RAW_LOG=1 \
+            -e TARGET="$TARGET" \
+            $GH_ENV_ARGS \
+            "$IMAGE" \
+            "clean core fs image project test"
+
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      - name: Add test runner problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/test-runner.json"
+
+      - name: Test runner
+        run: |
+          IMAGE="ghcr.io/phoenix-rtos/devel:${IMAGE_TAG}"
+          echo "Using Docker image: $IMAGE"
+
+          # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
+          # NOTE: the runner keys DUT output streaming and the CI result URL off these.
+          GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
+
+          docker run --rm --privileged \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -v "${HOME}:${HOME}" \
+            -v "${RUNNER_TEMP}:${RUNNER_TEMP}" \
+            -v "${GITHUB_ENV}:${GITHUB_ENV}" \
+            -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
+            -e CI=true \
+            -e HOME \
+            -e RUNNER_TEMP \
+            -e TARGET="$TARGET" \
+            $GH_ENV_ARGS \
+            --entrypoint="./phoenix-rtos-tests/runner.py" \
+            "$IMAGE" \
+              -v \
+              -S \
+              -T"$TARGET" \
+              -t phoenix-rtos-tests/libc \
+              -Oresults.csv
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-${{ env.TARGET }}-libc
+          path: |
+            results.csv
+            results.xml
+
+      - name: Publish test results
+        if: success() || failure()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: 'Unit Test Results (libc, rebased_posix)'
+          files: results.xml
