@@ -1,0 +1,87 @@
+_targets/aarch64a53/zynqmp/build.project
+  h_edab809c32d497 126
+_targets/armv7a7/imx6ull/build.project
+  h_edab809c32d497 141
+_targets/armv7a9/zynq7000/build.project
+  h_edab809c32d497 131
+_targets/armv7m4/stm32l4x6/build.project
+  h_edab809c32d497 66
+_targets/armv7m7/imxrt105x/build.project
+  h_edab809c32d497 65
+_targets/armv7m7/imxrt106x/build.project
+  h_edab809c32d497 64
+_targets/armv7m7/imxrt117x/build.project
+  h_edab809c32d497 66
+_targets/armv7r5f/zynqmp/build.project
+  h_edab809c32d497 132
+_targets/armv8m33/mcxn94x/build.project
+  h_edab809c32d497 66
+_targets/armv8m55/stm32n6/build.project
+  h_edab809c32d497 106
+_targets/armv8r52/mps3an536/build.project
+  h_edab809c32d497 63
+_targets/host/generic/build.project
+  h_edab809c32d497 19
+_targets/ia32/generic/build.project
+  h_edab809c32d497 146
+_targets/riscv64/generic/build.project
+  h_edab809c32d497 90
+_targets/riscv64/gr765/build.project
+  h_edab809c32d497 93
+_targets/riscv64/grfpga/build.project
+  h_edab809c32d497 99
+_targets/sparcv8leon/generic/build.project
+  h_edab809c32d497 51
+_targets/sparcv8leon/gr712rc/build.project
+  h_edab809c32d497 83
+_targets/sparcv8leon/gr716/build.project
+  h_edab809c32d497 57
+_targets/sparcv8leon/gr740/build.project
+  h_edab809c32d497 82
+build.project
+  h_edab809c32d497 92
+  s_cc349fbfe69f06::t_e68e6747b9be2e 51-57,85-91,93-124
+phoenix-rtos-build
+  s_b5f773088b022b::t_29a204dcb90c1c 1
+phoenix-rtos-corelibs
+  s_64038140da5d7d::t_b2bf6c3a7c582e 1
+phoenix-rtos-doc
+  s_64038140da5d7d::t_6d5d6fc7f11f54 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "69478b9ecd9ec0c071150bb561a645e8bf511ce8",
+  "prompts": {},
+  "humans": {
+    "h_edab809c32d497": {
+      "author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  },
+  "sessions": {
+    "s_64038140da5d7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a492f2e-27d1-493b-8cda-8ac513fde7f4",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    },
+    "s_b5f773088b022b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9fe7c23c-3d89-4f7e-80d7-adbaf591538f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    },
+    "s_cc349fbfe69f06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cf509191-06bd-4d74-b72e-5b23a7e1abee",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}

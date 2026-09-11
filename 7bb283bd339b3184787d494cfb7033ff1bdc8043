@@ -1,0 +1,19 @@
+phoenix-rtos-build
+  s_8f841fccbda881::t_96b1824f2b2143 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "7bb283bd339b3184787d494cfb7033ff1bdc8043",
+  "prompts": {},
+  "sessions": {
+    "s_8f841fccbda881": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb73c861-2b39-434a-9a77-e2d92be4e7f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
