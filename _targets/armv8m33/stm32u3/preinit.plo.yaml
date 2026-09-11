@@ -8,6 +8,7 @@ contents:
   - map flash1 {{ 0x08000000 + (env.FLASH_SIZE|default(0x80000)|int(base=0)) }} {{ 0x08000000 + 2*(env.FLASH_SIZE|default(0x80000)|int(base=0)) }} rxcb
   - map ram 0x20000000 {{ 0x20000000 + (env.RAM_SIZE|default(0x40000)|int(base=0)) }} rwxcb
   - map io 0x40000000 0x60000000 rw
+  - map otp 0x0bfa0000 0x0bfa0e00 r
   - phfs flash0 2.0 raw
   - phfs flash1 2.1 raw
   - phfs ramdev 4.0 raw
