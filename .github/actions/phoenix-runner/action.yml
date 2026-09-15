@@ -20,12 +20,25 @@ inputs:
     default: 'false'
     required: false
 
+  test-paths:
+    description: 'Space separated directories to search for tests. By default the whole project is searched'
+    default: ''
+    required: false
+
+  regex:
+    description: 'Run only the tests matching this regex. By default all found tests are run'
+    default: ''
+    required: false
+
 # we're using a composite action as `docker` action type doesn't allow non-static image specification
 runs:
   using: 'composite'
   steps:
   - name: Run phoenix-build container
     shell: bash
+    env:
+      TEST_PATHS: ${{ inputs.test-paths }}
+      TEST_REGEX: ${{ inputs.regex }}
     run: |
       IMAGE="ghcr.io/phoenix-rtos/devel:${{ inputs.image-tag }}"
       echo "Using Docker image: $IMAGE"
@@ -33,10 +46,19 @@ runs:
       # Collect all GITHUB_* env vars and format as -e KEY - omit value to avoid secret leakage
       GH_ENV_ARGS=$(env | grep ^GITHUB_ | cut -d= -f1 | sed 's/^/-e /')
 
-      # Build the nightly flag logic
-      NIGHTLY_ARG=""
+      # Optional runner args - kept in an array so a regex may contain spaces
+      RUNNER_ARGS=()
       if [ "${{ inputs.nightly }}" = "true" ]; then
-        NIGHTLY_ARG="--nightly"
+        RUNNER_ARGS+=(--nightly)
+      fi
+
+      # restrict the campaign to a subset of tests - runner accepts -t multiple times
+      for path in $TEST_PATHS; do
+        RUNNER_ARGS+=(-t "$path")
+      done
+
+      if [ -n "$TEST_REGEX" ]; then
+        RUNNER_ARGS+=(-r "$TEST_REGEX")
       fi
 
       # runner args:
@@ -59,7 +81,7 @@ runs:
         "$IMAGE" \
           -v \
           -T${{ inputs.target }} \
-          $NIGHTLY_ARG \
+          "${RUNNER_ARGS[@]}" \
           -Oresults.csv
 
 # branding
