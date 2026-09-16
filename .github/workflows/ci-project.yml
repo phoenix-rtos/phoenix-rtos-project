@@ -28,34 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - 'armv7a7-imx6ull-evk'
-          - 'armv7a9-zynq7000-qemu'
-          - 'armv7a9-zynq7000-zedboard'
-          - 'armv7a9-zynq7000-zturn'
-          - 'armv7m4-stm32l4x6-nucleo'
-          - 'armv7m7-imxrt105x-evk'
-          - 'armv7m7-imxrt106x-evk'
-          - 'armv7m7-imxrt117x-evk'
-          - 'armv7r5f-zynqmp-qemu'
-          - 'armv8r52-mps3an536-qemu'
-          - 'armv8m33-mcxn94x-frdm'
-          - 'armv8m55-stm32n6-nucleo'
-          - 'aarch64a53-zynqmp-qemu'
-          - 'host-generic-pc'
-          - 'ia32-generic-pc'
-          - 'ia32-generic-qemu'
-          - 'riscv64-generic-qemu'
-          - 'riscv64-gr765-vcu118'
-          - 'riscv64-grfpga-artya7'
-          - 'sparcv8leon-generic-qemu'
-          - 'sparcv8leon-gr712rc-board'
-          - 'sparcv8leon-gr716-mimas'
-          - 'sparcv8leon-gr716-mini'
-          - 'sparcv8leon-gr740-mini'
         include:
           - target: 'armv7a9-zynq7000-qemu'
             additional_params: 'ports'
+          - target: 'ia32-generic-qemu'
+            build_all_ports: 'true'
+
     steps:
       # step 1: checkout repository code inside the workspace directory of the runner
       - name: Checkout the repository
@@ -76,6 +54,7 @@ jobs:
           target: ${{ matrix.target }}
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
+          build_all_ports: ${{ matrix.build_all_ports == 'true' && 'true' || 'false' }}
 
       # step 3: tar rootfs
       - name: Tar rootfs
