@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Shell script for building armv8m33-stm32u3-nucleo_u385
+#
+# Copyright 2022 Phoenix Systems
+# Copyright 2026 Apator Metrix
+# Author: Lukasz Kosinski, Mateusz Karcz
+#
+
+[ "${BASH_SOURCE[0]}" -ef "$0" ] && echo "You should source this script, not execute it!" && exit 1
+
+: "${WATCHDOG:=0}"
+export WATCHDOG
+
+b_image_project () {
+	b_log "The images have been built for the ${TARGET} platform"
+}
