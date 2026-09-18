@@ -1,0 +1,112 @@
+# vim:sw=2:ts=2
+# Standalone nightly campaign running the phoenix-rtos-tests libc suite from the
+# `lukkrusz/rebased_posix` branch on ia32-generic-qemu and host-generic-pc.
+#
+# The branch is checked out at runtime instead of bumping the phoenix-rtos-tests submodule, so
+# merging this workflow never changes the revision the rest of the project builds against.
+name: nightly-libc-rebased-posix
+
+on:
+  schedule:
+    # triggered every day at 3:00 UTC
+    - cron: '0 3 * * *'
+
+env:
+  TESTS_BRANCH: lukkrusz/rebased_posix
+
+jobs:
+  nightly-libc:
+    name: build and test libc (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['ia32-generic-qemu', 'host-generic-pc']
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Checkout phoenix-rtos-tests branch under test
+        working-directory: phoenix-rtos-tests
+        run: |
+          git fetch --depth=1 origin "$TESTS_BRANCH"
+          git checkout --detach FETCH_HEAD
+          git log -1 --pretty=oneline
+
+      - name: Add GCC problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/gcc.json"
+
+      - name: Build
+        uses: ./.github/actions/phoenix-build
+        with:
+          target: ${{ matrix.target }}
+          params: 'core fs image project test'
+          # the branch tests error paths on which a kernel assert fires before the
+          # function sets its error code, making the expected return unreachable
+          debug: 'false'
+
+      - name: Add sanitizers problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/sanitizer-errors.json"
+
+      - name: Add test runner problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/test-runner.json"
+
+      - name: Test runner
+        uses: ./.github/actions/phoenix-runner
+        with:
+          target: ${{ matrix.target }}
+          test-paths: 'phoenix-rtos-tests/libc'
+
+      - name: Upload runner results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-${{ matrix.target }}-libc
+          # a re-run must replace the previous attempt's results, otherwise the summary
+          # job merges both and keeps reporting the failure that the re-run just fixed
+          overwrite: true
+          path: |
+            results.csv
+            results.xml
+
+  tests-summary:
+    if: success() || failure()   # don't care about cancelled runs
+    needs: [nightly-libc]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          pattern: test-results-*
+
+      - name: Merge Test Results
+        run: |
+          pip3 install junitparser junit2html
+          junitparser merge artifacts/test-results-*/results.xml junit.xml
+          junit2html junit.xml junit.html
+        env:
+          PIP_BREAK_SYSTEM_PACKAGES: 1  # NOTE: we're running on emphemeral GH VMs, install packages globally
+
+      - name: Upload Merged Unit Test Results in HTML
+        uses: actions/upload-artifact@v7
+        with:
+          name: Merged Unit Test Results
+          if-no-files-found: ignore
+          path: |
+            junit.html
+            junit.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: 'Unit Test Results (libc, rebased_posix)'
+          files: "junit.xml"
+
+  send-notification:
+    needs: ['nightly-libc', 'tests-summary']
+    if: "!cancelled() && failure() && github.event_name != 'pull_request'"
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/_send_google_chat.yml@master
+    secrets: inherit
