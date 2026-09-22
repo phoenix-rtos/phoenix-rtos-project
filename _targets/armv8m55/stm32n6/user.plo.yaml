@@ -5,8 +5,15 @@ is_relative: True
 
 contents:
   - kernel {{ env.BOOT_DEVICE }}
-  - app {{ env.BOOT_DEVICE }} -xn psh axi_app axi_app
-  - app {{ env.BOOT_DEVICE }} -xn stm32l4-multi axi_app axi_app;per;dmamem;flash0
-  - app {{ env.BOOT_DEVICE }} -xn flashdrv;-c;1;-m;0;-d;stm32-extflash axi_app axi_app
+  - sched 2 1:10000;2:10000
+  - part critical axi_app;per;dmamem;flash0 1 0 -ic
+  - part user axi_app 2 0x40000
+
+  - app {{ env.BOOT_DEVICE }} -xn stm32l4-multi axi_app axi_app critical
+  - app {{ env.BOOT_DEVICE }} -xn flashdrv;-c;1;-m;0;-d;stm32-extflash axi_app axi_app critical
+  - app {{ env.BOOT_DEVICE }} -xn psh axi_app axi_app critical
+
+  - app {{ env.BOOT_DEVICE }} -xn dummyfs axi_app axi_app user
+
   - wait 1000
   - go!
