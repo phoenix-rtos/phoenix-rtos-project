@@ -1,0 +1,18 @@
+phoenix-rtos-devices
+  h_edab809c32d497 1
+phoenix-rtos-filesystems
+  h_edab809c32d497 1
+phoenix-rtos-tests
+  h_edab809c32d497 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "00d39f1839414c64cc5fe45ab0240974cb4041a7",
+  "prompts": {},
+  "humans": {
+    "h_edab809c32d497": {
+      "author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
