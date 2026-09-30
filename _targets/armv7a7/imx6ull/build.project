@@ -91,6 +91,9 @@ b_image_target() {
 	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
 	[ "$sz" -gt "$((FS_SZ / 1024))" ] && b_die "rootfs size exceeds the target partition!"
 
+	# flash0 layout starts with plo
+	[ "$KERNEL_PLO_BOOT" = "y" ] || return 0
+
 	image_builder.py -v disk --nvm "$NVM_CONFIG" --part "rootfs=$ROOTFS" --part "plo=${PREFIX_PROG_STRIPPED}plo-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.img"
 
 	# TODO: remove? CI currently has the disk filename hardcoded - maybe it should use nvm.yaml?
