@@ -1,0 +1,10 @@
+# kernel + initrd booted without plo: syspage embedded in the kernel image
+size: 0
+
+contents:
+  - map ddr 0x80000000 0x87ffffff rwx
+  - console 0.0
+  - kernelimg {{ env.BOOT_DEVICE }}
+  - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x imx6ull-uart ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x psh ddr ddr

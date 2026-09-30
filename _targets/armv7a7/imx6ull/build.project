@@ -19,13 +19,13 @@ export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 # Platform dependent parameters
 #
 export SIZE_PAGE=$((0x1000))
-ADDR_DDR=$((0x80000000))
 
 #
 # Project specific build
 #
 export BOOT_DEVICE="flash0"
 export MAGIC_USER_SCRIPT="dabaabad"
+b_set_default_path "SYSPAGE_SCRIPT" "kernel.syspage.yaml" # used if not booting from PLO
 
 # TODO: move to nvm.yaml
 ERASE_SIZE=$((64 * 4096)) # Rootfs disk erase block size (in bytes)
@@ -50,27 +50,6 @@ b_build_target() {
 	fi
 }
 
-# Temporary solution to omit phoenix-rtos-loader
-b_syspage_gen() {
-	img="$1"
-	uscript="$2"
-
-	fn="${PREFIX_PROG}phoenix-${TARGET_FAMILY}-${TARGET_SUBFAMILY}.elf"
-	vectors=$(${CROSS}readelf -s "$fn" | awk '/init_vectors/ { printf("0x%s", $2) }')
-	syspage=$(${CROSS}readelf -s "$fn" | awk '/syspage_data/ { printf("0x%s", $2) }')
-	plugin=$(${CROSS}readelf -s "$fn" | awk '/plugin_ivt/ { printf("0x%s", $2) }')
-
-	addr=$((syspage - vectors))
-	sz=$((plugin - syspage))
-
-	# TODO: move the functionality to the image_builder?
-	"$PREFIX_BOOT/syspagen" \
-		-a 32 -s "$ADDR_DDR:$addr:$sz" \
-		-p "$PLO_SCRIPT_DIR/script.plo" \
-		-u "$uscript" \
-		-i "$img"
-}
-
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
 
@@ -80,28 +59,14 @@ b_image_target() {
 		b_log "FLASH image"
 		image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
 	else
-		#FIXME: this code path hasn't yet been moved to image_builder
+		b_log "Image will boot without PLO."
 
-		# Parsed by syspagen for map and console commands.
-		b_mkscript_preinit
+		${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_ELF/.elf/.bin}"
+		image_builder.py -v kernel-image --nvm "$NVM_CONFIG" --script "$SYSPAGE_SCRIPT" --kernel-elf "${PREFIX_PROG}${KERNEL_ELF}" --name kernel
 
-		# Build production image
-		b_log "RAM Image"
-
-		#TODO: create `kernel` partition image without the script using image_builder
-		b_kernel_image "$PREFIX_BOOT/phoenix.img"
-		b_syspage_gen "$PREFIX_BOOT/phoenix.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
-
-		b_log "FLASH Image"
-		# This is a workaround for target not using PLO.
-		# As plo is not used user script is used only to:
-		#    - upload executable binary file instead of elf to the board(kernelimg),
-		#    - upload required apps(app).
-		#TODO: create `kernel` partition image without the script using image_builder
-		b_mkscript_user "${PRIMARY_SCRIPT[@]}"
-		b_kernel_image "$PREFIX_BOOT/phoenix-kernel.img"
-		b_syspage_gen "$PREFIX_BOOT/phoenix-kernel.img" "$PLO_SCRIPT_DIR/$NAME_USER_SCRIPT"
-		cp -a "$PREFIX_BOOT/phoenix-kernel.img" "$PREFIX_BOOT/part_kernel.img"
+		# the same image for RAM (imx6ull-ram.sdp) and NAND (imx6ull-flash.sdp)
+		cp -a "$PREFIX_BOOT/part_kernel.img" "$PREFIX_BOOT/phoenix.img"
+		cp -a "$PREFIX_BOOT/part_kernel.img" "$PREFIX_BOOT/phoenix-kernel.img"
 	fi
 
 	b_log "Creating rootfs"
