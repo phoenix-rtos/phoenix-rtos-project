@@ -1,5 +1,5 @@
 # vim:sw=2:ts=2
-# Submodule bumps must point to commits already merged into the submodule's master branch.
+# Submodule bumps must point to commits already merged into the submodule's base branch.
 name: lint-submodule-refs
 
 # on events
@@ -7,11 +7,11 @@ on:
   pull_request:
     branches:
       - master
-      - 'feature/*'
+      - 'release/*'
   push:
     branches:
       - master
-      - 'feature/*'
+      - 'release/*'
 
 permissions:
   contents: read
@@ -21,17 +21,20 @@ jobs:
     name: submodule-refs
     runs-on: ubuntu-latest
     steps:
-      # full history: we need both ends of the checked range, submodules are not needed
+      # full history: we need both ends of the checked range. Submodules are left alone -
+      # the script populates just the ones the diff moved.
       - name: Checkout the repository
         uses: actions/checkout@v6
         with:
+          # the PR head itself rather than the merge commit, so the gitlinks checked out
+          # are the ones the diff below reports as moved
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           submodules: false
 
-      - name: Check that moved submodules point to master
+      - name: Check that moved submodules point to their base branch
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
           # for a PR these are the real branch tips (the checked out ref is the merge commit)
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
