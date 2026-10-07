@@ -1,7 +1,7 @@
 /*
  * Phoenix-RTOS
  *
- * Board config for riscv64-gr765-fpga
+ * Board config for riscv64-gr765-vcu118
  *
  * Copyright 2025 Phoenix Systems
  * Author: Lukasz Leczkowski
@@ -82,6 +82,8 @@
 /* SpaceWire GRSPW2 */
 
 #define SPW_CNT 2
+
+#define SPWCLK_FREQ (100 * 1000 * 1000U)
 
 #define SPW0_ACTIVE 1
 #define SPW1_ACTIVE 1
