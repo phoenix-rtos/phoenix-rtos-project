@@ -53,7 +53,7 @@ fi
 # target and project files are sourced, so that they can extend the list with
 # TEST_DIRS+=(...).
 #
-TEST_DIRS=(phoenix-rtos-corelibs)
+TEST_DIRS=(phoenix-rtos-corelibs phoenix-rtos-posixsrv)
 
 . "$TARGET_FILE"
 . "$PROJECT_FILE"
