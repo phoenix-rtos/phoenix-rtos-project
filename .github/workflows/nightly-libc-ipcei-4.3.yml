@@ -1,10 +1,10 @@
 # vim:sw=2:ts=2
 # Standalone nightly campaign running the phoenix-rtos-tests libc suite from the
-# `lukkrusz/rebased_posix` branch on ia32-generic-qemu and host-generic-pc.
+# `ipcei/4.3` branch on ia32-generic-qemu and host-generic-pc.
 #
 # The branch is checked out at runtime instead of bumping the phoenix-rtos-tests submodule, so
 # merging this workflow never changes the revision the rest of the project builds against.
-name: nightly-libc-rebased-posix
+name: nightly-libc-ipcei-4.3
 
 on:
   schedule:
@@ -12,7 +12,7 @@ on:
     - cron: '0 3 * * *'
 
 env:
-  TESTS_BRANCH: lukkrusz/rebased_posix
+  TESTS_BRANCH: ipcei/4.3
 
 jobs:
   nightly-libc:
@@ -102,7 +102,7 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          check_name: 'Unit Test Results (libc, rebased_posix)'
+          check_name: 'Unit Test Results (libc, ipcei/4.3)'
           files: "junit.xml"
 
   send-notification:
