@@ -21,7 +21,6 @@ export PSH_DEFUSRPWDHASH="0B1ANiYi45IhxkfmUW155/GBd4IRE="
 export SIZE_PAGE=$((0x1000))
 ADDR_DDR=$((0x80000000))
 
-
 #
 # Project specific build
 #
@@ -29,14 +28,12 @@ export BOOT_DEVICE="flash0"
 export MAGIC_USER_SCRIPT="dabaabad"
 
 # TODO: move to nvm.yaml
-ERASE_SIZE=$((64 * 4096))         # Rootfs disk erase block size (in bytes)
-
+ERASE_SIZE=$((64 * 4096)) # Rootfs disk erase block size (in bytes)
 
 b_build_project() {
 	b_log "Building user applications"
 	make -C "_user" all install
 }
-
 
 b_build_target() {
 	b_log "Building $TARGET project"
@@ -53,7 +50,6 @@ b_build_target() {
 	fi
 }
 
-
 # Temporary solution to omit phoenix-rtos-loader
 b_syspage_gen() {
 	img="$1"
@@ -64,18 +60,16 @@ b_syspage_gen() {
 	syspage=$(${CROSS}readelf -s "$fn" | awk '/syspage_data/ { printf("0x%s", $2) }')
 	plugin=$(${CROSS}readelf -s "$fn" | awk '/plugin_ivt/ { printf("0x%s", $2) }')
 
-	addr=$((syspage-vectors))
-	sz=$((plugin-syspage))
+	addr=$((syspage - vectors))
+	sz=$((plugin - syspage))
 
 	# TODO: move the functionality to the image_builder?
 	"$PREFIX_BOOT/syspagen" \
-		-a 32\
-		-s "$ADDR_DDR:$addr:$sz" \
+		-a 32 -s "$ADDR_DDR:$addr:$sz" \
 		-p "$PLO_SCRIPT_DIR/script.plo" \
 		-u "$uscript" \
 		-i "$img"
 }
-
 
 b_image_target() {
 	b_log "Creating image from $PREFIX_ROOTFS"
@@ -122,7 +116,7 @@ b_image_target() {
 
 	mkfs.jffs2 -U "${CLEANMARKER_ARG[@]}" -l -m none -e $ERASE_SIZE -s $SIZE_PAGE -r "$PREFIX_ROOTFS"/ -o "$ROOTFS"
 
-	if sumtool "${CLEANMARKER_ARG[@]}" -e $ERASE_SIZE -l -i "$ROOTFS" -o "$ROOTFS.tmp" 2> /dev/null; then
+	if sumtool "${CLEANMARKER_ARG[@]}" -e $ERASE_SIZE -l -i "$ROOTFS" -o "$ROOTFS.tmp" 2>/dev/null; then
 		echo "JFFS2 Summary nodes created"
 		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi
@@ -142,6 +136,5 @@ b_build_test_target() {
 	b_log "Build and install tests in the phoenix-rtos filesystem"
 	make -C "phoenix-rtos-tests" all install
 }
-
 
 export -f b_build_target
