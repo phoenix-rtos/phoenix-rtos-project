@@ -1,0 +1,14 @@
+_projects/riscv64-gr765-vcu118/board_config.h
+  h_fc26ad17182140 4,86-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4d42cb80d9f150d57f90af5e86d1f87598106079",
+  "prompts": {},
+  "humans": {
+    "h_fc26ad17182140": {
+      "author": "Lukasz Leczkowski <lukasz.leczkowski@phoenix-rtos.com>"
+    }
+  }
+}
