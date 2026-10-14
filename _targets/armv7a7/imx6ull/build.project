@@ -26,6 +26,11 @@ export SIZE_PAGE=$((0x1000))
 export BOOT_DEVICE="flash0"
 export MAGIC_USER_SCRIPT="dabaabad"
 b_set_default_path "SYSPAGE_SCRIPT" "kernel.syspage.yaml" # used if not booting from PLO
+# separate RAM image (eg. running psd) if set, otherwise the same as for NAND
+SYSPAGE_SCRIPT_RAM=""
+# nvm.yaml partition names
+KERNEL_PART="kernel"
+ROOTFS_PART="rootfs"
 
 # TODO: move to nvm.yaml
 ERASE_SIZE=$((64 * 4096)) # Rootfs disk erase block size (in bytes)
@@ -37,11 +42,11 @@ b_build_project() {
 
 b_build_target() {
 	b_log "Building $TARGET project"
-	image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
 
 	if [ "$KERNEL_PLO_BOOT" = "y" ]; then
 		b_log "Building PLO"
 
+		image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script.plo
 		RAM_SCRIPT=1 image_builder.py script --nvm "$NVM_CONFIG" --script "$PLO_SCRIPT_PREINIT" --out script-ram.plo
 		make -C plo all
 
@@ -57,16 +62,20 @@ b_image_target() {
 		b_log "Image will boot from PLO."
 
 		b_log "FLASH image"
-		image_builder.py -v partition --nvm "$NVM_CONFIG" --name kernel --script "$PLO_SCRIPT_USER"
+		image_builder.py -v partition --nvm "$NVM_CONFIG" --name "$KERNEL_PART" --script "$PLO_SCRIPT_USER"
 	else
 		b_log "Image will boot without PLO."
 
 		${CROSS}objcopy "${PREFIX_PROG_STRIPPED}${KERNEL_ELF}" -O binary "${PREFIX_PROG_STRIPPED}${KERNEL_ELF/.elf/.bin}"
-		image_builder.py -v kernel-image --nvm "$NVM_CONFIG" --script "$SYSPAGE_SCRIPT" --kernel-elf "${PREFIX_PROG}${KERNEL_ELF}" --name kernel
+		image_builder.py -v kernel-image --nvm "$NVM_CONFIG" --script "$SYSPAGE_SCRIPT" --kernel-elf "${PREFIX_PROG}${KERNEL_ELF}" --name "$KERNEL_PART"
+		cp -a "$PREFIX_BOOT/part_${KERNEL_PART}.img" "$PREFIX_BOOT/phoenix-kernel.img"
 
-		# the same image for RAM (imx6ull-ram.sdp) and NAND (imx6ull-flash.sdp)
-		cp -a "$PREFIX_BOOT/part_kernel.img" "$PREFIX_BOOT/phoenix.img"
-		cp -a "$PREFIX_BOOT/part_kernel.img" "$PREFIX_BOOT/phoenix-kernel.img"
+		# RAM image (imx6ull-ram.sdp), by default the same as for NAND (imx6ull-flash.sdp)
+		if [ -n "$SYSPAGE_SCRIPT_RAM" ]; then
+			image_builder.py -v kernel-image --nvm "$NVM_CONFIG" --script "$SYSPAGE_SCRIPT_RAM" --kernel-elf "${PREFIX_PROG}${KERNEL_ELF}" --out phoenix.img
+		else
+			cp -a "$PREFIX_BOOT/part_${KERNEL_PART}.img" "$PREFIX_BOOT/phoenix.img"
+		fi
 	fi
 
 	b_log "Creating rootfs"
@@ -86,7 +95,7 @@ b_image_target() {
 		mv "$ROOTFS.tmp" "$ROOTFS"
 	fi
 
-	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" '{{ nvm.flash0.rootfs.size }}')
+	FS_SZ=$(image_builder.py query --nvm "$NVM_CONFIG" "{{ nvm.flash0.${ROOTFS_PART}.size }}")
 	sz=$(du -k "$ROOTFS" | awk '{ print $1 }')
 	echo "rootfs size: ${sz} kB / $((FS_SZ / 1024)) kB"
 	[ "$sz" -gt "$((FS_SZ / 1024))" ] && b_die "rootfs size exceeds the target partition!"
