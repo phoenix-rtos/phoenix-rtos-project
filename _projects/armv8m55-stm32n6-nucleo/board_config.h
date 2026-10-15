@@ -37,6 +37,16 @@
 #define UART_CONSOLE_KERNEL 1
 #define UART_CONSOLE_USER   1
 
+/* Ethernet (RMII, LAN8742A PHY; REF_CLK 50 MHz provided by PHY on PF7) */
+#define ETH1_MDC_PORT           gpiog
+#define ETH1_MDC_PIN            11
+#define ETH1_MDIO_PORT          gpiof
+#define ETH1_MDIO_PIN           4
+#define ETH1_RX_REFCLK_INTERNAL 0
+#define ETH1_REF_CLK_PORT       gpiof
+#define ETH1_REF_CLK_PIN        7
+#define ETH1_MODE_RMII
+
 /*
  * libpseudodev and libposixsrv shall be used exclusively, libpseudodev uses
  * less resources, but libposixsrv provides POSIX support and may be resource
