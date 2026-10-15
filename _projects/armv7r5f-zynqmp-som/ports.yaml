@@ -1,0 +1,4 @@
+ports:
+  - name: micropython
+    tests: True
+    if: {{ bool(env.LONG_TEST) }}
