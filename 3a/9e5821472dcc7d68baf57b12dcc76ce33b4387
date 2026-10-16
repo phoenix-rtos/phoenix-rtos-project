@@ -1,0 +1,19 @@
+_projects/armv7a7-imx6ull-evk/board_config.h
+  s_961eda7c4468ed::t_c5889871ffef6a 17-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3a9e5821472dcc7d68baf57b12dcc76ce33b4387",
+  "prompts": {},
+  "sessions": {
+    "s_961eda7c4468ed": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8172be12-599a-462e-8ba1-28cddf925c2a",
+        "model": "unknown"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
