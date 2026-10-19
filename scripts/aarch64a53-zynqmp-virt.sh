@@ -15,4 +15,4 @@ qemu-system-aarch64 \
 	-accel kvm \
 	-device loader,addr=0x49000000,file=_boot/aarch64a53-zynqmp-virt/flash0.disk \
 	-s \
-	-m 600M
+	-m 1G
