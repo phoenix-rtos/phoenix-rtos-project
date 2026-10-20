@@ -5,7 +5,7 @@ CONSOLE
 LONG_TEST
 SIL
 DEBUG
-
+CPUTIME_SPLIT
 
 
 # project-specific env variables should be added below this line
