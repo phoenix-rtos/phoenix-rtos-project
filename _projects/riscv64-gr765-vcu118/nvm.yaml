@@ -9,7 +9,7 @@ flash0:
       offs: 0x40000
     - name: rootfs
       offs: 0x100000
-      size: 0x600000
+      size: 0x700000
       type: jffs2
     - name: ptable
       offs: 0x1ffc0000
