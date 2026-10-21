@@ -32,6 +32,20 @@
         compatible = "riscv,cpu-intc";
       };
     };
+
+    cpu1: cpu@1 {
+      device_type = "cpu";
+      reg = <1>;
+      status = "okay";
+      compatible = "gaisler,noelv", "riscv";
+      riscv,isa = "rv64imafd";
+      mmu-type = "riscv,sv39";
+      cpu1_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
   };
 
   memory@0 {
@@ -42,7 +56,7 @@
   sysclock: sysclock {
     #clock-cells = <0>;
     compatible = "fixed-clock";
-    clock-frequency = <100000000>;
+    clock-frequency = <80000000>;
   };
 
   soc {
@@ -51,39 +65,36 @@
     compatible = "simple-bus";
     ranges;
 
-    clint@e0000000 {
+    clint@b0000000 {
       compatible = "riscv,clint0";
       interrupts-extended = <
         &cpu0_intc 3
         &cpu0_intc 7
+        &cpu1_intc 3
+        &cpu1_intc 7
       >;
-      reg = <0xe0000000 0x100000>;
+      reg = <0xb0000000 0x100000>;
       reg-names = "control";
     };
 
-    plic0: interrupt-controller@f8000000 {
+    plic0: interrupt-controller@fc000000 {
       #address-cells = <0>;
       #interrupt-cells = <1>;
       compatible = "riscv,plic0";
-      reg = <0xf8000000 0x4000000>;
+      reg = <0xfc000000 0x4000000>;
       interrupt-controller;
       interrupts-extended = <
         &cpu0_intc 11
         &cpu0_intc 9
         &cpu0_intc 8
         &cpu0_intc 10
+        &cpu1_intc 11
+        &cpu1_intc 9
+        &cpu1_intc 8
+        &cpu1_intc 10
       >;
       riscv,max-priority = <7>;
       riscv,ndev = <31>;
-    };
-
-    greth0: greth@fc084000 {
-      compatible = "gaisler,greth";
-      reg = <0xfc084000 0x100>;
-      interrupt-parent = <&plic0>;
-      interrupts = <5>;
-      preserve-link = <1>;
-      local-mac-address = [00 50 C2 75 a3 52];
     };
 
     uart0: uart@ff900000 {

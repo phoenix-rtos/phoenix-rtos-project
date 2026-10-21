@@ -65,10 +65,10 @@
 
 #define TIMER_FREQ (50 * 1000 * 1000)
 
-#define PLIC_BASE     0xf8000000UL
+#define PLIC_BASE     0xfc000000UL
 #define PLIC_IRQ_SIZE 32
 
-#define SYSCLK_FREQ (100 * 1000 * 1000)
+#define SYSCLK_FREQ (80 * 1000 * 1000)
 
 #define SBI_AREA_START 0x0UL
 #define SBI_AREA_END   0x10000UL
