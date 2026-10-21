@@ -8,5 +8,6 @@ contents:
   - app {{ env.BOOT_DEVICE }} -xn psh axi_app axi_app
   - app {{ env.BOOT_DEVICE }} -xn stm32l4-multi axi_app axi_app;per;dmamem;flash0
   - app {{ env.BOOT_DEVICE }} -xn flashdrv;-c;1;-m;0;-d;stm32-extflash axi_app axi_app
+  - app {{ env.BOOT_DEVICE }} -xn lwip;stm32eth:1:PHY:lan8742a:0.0:irq:MAC {{ env.BOOT_DEVICE }} axi_app;per
   - wait 1000
   - go!
