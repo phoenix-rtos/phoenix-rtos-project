@@ -1,0 +1,16 @@
+phoenix-rtos-devices
+  h_44b30f378b8eea 1
+phoenix-rtos-usb
+  h_44b30f378b8eea 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a5118a9f38680d1b896e9e332f7e3ffd68b6b860",
+  "prompts": {},
+  "humans": {
+    "h_44b30f378b8eea": {
+      "author": "Mateusz Kobak <mateusz.kobak@phoenix-rtos.com>"
+    }
+  }
+}
