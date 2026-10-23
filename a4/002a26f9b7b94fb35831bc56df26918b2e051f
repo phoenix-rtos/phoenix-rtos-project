@@ -1,0 +1,19 @@
+phoenix-rtos-kernel
+  s_12831ff4e772b0::t_4e49eeff0b40c2 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4002a26f9b7b94fb35831bc56df26918b2e051f",
+  "prompts": {},
+  "sessions": {
+    "s_12831ff4e772b0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5cea00b-53d0-4a66-bcd7-cdb5be997dce",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
