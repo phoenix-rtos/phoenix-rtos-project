@@ -7,6 +7,6 @@ VER_PATCH=0
 # Tag (SemVer: Pre-release). Empty on a release. Otherwise: "dev" (development), "rc.N"
 # (release candidate N), "rc.N.dev" (development after "rc.N") - all towards the version
 # specified above.
-VER_TAG=dev
+VER_TAG=
 # Build metadata
 VER_BUILD=
