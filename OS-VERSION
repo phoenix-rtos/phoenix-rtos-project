@@ -3,10 +3,10 @@
 # NAME=value without spaces, values only in [0-9A-Za-z.], MAJOR/MINOR/PATCH 0-999.
 VER_MAJOR=3
 VER_MINOR=4
-VER_PATCH=0
+VER_PATCH=1
 # Tag (SemVer: Pre-release). Empty on a release. Otherwise: "dev" (development), "rc.N"
 # (release candidate N), "rc.N.dev" (development after "rc.N") - all towards the version
 # specified above.
-VER_TAG=
+VER_TAG=dev
 # Build metadata
 VER_BUILD=
