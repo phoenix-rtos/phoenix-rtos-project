@@ -11,6 +11,7 @@
 export PLO_DEVICES="uart-grlib ram-storage"
 export BOOT_DEVICE="ram0"
 export RISCV_ISA_STRING="rv64gch_zicbom_zicntr_zicond_zihpm_zfa_zfh_zfhmin_zca_zcb_zcd_zba_zbb_zbc_zbs_zkn_zkt_smepmp_smstateen_sscofpmf_sstc_svinval_svnapot_svpbmt"
+export LIBM_USE_LIBMCS="y"
 
 b_image_project() {
 	rm -f "$PREFIX_BOOT/sbi-${TARGET_SUBFAMILY}.elf"
