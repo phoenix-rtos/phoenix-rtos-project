@@ -14,7 +14,7 @@ contents:
     filename: imx6ull-flashnor
     args:
        - '-q;1'
-       - '-r;0;{{ nvm.flash0.rootfs.offs }};{{ nvm.flash0.rootfs.size }};jffs2'
+       - '-r;{{ nvm.flash0.rootfs.offs }};{{ nvm.flash0.rootfs.size }};jffs2'
     text_map: ddr
     data_maps: ddr
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
