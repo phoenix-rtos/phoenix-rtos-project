@@ -1,7 +1,8 @@
 flash0:
   size: 0x2000000 # 32 MB
-  block_size: 0x1000
+  block_size: 0x10000
   padding_byte: 0xff
+  ptable_blocks: 1
   partitions:
     - name: plo
       offs: 0x0
