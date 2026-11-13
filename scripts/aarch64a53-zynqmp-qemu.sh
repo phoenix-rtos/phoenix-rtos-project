@@ -9,8 +9,10 @@
 # Author: Jacek Maksymowicz
 #
 
-IMG_PLO_ZYNQMP="$(dirname "${BASH_SOURCE[0]}")/../_boot/aarch64a53-zynqmp-qemu/plo.elf"
-IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/aarch64a53-zynqmp-qemu/flash0.disk"
+BOOT_DIR="${PHOENIX_BOOT_DIR:-$(dirname "${BASH_SOURCE[0]}")/../_boot/aarch64a53-zynqmp-qemu}"
+
+IMG_PLO_ZYNQMP="$BOOT_DIR/plo.elf"
+IMG_FLASH_QEMU="$BOOT_DIR/flash0.disk"
 DTB_ZYNQMP="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynqmp-zcu104.dtb"
 
 for FILE in "$IMG_PLO_ZYNQMP" "$IMG_FLASH_QEMU" "$DTB_ZYNQMP"; do
