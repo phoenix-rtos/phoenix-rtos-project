@@ -2,7 +2,7 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map kddr 0x000000 0x1fffff rwx # 0 ~ 2 MB
+  - map kddr 0x000000 0x1fffff rwxk # 0 ~ 2 MB
   - map ddr 0x200000 0x1fffffff rwx # 2 ~ 512 MB
   - map ocram 0xfffc0000 0xffffffff rwx
   - phfs uart0 0.0 raw

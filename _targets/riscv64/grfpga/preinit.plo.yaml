@@ -2,7 +2,7 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map ddr 0x40000 0x7ffffff rwx
+  - map ddr 0x40000 0x7ffffff rwxk
   - phfs flash0 2.0 raw
   - phfs uart1 0.1 phoenixd
   - console 0.0

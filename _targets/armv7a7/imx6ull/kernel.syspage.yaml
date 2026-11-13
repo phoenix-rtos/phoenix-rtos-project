@@ -2,7 +2,7 @@
 size: 0
 
 contents:
-  - map ddr 0x80000000 0x87ffffff rwx
+  - map ddr 0x80000000 0x87ffffff rwxk
   - console 0.0
   - kernelimg {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
