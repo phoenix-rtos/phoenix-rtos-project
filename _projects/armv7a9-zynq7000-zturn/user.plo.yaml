@@ -8,6 +8,7 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x dummyfs;-N;devfs;-D ddr ddr
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x coredump_server ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh;-i;/etc/rc.psh ddr ddr
   - name: app
     device: '{{ env.BOOT_DEVICE }}'
