@@ -1,0 +1,38 @@
+# std's integration tests
+ambiguous_hash_map
+builtin_clone
+create_dir_all_bare
+env --skip test_self_exe_path
+env_modify
+eq_multidispatch
+error
+istr
+log_knows_the_names_of_variants_in_std
+minmax_stability_issue_23687
+num
+panic
+path
+run_time_detect
+seq_compare
+slice_from_array_issue_113238
+switch_stdout
+sync
+sync_view
+thread --skip available_parallelism
+thread_local
+type_name_unsized
+volatile_fat_ptr
+
+# std's unit tests
+# skipped:
+#   fs:: - fs::remove_dir_all leaves files behind (ENOTEMPTY), so every test's tmpdir cleanup fails
+#   net:: - no network on the target
+#   process:: - no process spawning
+#   test_try_reserve - libphoenix malloc truncates sizes of 4 GiB and more (malloc_dl.c)
+std-unittests --skip fs:: --skip net:: --skip process:: --skip test_try_reserve
+std-unittests os::unix::fs --skip test_mkfifo
+# std-unittests os::unix::net # kernel AF_UNIX connect() blocks until the listener accepts, so tests hang
+
+# core's and alloc's
+coretests --skip flt2dec
+alloctests-unittests --skip try_reserve

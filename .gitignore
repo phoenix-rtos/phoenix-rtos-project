@@ -9,3 +9,8 @@ compile_commands.json
 .venv/
 .cpptest/
 reports/
+debug/
+target/
+**/*.rs.bk
+**/mutants.out*/
+rustc-ice-*.txt
