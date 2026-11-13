@@ -6,9 +6,11 @@
 # Author: Hubert Buczynski, Damian Modzelewski
 #
 
-IMG_PLO_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu/plo.img"
+BOOT_DIR="${PHOENIX_BOOT_DIR:-$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu}"
+
+IMG_PLO_ZYNQ7000="$BOOT_DIR/plo.img"
 DTB_ZYNQ7000="$(dirname "${BASH_SOURCE[0]}")/../scripts/zynq7000-zc702-single.dtb"
-IMG_FLASH_QEMU="$(dirname "${BASH_SOURCE[0]}")/../_boot/armv7a9-zynq7000-qemu/flash0.disk"
+IMG_FLASH_QEMU="$BOOT_DIR/flash0.disk"
 
 for FILE in "$IMG_PLO_ZYNQ7000" "$IMG_FLASH_QEMU" "$DTB_ZYNQ7000"; do
 	if [ ! -f "$FILE" ]; then

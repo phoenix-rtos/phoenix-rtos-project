@@ -6,6 +6,8 @@
 # Author: Lukasz Kosinski, Lukasz Leczkowski
 #
 
+BOOT_DIR="${PHOENIX_BOOT_DIR:-$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu}"
+
 REGEX="version ([0-9]+)\.([0-9]+)"
 OPTIMG=""
 
@@ -24,8 +26,8 @@ fi
 exec qemu-system-riscv64 \
 	-smp 1 \
 	-machine virt \
-	"$OPTIMG" "$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/sbi-generic.elf" \
+	"$OPTIMG" "$BOOT_DIR/sbi-generic.elf" \
 	-serial stdio \
-	-drive file="$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/vblk0.disk",format=raw,cache=unsafe,if=none,id=vblk0 \
+	-drive file="$BOOT_DIR/vblk0.disk",format=raw,cache=unsafe,if=none,id=vblk0 \
 	-device virtio-blk-device,drive=vblk0 \
-	-device loader,file="$(dirname "${BASH_SOURCE[0]}")/../_boot/riscv64-generic-qemu/loader.disk",addr=0x20000000
+	-device loader,file="$BOOT_DIR/loader.disk",addr=0x20000000
