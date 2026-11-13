@@ -1,0 +1,120 @@
+# vim:sw=2:ts=2
+name: ci-rust
+
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        type: string
+        description: 'Docker image tag version'
+        default: 'latest'
+        required: false
+      project-ref:
+        type: string
+        description: 'phoenix-rtos-project ref to test the calling submodule in (empty: the caller is the project)'
+        default: ''
+        required: false
+
+jobs:
+  rust:
+    name: rust
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [
+          'riscv64-generic-qemu',
+          'ia32-generic-qemu',
+          'armv7r5f-zynqmp-qemu'
+        ]
+        variant: ['checked', 'release']
+    defaults:
+      run:
+        shell: bash
+    env:
+      TARGET: ${{ matrix.target }}
+      DEBUG: ${{ matrix.variant == 'checked' && '1' || '' }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.project-ref && 'phoenix-rtos/phoenix-rtos-project' || github.repository }}
+          ref: ${{ inputs.project-ref }}
+          submodules: recursive
+
+      - if: inputs.project-ref
+        uses: ./.github/actions/resolve-submodule-deps
+
+      - name: Get the Rust toolchain
+        run: |
+          mv "$(RUST_TOOLCHAIN_CACHE="$RUNNER_TEMP/cache" scripts/rust-toolchain.sh)" "$RUNNER_TEMP/rust-toolchain"
+          jq . "$RUNNER_TEMP/rust-toolchain/PHOENIX-TOOLCHAIN.json"
+          mkdir -p "$RUNNER_TEMP/bin"
+          cat > "$RUNNER_TEMP/bin/rdocker" << EOF
+          #!/bin/bash
+          img="\$1"; shift
+          exec docker run --rm --privileged -v "$PWD:$PWD" -w "$PWD" -v "$RUNNER_TEMP:$RUNNER_TEMP" \\
+            -e CI=true -e CONSOLE=serial -e RAW_LOG=1 -e TARGET -e DEBUG -e RUST_BUILD_STD -e RUNNER_TEMP \\
+            -e RUST_ENABLE=y -e RUST_TOOLCHAIN_DIR="$RUNNER_TEMP/rust-toolchain" \\
+            -e CARGO_HOME="$RUNNER_TEMP/cargo-home" -e RUST_RUNNER_DOCKER=0 \\
+            "ghcr.io/phoenix-rtos/\$img:${{ inputs.image-tag }}" "\$@"
+          EOF
+          chmod +x "$RUNNER_TEMP/bin/rdocker"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Get the std override
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          [ -n "$PR" ] || exit 0
+          body="$(gh pr view "$PR" --repo "${{ github.repository }}" --json body --jq .body)"
+          dep="$(tr -d '\r' <<< "$body" | sed -n 's/^[[:space:]]*[Dd]epends-[Oo]n:[[:space:]]*rust\([:#][^[:space:]]*\)[[:space:]]*$/\1/p')"
+          dep="${dep%%$'\n'*}"
+          case "$dep" in
+            '') exit 0 ;;
+            :*) ref="refs/heads/${dep#:}" ;;
+            '#'[0-9]*) ref="refs/pull/${dep#\#}/head" ;;
+            *) ref="" ;;
+          esac
+          git check-ref-format "$ref" || { echo "::error::Depends-On: rust$dep: expected rust:<branch> or rust#<PR>"; exit 1; }
+
+          base="$(jq -r .rust.commit "$RUNNER_TEMP/rust-toolchain/PHOENIX-TOOLCHAIN.json")"
+          cd "$(mktemp -d)"
+          git init -q && git remote add origin https://github.com/phoenix-rtos/rust
+          git fetch -q --depth=1 --filter=blob:none origin "$base" "+$ref:refs/std"
+          git diff --quiet "$base" refs/std -- compiler src/llvm-project ||
+            { echo "::error::$ref changes the compiler: it needs a new toolchain"; exit 1; }
+          git sparse-checkout set library && git checkout -q refs/std
+          git submodule update -q --init --depth=1 library/backtrace && rm -f library/backtrace/.git
+          rm -rf "$RUNNER_TEMP/rust-toolchain/lib/rustlib/src/rust/library"
+          cp -r library "$RUNNER_TEMP/rust-toolchain/lib/rustlib/src/rust/"
+          echo "std from phoenix-rtos/rust $ref ($(git rev-parse --short refs/std))" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "RUST_BUILD_STD=y" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: rdocker build host core fs project test image
+
+      # TODO: drop the jinja2 install once the devel image has it
+      - name: Run cargo tests
+        run: rdocker devel 'python3 -m pip install -q jinja2 && ./phoenix-rtos-build/build.sh env <<< "make -C _user test-rust-smoke-run"'
+
+      - name: Run ctest
+        run: |
+          src="$(sed -n '/^name = "libc"$/,/^$/s/^source = "\(.*\)"$/\1/p' "$RUNNER_TEMP/rust-toolchain/lib/rustlib/src/rust/library/Cargo.lock")"
+          url="${src#git+}"
+          git init -q "$RUNNER_TEMP/libc"
+          git -C "$RUNNER_TEMP/libc" fetch -q --depth=1 "${url%%[?#]*}" "${src##*#}"
+          git -C "$RUNNER_TEMP/libc" checkout -q FETCH_HEAD
+
+          cat > "$RUNNER_TEMP/ctest.sh" << 'EOF'
+          set -e
+          eval "$(make -s --no-print-directory -C _user export-cargo-env)"
+          cd "$RUNNER_TEMP/libc"
+          RUST_RUNNER_RUN_TIMEOUT=900 CARGO_TARGET_DIR="$RUNNER_TEMP/libc-target" "$CARGO" test -p libc-test --test ctest
+          EOF
+          rdocker devel 'python3 -m pip install -q jinja2 && ./phoenix-rtos-build/build.sh env < "$RUNNER_TEMP/ctest.sh"' 2>&1 | tee "$RUNNER_TEMP/ctest.log"
+          echo "ctest on $TARGET: $(tr -d '\r' < "$RUNNER_TEMP/ctest.log" | grep -a '^PASSED')" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run tests
+        run: rdocker devel "python3 -m pip install -q jinja2 && ./phoenix-rtos-tests/runner.py -v -T$TARGET -t _user/rust-smoke -t phoenix-rtos-rust"

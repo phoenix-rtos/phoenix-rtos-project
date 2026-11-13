@@ -474,6 +474,15 @@ jobs:
             results.csv
             results.xml
 
+  # ── Rust (report only) ─────────────────────────────────────────────────────
+  rust:
+    needs: [resolve-deps]
+    if: contains(fromJSON('["libphoenix", "phoenix-rtos-kernel", "phoenix-rtos-build", "phoenix-rtos-tests"]'), github.event.repository.name)
+    uses: phoenix-rtos/phoenix-rtos-project/.github/workflows/ci-rust.yml@master
+    with:
+      image-tag: ${{ inputs.image-tag }}
+      project-ref: ${{ needs.resolve-deps.outputs.project-ref }}
+
   # ── Test results summary ───────────────────────────────────────────────────
   tests-summary:
     if: success() || failure()   # don't care about cancelled runs
