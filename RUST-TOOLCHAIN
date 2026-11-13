@@ -1,0 +1,3 @@
+# Rust toolchain image (published by phoenix-rtos/rust)
+# used by ci-rust.yml and, when RUST_ENABLE=y, by docker-{build,devel}.sh
+ghcr.io/phoenix-rtos/rust-toolchain:phoenix-20261113
