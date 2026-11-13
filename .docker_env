@@ -6,6 +6,6 @@ LONG_TEST
 SIL
 DEBUG
 CPUTIME_SPLIT
-
+RUST_ENABLE
 
 # project-specific env variables should be added below this line
