@@ -7,6 +7,7 @@ contents:
   - kernel {{ env.BOOT_DEVICE }}
   - app {{ env.BOOT_DEVICE }} -x zynq-uart ddr ddr;devs
   - app {{ env.BOOT_DEVICE }} -x dummyfs ddr ddr
+  - app {{ env.BOOT_DEVICE }} -x coredump_server ddr ddr
   - app {{ env.BOOT_DEVICE }} -x psh ddr ddr
   - wait 1500
   - go!
