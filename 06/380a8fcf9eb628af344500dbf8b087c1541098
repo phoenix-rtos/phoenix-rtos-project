@@ -1,0 +1,19 @@
+scripts/aarch64a53-zynqmp-qemu.sh
+  s_4ae779d94169d8::t_46d945ceb98151 23-24,35-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06380a8fcf9eb628af344500dbf8b087c1541098",
+  "prompts": {},
+  "sessions": {
+    "s_4ae779d94169d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4737c82f-3368-408a-8236-bcb531f7d028",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
