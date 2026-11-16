@@ -1,0 +1,22 @@
+libphoenix
+  h_44b30f378b8eea 1
+phoenix-rtos-devices
+  h_44b30f378b8eea 1
+phoenix-rtos-lwip
+  h_44b30f378b8eea 1
+phoenix-rtos-tests
+  h_44b30f378b8eea 1
+plo
+  h_44b30f378b8eea 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b34efa1ab20f46930e3c91ea6661b066115f833",
+  "prompts": {},
+  "humans": {
+    "h_44b30f378b8eea": {
+      "author": "Mateusz Kobak <mateusz.kobak@phoenix-rtos.com>"
+    }
+  }
+}
