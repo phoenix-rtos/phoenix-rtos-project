@@ -1,0 +1,19 @@
+_projects/aarch64a53-zynqmp-qemu/rootfs-overlay/etc/rc.psh
+  s_4ae779d94169d8::t_14cd093f4e48f2 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "528bdf475018533e79ec8d370041df2b4c890b7e",
+  "prompts": {},
+  "sessions": {
+    "s_4ae779d94169d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4737c82f-3368-408a-8236-bcb531f7d028",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
