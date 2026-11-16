@@ -194,6 +194,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Remove leftovers of previous jobs
+        run: |
+          git clean -ffdx
+          git submodule foreach --quiet --recursive git clean -ffdx
+
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
