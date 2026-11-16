@@ -20,6 +20,8 @@ for FILE in "$IMG_PLO_ZYNQMP" "$IMG_FLASH_QEMU" "$DTB_ZYNQMP"; do
 	fi
 done
 
+# -icount: with thread=single, the timer IRQ that the kernel rotates to an idle core waits until a spinning core
+# yields, so ticks are lost and the guest clock almost stops; icount runs the guest clock by executed instructions
 exec qemu-system-aarch64 \
 	-M arm-generic-fdt \
 	-serial null \
@@ -30,4 +32,5 @@ exec qemu-system-aarch64 \
 	-device loader,addr=0xfd1a0104,data=0x80000e0e,data-len=4 \
 	-m 2G \
 	-display none \
-	-accel tcg,thread=single,tb-size=1024
+	-accel tcg,thread=single,tb-size=1024 \
+	-icount shift=auto
