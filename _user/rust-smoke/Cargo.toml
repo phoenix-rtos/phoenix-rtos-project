@@ -1,0 +1,17 @@
+[package]
+name = "rust-smoke"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "rust-smoke"
+path = "src/main.rs"
+
+[profile.release]
+# The build system strips separately and keeps the unstripped copy in
+# _build/<target>/prog, so keep the symbols here.
+debug = true
+
+[dependencies]
+base64 = "0.23.1"

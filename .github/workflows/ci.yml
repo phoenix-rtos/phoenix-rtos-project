@@ -13,5 +13,9 @@ on:
 
 jobs:
   call-ci:
+    if: false
     uses: ./.github/workflows/ci-project.yml
     secrets: inherit
+
+  call-rust:
+    uses: ./.github/workflows/ci-rust.yml

@@ -49,11 +49,14 @@ if [ ! -f "$PROJECT_FILE" ]; then
 fi
 
 #
-# Repositories with unit tests declared through test-binary.mk. Set before the
-# target and project files are sourced, so that they can extend the list with
-# TEST_DIRS+=(...).
+# Repositories with unit tests declared through test-binary.mk or Rust cargo
+# tests. Set before the target and project files are sourced, so that they
+# can extend the list with TEST_DIRS+=(...).
 #
 TEST_DIRS=(phoenix-rtos-corelibs phoenix-rtos-posixsrv)
+if [ "$RUST_ENABLE" = "y" ]; then
+	TEST_DIRS+=(phoenix-rtos-rust _user)
+fi
 
 . "$TARGET_FILE"
 . "$PROJECT_FILE"

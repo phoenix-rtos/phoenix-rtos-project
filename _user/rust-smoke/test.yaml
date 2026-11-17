@@ -1,0 +1,7 @@
+# Built by `build.sh test` with RUST_ENABLE=y (see phoenix-rtos-build/RUST.md)
+test:
+  type: libtest
+  requires: [RUST_ENABLE]
+  tests:
+    - name: rust-smoke
+      execute: test-rust-smoke

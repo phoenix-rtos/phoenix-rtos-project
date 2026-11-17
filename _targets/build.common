@@ -34,6 +34,8 @@ b_set_default_path() {
 	fi
 }
 
+export RUST_RUNNER="${RUST_RUNNER:-${PREFIX_PROJECT}/phoenix-rtos-tests/cargo-runner.py}"
+
 b_set_default_path "NVM_CONFIG" "nvm.yaml"
 b_set_default_path "PLO_SCRIPT_PREINIT" "preinit.plo.yaml"
 b_set_default_path "PLO_SCRIPT_USER" "user.plo.yaml"

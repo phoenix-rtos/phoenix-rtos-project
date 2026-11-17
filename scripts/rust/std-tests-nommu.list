@@ -1,0 +1,46 @@
+# std-tests.list for targets without an MMU (armv7r5f-zynqmp-qemu)
+#
+# skipped, besides what std-tests.list skips:
+#   random - the image has no /dev/urandom (posixsrv is not started), and std
+#            seeds HashMap's RandomState and its test tmpdir names from it
+#   HOME - nothing sets HOME on the image (no rc.psh), so the XDG directories
+#          cannot be derived from it
+#   stack - oneshot::send_before_recv sends a [u8; 4096] by value; unoptimised,
+#           every generic layer of send() and recv() copies it, and it needs
+#           more than 64 KiB of stack (passes with 128 KiB, std-tests.sh gives
+#           test threads 32 KiB)
+
+# std's integration tests
+ambiguous_hash_map
+builtin_clone
+# create_dir_all_bare # random
+env --skip test_self_exe_path
+env_modify --skip test_env_set_get_huge --skip test_env_set_var --skip test_remove_var --skip test_set_var --skip test_var_big # random
+eq_multidispatch
+error
+istr
+log_knows_the_names_of_variants_in_std
+minmax_stability_issue_23687
+num
+panic
+path
+run_time_detect
+seq_compare
+slice_from_array_issue_113238
+# switch_stdout # random
+sync --exact --skip oneshot::send_before_recv # stack
+sync_view
+thread --skip available_parallelism
+thread_local --skip dynamic_tests::hashmap # random
+type_name_unsized
+volatile_fat_ptr
+
+# std's unit tests
+std-unittests --skip fs:: --skip net:: --skip process:: --skip test_try_reserve --skip collections::hash:: # random
+std-unittests const_with_hasher
+std-unittests os::unix::fs --skip test_mkfifo --skip vectored_at --skip can_fetch_xdg # random, HOME
+
+# core's and alloc's
+coretests --skip flt2dec --skip hash::test_build_hasher_dyn_compatible --skip mem::type_info::test_dynamic_traits --skip slice::select_nth_unstable # random
+coretests slice::select_nth_unstable_
+alloctests-unittests --skip try_reserve --skip collections::linked_list::tests::test_fuzz # random

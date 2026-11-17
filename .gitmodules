@@ -43,3 +43,6 @@
 [submodule "phoenix-rtos-doc"]
 	path = phoenix-rtos-doc
 	url = https://github.com/phoenix-rtos/phoenix-rtos-doc
+[submodule "phoenix-rtos-rust"]
+	path = phoenix-rtos-rust
+	url = https://github.com/phoenix-rtos/phoenix-rtos-rust
