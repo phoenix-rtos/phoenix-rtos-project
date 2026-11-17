@@ -11,7 +11,7 @@
 # no NVM storage, all programs are being loaded via UART
 export BOOT_DEVICE="uart0"
 
-export PLO_DEVICES="gpio-gr716 uart-grlib"
+export PLO_DEVICES="gpio-grlib uart-grlib"
 
 prepare_plo_img() {
 	#TODO: consider using nvm.yaml for merging header with plo
