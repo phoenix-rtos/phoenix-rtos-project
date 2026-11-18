@@ -314,12 +314,18 @@ jobs:
           CPPTEST_CONFIG: ${{ inputs.cpptest_ruleset }}
           CPPTEST_COMPILER: ${{ case(contains(matrix.target, 'aarch64'), 'gcc_14-aarch64', 'gcc_14-aarch32') }}
         run: |
+          set -o pipefail
           cpptestcli -config "$CPPTEST_CONFIG" \
             -input "_build/${{ matrix.target }}/compile_commands.json" \
             -compiler "$CPPTEST_COMPILER" \
             -module ${{ github.event.repository.name }} \
             -property report.format=sarif,html \
-            -resource ${{ github.event.repository.name }}
+            -resource ${{ github.event.repository.name }} 2>&1 | tee cpptest.log
+          # cpptestcli exits 0 when a file can't be preprocessed - the file is silently not analyzed
+          if grep -q "setup problems have been encountered" cpptest.log; then
+            echo "::error::cpptest setup problems - some files were not analyzed, see the log above"
+            exit 1
+          fi
 
       # Save .cpptest cache after analysis. Critical on master (builds baseline
       # for all PRs). Uses !cancelled() to save even if cpptestcli found violations.
