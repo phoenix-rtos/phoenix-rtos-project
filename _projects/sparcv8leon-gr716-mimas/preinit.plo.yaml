@@ -2,8 +2,8 @@ size: 0x1000
 is_relative: False
 
 contents:
-  - map ocram 0x31000000 0x3101FFFF rwx
-  - map extram 0x40000000 0x401FFFFF rwx
+  - map ocram 0x31000000 0x31020000 rwx
+  - map extram 0x40000000 0x40200000 rwxk
   - phfs uart0 0.0 phoenixd
   - console 0.1
 
