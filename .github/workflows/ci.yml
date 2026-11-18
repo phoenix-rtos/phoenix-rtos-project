@@ -14,4 +14,8 @@ on:
 jobs:
   call-ci:
     uses: ./.github/workflows/ci-project.yml
+    # WIP: run the nightly configuration on this PR, drop before merge
+    with:
+      build_params: all tests
+      nightly: true
     secrets: inherit
