@@ -41,6 +41,8 @@ jobs:
           - 'armv8r52-mps3an536-qemu'
           - 'armv8m33-mcxn94x-frdm'
           - 'armv8m33-mcxn94x-frdm_cpu1'
+          - 'armv8m33-stm32u3-nucleo_u385'
+          - 'armv8m33-stm32u3-nucleo_u3c5'
           - 'armv8m55-stm32n6-nucleo'
           - 'aarch64a53-zynqmp-qemu'
           - 'host-generic-pc'
