@@ -1,0 +1,43 @@
+# vim:sw=2:ts=2
+# build html version of docs and deploy to docs.phoenix-rtos.com
+name: deploy
+
+# on events
+on:
+  push:
+    branches:
+      - master
+      - 'feature/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build
+
+    steps:
+      - name: Build docs
+        uses: phoenix-rtos/phoenix-rtos-project/phoenix-rtos-doc/.github/workflows/build.yml@master
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html_build
+          path: _build
+          if-no-files-found: error
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: deploy-on-merge
+    needs: build
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: html_build
+          path: _build
+          if-no-files-found: error
+
+      # - name: Deploy docs
+      #   run: |
+          # send cmd
