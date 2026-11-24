@@ -5,5 +5,5 @@ W /bin/bind devfs /dev
 W /sbin/dummyfs -m /tmp -D
 X /bin/posixsrv
 T /dev/console
+W /sbin/pcie
 X /bin/psh
-X /sbin/pcie
