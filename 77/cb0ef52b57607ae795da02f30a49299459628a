@@ -1,0 +1,24 @@
+phoenix-rtos-corelibs
+  h_edab809c32d497 1
+phoenix-rtos-devices
+  h_edab809c32d497 1
+phoenix-rtos-filesystems
+  h_edab809c32d497 1
+phoenix-rtos-kernel
+  h_edab809c32d497 1
+phoenix-rtos-ports
+  h_edab809c32d497 1
+phoenix-rtos-tests
+  h_edab809c32d497 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "77cb0ef52b57607ae795da02f30a49299459628a",
+  "prompts": {},
+  "humans": {
+    "h_edab809c32d497": {
+      "author": "Marek Białowąs <marek.bialowas@phoenix-rtos.com>"
+    }
+  }
+}
