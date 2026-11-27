@@ -19,6 +19,11 @@ on:
         type: boolean
         default: false
         required: false
+      sbom:
+        type: boolean
+        description: 'Generate CycloneDX SBOM for each target and upload it as an artifact'
+        default: true
+        required: false
 
 
 # jobs
@@ -80,6 +85,31 @@ jobs:
           params: ${{ inputs.build_params }} ${{ matrix.additional_params }}
           nightly: ${{ inputs.nightly }}
 
+      # step 2a: generate SBOM of the built image (lands in _boot/$TARGET, so it's also part of the boot tarball)
+      # TODO: drop the pip install once the build image ships the SBOM dependencies from phoenix-rtos-build/requirements.txt
+      - name: Generate SBOM
+        if: inputs.sbom
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -e TARGET="${{ matrix.target }}" \
+            -e PIP_BREAK_SYSTEM_PACKAGES=1 \
+            -e PIP_ROOT_USER_ACTION=ignore \
+            --entrypoint bash \
+            "ghcr.io/phoenix-rtos/build:${{ inputs.image-tag }}" \
+            -c 'pip3 install -q $(grep -E "^(license-expression|cyclonedx-python-lib|reuse)\b" phoenix-rtos-build/requirements.txt) && ./phoenix-rtos-build/build.sh sbom'
+          mkdir -p sbom
+          cp "_boot/${{ matrix.target }}/phoenix.cdx.json" "sbom/${{ matrix.target }}.cdx.json"
+
+      - name: Upload SBOM
+        if: inputs.sbom
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-${{ matrix.target }}
+          path: sbom/${{ matrix.target }}.cdx.json
+          if-no-files-found: error
+
       # step 3: tar rootfs
       - name: Tar rootfs
         working-directory: _fs
@@ -98,6 +128,26 @@ jobs:
           path: |
             boot-${{ matrix.target }}.tar
             rootfs-${{ matrix.target }}.tar
+
+  sbom-summary:
+    needs: build
+    if: inputs.sbom && !cancelled()
+    name: SBOM summary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download SBOMs
+        uses: actions/download-artifact@v8
+        with:
+          path: sbom
+          pattern: sbom-*
+          merge-multiple: true
+
+      - name: Upload merged SBOMs
+        uses: actions/upload-artifact@v7
+        with:
+          name: SBOMs
+          path: sbom/*.cdx.json
+          if-no-files-found: error
 
   test-emu:
     needs: build
